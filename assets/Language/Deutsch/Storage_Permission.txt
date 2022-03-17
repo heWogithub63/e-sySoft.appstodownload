@@ -1,0 +1,7 @@
+Um die App zu starten,
+wird der Schreib-Zugang zum Speicher
+benötigt !!
+Bitte gewähren Sie die Berechtigung
+und schalten Sie Speicher auf ' Zulassen '
+
+

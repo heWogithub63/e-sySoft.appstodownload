@@ -1,0 +1,6 @@
+  Leider konnte in
+  dem selektierten 
+  Ordner keine Datei
+  mit dem gewählten
+  Chare gefunden 
+  werden !!

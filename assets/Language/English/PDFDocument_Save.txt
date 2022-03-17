@@ -1,0 +1,6 @@
+To Save the Text Document
+as a Pdf Document,
+please write the
+choosed file name
+in the Edit-Field
+and accept with OK !!

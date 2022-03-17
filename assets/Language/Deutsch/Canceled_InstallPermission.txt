@@ -1,0 +1,5 @@
+  Wenn Sie der
+  Install-Berechtigung
+  nicht zustimmen,
+  können Sie mit dem FileBrowser
+  keine Apps installieren !!

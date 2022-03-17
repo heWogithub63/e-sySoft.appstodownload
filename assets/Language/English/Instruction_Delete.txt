@@ -1,0 +1,6 @@
+  Do you realy want
+  to delete the
+  selected 
+  File/Folder ??
+  This action will
+  be not reversible !!

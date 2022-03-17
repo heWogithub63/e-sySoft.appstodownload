@@ -1,0 +1,11 @@
+Please write the
+wanted file name
+for the combiend PDF
+Document in the Edit File
+followed from the PDF's
+names whitch you wants to add.
+The displayed Pdfs are this
+ones which are in the 
+selected folder !!
+Forward of the Selection
+with the arrow to the right.

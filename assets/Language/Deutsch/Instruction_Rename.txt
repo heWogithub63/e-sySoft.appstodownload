@@ -1,0 +1,7 @@
+  Bitte tragen Sie
+  den gewünschten Namen
+  der umzubenennenden
+  Datei in das Eingabe-
+  Feld ein und bestätigen
+  mit OK !!
+

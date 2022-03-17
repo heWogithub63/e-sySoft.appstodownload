@@ -1,0 +1,10 @@
+Wenn Sie ein Dokument
+speichern wollen,
+muss im FileBrowser 
+ein Ordner in den Sie
+speichern wollen,
+selektiert sein !!
+
+Zurück zum FileBrowser
+wischen nach rechts
+am unteren Bildschirmrand !!

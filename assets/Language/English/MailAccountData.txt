@@ -1,0 +1,10 @@
+  The actuall data of
+  your mail accounts are -->
+   -------------------------------------------   
+  Mail outgoin-server: (!e.g. smtp.gmail.com!)
+  Mail income-Server: (!e.g. pop.gmail.com!)
+  
+  User-Id: (!e.g. miller@gmail.com!)
+  e-mail_Addresse: (!e.g. miller@gmail.com!)
+  Password: (!e.g. myPassword!)
+  Port: (!e.g. 993!)

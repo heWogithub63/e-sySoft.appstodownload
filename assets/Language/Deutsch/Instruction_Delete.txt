@@ -1,0 +1,6 @@
+  Sind Sie sich sicher
+  den/die selectierte(n)
+  Ordner/Datei zu
+  löschen ??
+  Dies Aktion ist nicht
+  zurücknehmbar !!

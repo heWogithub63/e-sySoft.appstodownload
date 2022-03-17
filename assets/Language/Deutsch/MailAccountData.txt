@@ -1,0 +1,10 @@
+  Die aktuellen Daten Ihrer
+  Mail-Accounts sind -->
+   -------------------------------------------   
+  Mail Ausgangs-Server: (!z.B. smtp.gmail.com!)
+  Mail Eingangs-Server: (!z.B. pop.gmail.com!)
+  
+  Benutzer-Id: (!z.B.Mustermann@gmail.com!)
+  e-mail_Addresse: (!z.B.Mustermann@gmail.com!)
+  Kennwort: (!z.B. meinPasswort!)
+  Port: (!z.B. 993!)

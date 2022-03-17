@@ -1,0 +1,7 @@
+Derzeit ist kein Edit Feld 
+selektiert !!
+Bitte überprüfen Sie 
+ob sich der
+Cursor im einzutragenden 
+Editfeld
+befindet !!

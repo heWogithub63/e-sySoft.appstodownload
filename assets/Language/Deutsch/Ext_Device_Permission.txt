@@ -1,0 +1,6 @@
+  Um auf die SD-Card oder USB-Stick
+  schreiben zu können, wählen Sie den
+  Button root-user und gewähren Sie
+  die Schreibberechtigung für den
+  Datenträger !!!
+  

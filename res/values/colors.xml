@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#ffffffff</color>
+    <color name="white_overlay">#00000000</color>
+    <color name="yellow">#fff6f901</color>
+    <color name="red">#ffed0707</color>
+    <color name="green">#ff04f115</color>
+    <color name="grey">#ff7e8083</color>
+    <color name="grey_overlay">#28000000</color>
+    <color name="black">#ff010101</color>
+    <color name="black_overlay">#66000000</color>
+    <color name="blue">#ff2428c9</color>
+    <color name="blue_overlay">#66002299</color>
+    <color name="light_blue_600">#FF039BE5</color>
+    <color name="light_blue_900">#FF01579B</color>
+    <color name="light_blue_A200">#FF40C4FF</color>
+    <color name="light_blue_A400">#FF00B0FF</color>
+    <color name="grey_blue_overlay">#484989</color>
+</resources>

@@ -1,0 +1,7 @@
+  Wenn Sie der
+  Schreib-Berechtigung
+  für den gewählten
+  Device nicht zustimmen,
+  kann die gewünschte
+  Funktion nicht
+  ausgeführt werden !!

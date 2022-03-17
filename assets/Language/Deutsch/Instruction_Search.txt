@@ -1,0 +1,6 @@
+  Bitte tragen Sie 
+  den gesuchte Datei/Ordner
+  Namen, oder einen Teil
+  davon in das Edit-Feld
+  ein und bestätigen Sie
+  mit OK !!

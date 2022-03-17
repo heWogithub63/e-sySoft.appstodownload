@@ -1,0 +1,9 @@
+  Die aktuellen Daten Ihres
+  Editor-Account sind -->
+
+  Logo: 
+  Addressen Voreinstellung: Abs.
+  Nachname/Vorname: (!z.B.Mustermann Detlev!)
+  e-mail_Addresse: (!z.B.Mustermann@gmail.com!)
+  Telephon Nr: (!z.B. +49 1765 12345!)
+  

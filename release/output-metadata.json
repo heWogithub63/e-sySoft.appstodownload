@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "easysoft.freebrowser",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "versionCode": 8,
+      "versionName": "version 8.1",
+      "outputFile": "app-release.apk"
+    }
+  ]
+}

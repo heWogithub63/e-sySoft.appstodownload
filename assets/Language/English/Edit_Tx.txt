@@ -1,0 +1,9 @@
+  Paste
+  Copy
+  Move
+  Rename
+  Delete
+--> Trashbox
+----------
+  New Folder
+  Search

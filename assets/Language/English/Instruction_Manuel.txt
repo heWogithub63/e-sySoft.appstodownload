@@ -1,0 +1,70 @@
+Thanks for downloading FreeBrowser.
+
+The App includes an File-Browser,
+an Internet-Entrace, an Text-, and Pdf-
+Editor, an Vidio-Player, an Picture-
+Displayer, an Musicplayer,as well as an Email-Programm.
+
+Languages: German, English
+
+About the using:
+    short Click -->  Selection of Files,
+                     Links, Documents, or Folders
+                     to use the manipulating 
+                     Possibilities.
+    long  Click -->  To open Files or
+                     Links.
+
+    back to the File-Browser --> from 
+                     MultiMediaPanel
+                     via Wipe to the Right at
+                     the top line of the display.
+                     --> from Editor, EmailPanel, 
+                     InternetBrowser
+                     via Wipe to the Right at
+                     the bottom line of the display.
+
+    Mediadateien --> Create a 
+                     Medialiste via Selection
+                     from the folder which includes
+                     the media files
+                     ->
+                     Selection of the Folder than
+                     tip on Button --> MediaList,
+ 
+                     or wich includes 
+                     folders with media files
+                     -> Search via file name
+                     or part of file names (e.g. .mp4)
+                     -> MedialList Button
+                    
+
+    SoftKeyboard --> the Display Keyboard is moveable to the
+                     Top or Button of the Display.
+
+    
+    Pdf Editor: realise the creation of one page
+                multypage PDFs (display the Pages -> PDF), 
+                the input of
+                Pictures (e.g. signes), 
+                as well as the connection
+                from more Pdfs to one. -> 
+                Pdfs have to be in one folder wich is selected,
+                Klick on New --> PDF.
+
+    Text Editor: realises the input of head lines,
+                 logos (Preselection -> Info, 
+                 !! Use the Preselection Arrow !!), 
+                 background pictures (e.g. forms),
+                 with the possibility to save as PDF.
+
+    Internet Entrace: realises the save of webpage links,
+                      history klicks, jump to search programm,
+                      wich you could preselect in the FileBrowser 
+                      -> last right Button on the TopLine.
+                      Search Buttons could be hided via wipe to Bottom.
+
+    E-mail: all funktions of a email programm,
+            useable after the input of 'account Data'
+            under -> Info Button.
+            "!! Use the Preselection Arrow !!"

@@ -1,0 +1,5 @@
+DucDucGo https://duckduckgo.com
+Wikipedia https://de.wikipedia.org
+Google https://search.google.com
+Ebay https://www.ebay.com
+Amazone https://www.amazon.com/search/s?k=search

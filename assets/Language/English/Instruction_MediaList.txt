@@ -1,0 +1,7 @@
+  If you want's
+  to create a Media-List
+  you have to select a Folder.
+  From the index all 
+  media-files acording the 
+  choosed Chare will be included
+  to the list !!

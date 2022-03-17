@@ -1,0 +1,7 @@
+For running this App,
+it needs a Write_Permission !!
+Please accept to enter your 
+Phone_Storage
+and allow the Permission
+
+

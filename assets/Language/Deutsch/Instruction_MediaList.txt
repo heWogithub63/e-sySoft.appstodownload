@@ -1,0 +1,8 @@
+  Wenn Sie eine
+  Media Liste erstellen
+  wollen, müssen Sie einen
+  Ordner selektieren.
+  Hieraus werden dann
+  alle Dateien, entsprechend des
+  gewählten Chares, in die Liste
+  übernommen !!!

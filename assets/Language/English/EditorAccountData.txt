@@ -1,0 +1,9 @@
+  Your actual Data from
+  your Editor-Account are -->
+  
+  Logo: 
+  Address presetting: From:
+  Lastname/Firstname: (!Miller Detlev!)
+  e-mail_Addresse: (!e.g.Miller@gmail.com!)
+  Telephon Nr: (!e.g. +49 1765 12345!)
+  

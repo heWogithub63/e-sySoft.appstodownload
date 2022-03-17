@@ -1,0 +1,6 @@
+  If you want's to write
+  on a extern Device like 
+  SD_CARD or USB-STICK
+  press the root-user Button
+  and performe the Write-Permission
+  for the particular Data-Device !!!

@@ -1,0 +1,9 @@
+  Einfügen
+  Kopieren
+  Verschieben
+  Umbenennen
+  Löschen
+--> Papierkorb
+------------
+  Neuer Ordner
+  Suchen

@@ -1,0 +1,6 @@
+Right now is no edit 
+fild selected.
+Please check 
+if there is a 
+Cursor in the edit fild
+wich you want to use .

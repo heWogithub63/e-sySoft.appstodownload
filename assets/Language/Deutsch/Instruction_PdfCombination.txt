@@ -1,0 +1,12 @@
+Beim Verknüpfen von
+PDF's müssen Sie im
+FeilBrowser den Ordner
+selectieren, in dem 
+sich die zu verknüpfenden
+PDF's befinden und das
+neu PDF geschrieben 
+werden soll !!!
+
+Zurück zum FileBrowser
+wischen nach rechts
+am unteren Bildschirmrand !!

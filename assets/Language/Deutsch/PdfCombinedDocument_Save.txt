@@ -1,0 +1,12 @@
+Bitte bestimmen Sie 
+den gewünschten 
+Dokument Namen für das
+kombinierte PDF File, 
+gefolgt von
+den Namen der PDF Files
+die Sie als Seiten hinzufügen
+möchten. Angezeigt sind alle
+PDF's die sich im selektierten
+Ordner befinden !!
+Selektion vorwärts mit dem
+angezeigten Pfeil rechts.

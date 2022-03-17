@@ -1,0 +1,4 @@
+  Unfortunately in the
+  selected Folder couldn't
+  be found a file with
+  the choosed Chare !!

@@ -1,0 +1,5 @@
+  If you don't
+  agree with the InstallPermission 
+  you will not be able to install
+  an Android Application with
+  this File Browser !!
