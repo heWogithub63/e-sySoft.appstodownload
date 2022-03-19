@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import static easysoft.freebrowser.FileBrowser.*;
 import static easysoft.freebrowser.emailDisplayFragment.mailTx;
@@ -63,7 +64,6 @@ public class showMessageFragment extends Fragment {
         backgrColor = getResources().getColor(R.color.black_overlay);
 
         messageLayout = fileBrowser.frameLy.get(0);
-
     }
 
     @Override
@@ -289,8 +289,9 @@ public class showMessageFragment extends Fragment {
                             clickOk();
                         } else if (kindOf.equals("InstallPermissionDenied"))
                             fileBrowser.createList_systemUrl(2, 4);
-                        fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+
                         fileBrowser.threadStop = true;
+                        fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
 
                     }
                 });
@@ -303,11 +304,16 @@ public class showMessageFragment extends Fragment {
         }
     }
     public void clickOk () {
-        if (kindOf.startsWith("ask")) {
+        if (kindOf.contains("ask") ) {
             String todo = commandString.substring(0, commandString.indexOf("  ")),
                     from = commandString.substring(commandString.indexOf("  ") + 2),
-                    newName = requestedText.getText().toString().replace(" ", "").trim(),
-                    kind = "";
+                    kind = "",
+                    to = "",
+                    newName = "";
+
+            if(requestedText != null)
+                newName = requestedText.getText().toString().replace(" ", "").trim();
+
 
             if(kindOf.endsWith("Reaname")) {
                 if(from.substring(from.lastIndexOf("/")+1).contains("."))
@@ -316,37 +322,37 @@ public class showMessageFragment extends Fragment {
                 if(newName.contains("."))
                     newName = newName.substring(0, newName.lastIndexOf("."));
                 newName = newName +kind;
-                String to = from.substring(0, from.lastIndexOf("/") +1) +newName;
+                to = from.substring(0, from.lastIndexOf("/") +1) +newName;
                 if(to.startsWith("'"))
                     to = to.substring(1);
                 // new FileBrowser.dataHandler(todo, from, to,null).start();
-                fileBrowser.startTerminalCommands(todo,from,to);
             } else if(kindOf.endsWith("Search")) {
-                fileBrowser.startTerminalCommands(todo, from, " -> find " + newName);
-            }
+                to = " -> find " + newName;
+            } else if (kindOf.endsWith("Delete")) {
+                //new FileBrowser.dataHandler(todo, from, to,null).start();
+                if(kindOf.contains("Trash")) {
+                    if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                }
+            } else if (kindOf.endsWith("Create")) {
 
-        } else if (kindOf.startsWith("Delete")) {
-            String todo = commandString.substring(0, commandString.indexOf("  ")),
-                    from = commandString.substring(commandString.indexOf("  ") + 2),
-                    to = "";
-            //new FileBrowser.dataHandler(todo, from, to,null).start();
-            fileBrowser.startTerminalCommands(todo,from,to);
-            if(kindOf.endsWith("Trash")) {
-                if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                String index = requestedText.getText().toString().replace(" ", "_").replace(".", "-");
+                if (index.contains("/"))
+                    index = index.substring(index.lastIndexOf("/") + 1);
+                commandString = commandString + "/" + index;
+                if (kindOf.endsWith("Ordner"))
+                    from = from + "/" + index;
+                //new FileBrowser.dataHandler(todo, from, to,null).start();
+
             }
-        } else if (kindOf.startsWith("create")) {
-            String todo = commandString.substring(0, commandString.indexOf("  ")),
-                    from = commandString.substring(commandString.indexOf("  ") + 2),
-                    to = "";
-            String index = requestedText.getText().toString().replace(" ", "_").replace(".", "-");
-            if (index.contains("/"))
-                index = index.substring(index.lastIndexOf("/") + 1);
-            commandString = commandString + "/" + index;
-            if(kindOf.endsWith("Ordner"))
-                from = from + "/" + index;
-            //new FileBrowser.dataHandler(todo, from, to,null).start();
-            fileBrowser.startTerminalCommands(todo,from,to);
+            final String com = todo, fromPath = from, toPath = to;
+            fileBrowser.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fileBrowser.startTerminalCommands(com, fromPath, toPath);
+                }
+            });
+
         } else if(kindOf.equals("Instruction_Manuel")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 if (!fileBrowser.getPackageManager().canRequestPackageInstalls()) {
@@ -448,8 +454,7 @@ public class showMessageFragment extends Fragment {
 
             }
         }
-        fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
-        fileBrowser.threadStop = true;
+        //fileBrowser.threadStop = true;
     }
 
 
@@ -505,27 +510,23 @@ public class showMessageFragment extends Fragment {
 
                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.showList,3);
-                fileBrowser.runOnUiThread(new Runnable() {
-                      @Override
 
-                      public void run() {
-                          String kindOfMedia = "";
-                          if(kindOf.contains("Mus"))
-                              kindOfMedia = "AUDIO";
-                          else if(kindOf.contains("Picture") || kindOf.contains("Bilder"))
-                              kindOfMedia = "PICTURES";
-                          else if(kindOf.contains("Video"))
-                              kindOfMedia = "VIDEO";
-                          Bundle bund = new Bundle();
-                          bund.putString("KIND_OF_MEDIA", kindOfMedia);
-                          bund.putString("URL", "Array");
-                          fileBrowser.fragmentStart(fileBrowser.showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
-                                  displayWidth, displayHeight);
+                    String kindOfMedia = "";
+                    if(kindOf.contains("Mus"))
+                        kindOfMedia = "AUDIO";
+                    else if(kindOf.contains("Picture") || kindOf.contains("Bilder"))
+                        kindOfMedia = "PICTURES";
+                    else if(kindOf.contains("Video"))
+                        kindOfMedia = "VIDEO";
+                    Bundle bund = new Bundle();
+                    bund.putString("KIND_OF_MEDIA", kindOfMedia);
+                    bund.putString("URL", "Array");
+                    fileBrowser.fragmentStart(fileBrowser.showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
+                            displayWidth, displayHeight);
 
-                      }
-                });
 
                 fileBrowser.intendStarted = true;
+
             } else if(kindOf.startsWith("mailNoInternet")) {
                 fileBrowser.threadStop = true;
             } else if(kindOf.equals("Instruction_LogoAccount"))
@@ -534,110 +535,89 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.threadStop = true;
             } else if(kindOf.equals("Instruction_MailAccount")) {
 
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mailTx.requestFocus();
-                        if(mailTx.getText().toString().contains("(!") && mailTx.getText().toString().contains("!)"))
-                           mailTx.setSelection(mailTx.getText().toString().indexOf("(!"), mailTx.getText().toString().indexOf("!)") +2);
-                        fileBrowser.keyboardTrans = mailTx;
-                        int fact = displayHeight/18,
-                                fact01 = displayHeight/18;
-                        if(yfact < 0.625) {
-                            fact = displayHeight / 28;
-                            fact01 = 0;
-                        }
-                        if(yfact >= 0.8) {
-                            fact01 = displayHeight/12;
-                        }
-                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
-                                    displayWidth -10, (int)(displayHeight/3) +fact01);
-                    }
-                });
+                mailTx.requestFocus();
+                if(mailTx.getText().toString().contains("(!") && mailTx.getText().toString().contains("!)"))
+                   mailTx.setSelection(mailTx.getText().toString().indexOf("(!"), mailTx.getText().toString().indexOf("!)") +2);
+                fileBrowser.keyboardTrans = mailTx;
+                int fact = displayHeight/18,
+                        fact01 = displayHeight/18;
+                if(yfact < 0.625) {
+                    fact = displayHeight / 28;
+                    fact01 = 0;
+                }
+                if(yfact >= 0.8) {
+                    fact01 = displayHeight/12;
+                }
+                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                            displayWidth -10, (int)(displayHeight/3) +fact01);
+
             } else if(kindOf.equals("Instruction_EditorAccount")) {
 
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TxEditor.requestFocus();
-                        if(TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
-                           TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") +2);
-                        fileBrowser.keyboardTrans = TxEditor;
-                        int fact = displayHeight/18,
-                                fact01 = displayHeight/18;
-                        if(yfact < 0.625) {
-                            fact = displayHeight / 28;
-                            fact01 = 0;
-                        }
-                        if(yfact >= 0.8) {
-                            fact01 = displayHeight/12;
-                        }
-                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
-                                    displayWidth -10, (int)(displayHeight/3) +fact01);}
-                });
+                TxEditor.requestFocus();
+                if(TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
+                   TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") +2);
+                fileBrowser.keyboardTrans = TxEditor;
+                int fact = displayHeight/18,
+                        fact01 = displayHeight/18;
+                if(yfact < 0.625) {
+                    fact = displayHeight / 28;
+                    fact01 = 0;
+                }
+                if(yfact >= 0.8) {
+                    fact01 = displayHeight/12;
+                }
+                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                            displayWidth -10, (int)(displayHeight/3) +fact01);
+
             } else if(kindOf.startsWith("successAction")) {
+
                 if(kindOf.contains("delete")) {
                     if(kindOf.endsWith("delete")) {
                         devicePath = devicePath.substring(0,devicePath.lastIndexOf("/"));
-                    } else if (kindOf.endsWith("Trash")) {
-                        fileBrowser.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
-                                headMenueIcon01[headMenueIcon01.length - 1].setEnabled(false);
-                                new File(fileBrowser.context.getFilesDir() + "/pathCollection/PathList.txt").delete();
-                            }
-                        });
                     }
+
                 } else if(kindOf.contains("move")) {
 
                     if (kindOf.endsWith("toTrash")) {
                         calledBy = "trashList";
                         fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", devicePath +"\n");
-                        fileBrowser.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "closed", "open");
-                                fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(true);
-                            }
-                        });
+                        calledBy = "toTrash";
+                        fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "closed", "open");
+
                     } else if (kindOf.endsWith("fromTrash")) {
                         String str = "";
                         for(int s=0;s<arrayList.size();s++)
                             str = str + arrayList.get(s)[1] +"/"+ arrayList.get(s)[0]  +"\n";
 
                         fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", str);
-                        if(arrayList.size() == 0)
-                            fileBrowser.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
-                                    fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(false);
-                                }
-                            });
+
+                        if(arrayList.size() == 0) {
+                            calledBy = "fromTrash";
+                            fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
+                        }
                     }
                 }
+
                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.showList,3);
 
                 fileBrowser.changeIcon(headMenueIcon[2],"headMenueIcons","open","closed");
 
-            } else if(kindOf.equals("Successful_PdfDocumentSave")) {
+
+
+            } else if(kindOf.equals("Successful_TxDocumentSave")) {
                 if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
-                fileBrowser.startExtApp(devicePath);
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fileBrowser.reloadFileBrowserDisplay();
-                    }
-                });
-            }
 
-            fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
+                fileBrowser.startExtApp(devicePath);
+            } else if(kindOf.equals("Successful_PdfDocumentSave")) {
+                fileBrowser.startExtApp(devicePath);
+            }
             fileBrowser.threadStop = true;
+            fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
+
         }
     }
 }

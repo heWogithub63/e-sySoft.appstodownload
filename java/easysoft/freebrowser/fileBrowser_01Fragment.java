@@ -268,16 +268,13 @@ public class fileBrowser_01Fragment extends Fragment {
             if (fileBrowser.intendStarted) {
                 if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                     fileBrowser.showMediaDisplay.disrupt = true;
-                    if(fileBrowser.showMediaDisplay.mP != null) {
-                        fileBrowser.showMediaDisplay.mP.stop();
-                        fileBrowser.showMediaDisplay.mP.release();
-                        fileBrowser.showMediaDisplay.mP = null;
-                    }
 
-                    if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
-                        fileBrowser.runningMediaList = new ArrayList<>();
+                    if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
                         fileBrowser.runningMediaList = null;
-                    }
+
+                    if(fileBrowser.showMediaDisplay.videoView.isPlaying())
+                        fileBrowser.showMediaDisplay.videoView.stopPlayback();
+
                     fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
 
                     fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon02[2], fileBrowser.headMenueIcon02[3]},

@@ -387,9 +387,11 @@ public class MediaDisplayFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         if(mP!=null) {
-            mP.stop();
-            mP.release();
-            mP=null;
+            try {
+                mP.stop();
+                mP.release();
+                mP = null;
+            } catch (java.lang.IllegalStateException ie) {}
         }
         if (runningMediaList != null && runningMediaList.size() > 0)
             runningMediaList = null;

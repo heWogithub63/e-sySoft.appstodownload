@@ -235,7 +235,7 @@ public class showListFragment extends Fragment {
                                                   //commandString = "copy  " + devicePath_trans;
                                                   commandString = "cp -r  " + devicePath_trans;
                                               } else {
-                                                  kind_of = "Move";
+                                                  kind_of = "askForMove";
                                                   //commandString = "move  " + devicePath_trans;
                                                   commandString = "mvcp -r  " + devicePath_trans;
                                               }
@@ -245,19 +245,17 @@ public class showListFragment extends Fragment {
                                           } else if ((kind_of.contains("Umbenennen") || kind_of.contains("Rename"))) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
-                                              kind_of = "Rename";
+                                              kind_of = "askForRename";
                                               //commandString = "rename  " + devicePath_trans;
                                               commandString = "mvcp -r  " + devicePath_trans;
-                                              fileBrowser.messageStarter("askForReaname", docu_Loader("Language/" + language + "/Instruction_" +
-                                                              kind_of + ".txt"),  0);
+                                              fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Rename.txt"),  0);
                                           } else if ((kind_of.contains("Löschen") || kind_of.contains("Delete"))) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
-                                              kind_of = "Delete";
+                                              kind_of = "_askForDelete";
                                               //commandString = "delete  " + devicePath_trans;
                                               commandString = "rm -rf  " + devicePath_trans;
-                                              fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_" +
-                                                              kind_of + ".txt"),  0);
+                                              fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Delete.txt"), 0);
                                           } else if (kind_of.contains("-->")) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
@@ -266,23 +264,26 @@ public class showListFragment extends Fragment {
                                               String toTrash = fileBrowser.context.getFilesDir() +"/.TrashIndex" + devicePath_trans.substring(devicePath_trans.lastIndexOf("/"));
                                               commandString = "move  " +devicePath_trans;
                                               //new FileBrowser.dataHandler("move  ", devicePath_trans, toTrash,null).start();
-                                              fileBrowser.startTerminalCommands("mvcp -r ",devicePath_trans,toTrash);
+                                              fileBrowser.runOnUiThread(new Runnable() {
+                                                  @Override
+                                                  public void run() {
+                                                      fileBrowser.startTerminalCommands("mvcp -r ", devicePath_trans, toTrash);
+                                                  }
+                                              });
                                               return;
                                           } else if ((kind_of.contains("Neuer Ordner") || kind_of.contains("New Folder"))) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
-                                              kind_of = "CreateFolder";
+                                              kind_of = "askForCreate";
                                               //commandString = "create  " + devicePath_trans;
                                               commandString = "mkdir  " + devicePath;
-                                              fileBrowser.messageStarter("createInstructionOrdner", docu_Loader("Language/" + language + "/Instruction_" +
-                                                              kind_of + ".txt"),  0);
+                                              fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_CreateFolder.txt"),  0);
                                           } else if ((kind_of.contains("Suchen") || kind_of.contains("Search"))) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
-                                              kind_of = "Search";
+                                              kind_of = "askForSearch";
                                               commandString = "ls -aR  " +devicePath_trans;
-                                              fileBrowser.messageStarter("askForSearch", docu_Loader("Language/" + language + "/Instruction_" +
-                                                              kind_of + ".txt"),  0);
+                                              fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Search.txt"),  0);
                                           } else if ((kind_of.contains("Einfügen") || kind_of.contains("Paste")) && !commandString.equals("")) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
@@ -296,10 +297,16 @@ public class showListFragment extends Fragment {
                                                   kind = kind.replace(" ","\\ ");
                                               }
                                               to = to +"/"+ kind;
+                                              final String to1 = to;
 
                                               commandString = "";
                                               //new FileBrowser.dataHandler(todo,from,to, null).start();
-                                              fileBrowser.startTerminalCommands(todo,from,to);
+                                              fileBrowser.runOnUiThread(new Runnable() {
+                                                  @Override
+                                                  public void run() {
+                                                      fileBrowser.startTerminalCommands(todo, from, to1);
+                                                  }
+                                              });
                                           }
                                       }
                                   } else if(caller.equals("mediaCollectionList")) {
@@ -348,11 +355,10 @@ public class showListFragment extends Fragment {
                                       }
                                   } else if(caller.equals("TrashList")) {
                                       if(tag.substring(tag.indexOf(" ")+1).contains(" ")) {
-                                          kind_of = "Delete Trash";
+                                          kind_of = "_askTrashDelete";
                                           //commandString = fileBrowser.context.getFilesDir() + "/.TrashIndex";
-                                          commandString = "rm -rf  " + fileBrowser.context.getFilesDir() + "/.TrashIndex";
-                                          fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_" +
-                                                          kind_of.substring(0, kind_of.indexOf(" ")) + ".txt"), 0);
+                                          commandString = "rm -rfx  " + fileBrowser.context.getFilesDir() + "/.TrashIndex";
+                                          fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Delete.txt"), 0);
                                       } else {
                                           calledBy = "TreshIndex";
 

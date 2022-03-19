@@ -832,7 +832,7 @@ public class TextEditorFragment extends Fragment {
         pdfDocument.close();
 
         devicePath = FILE;
-        fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
+        fileBrowser.messageStarter("Successful_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
 
     }
     public void generatePDFfromPdf() {
@@ -903,7 +903,8 @@ public class TextEditorFragment extends Fragment {
 
         pdfDocument.close();
         devicePath = FILE;
-        fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
+
+        fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
 
     }
 
@@ -948,7 +949,7 @@ public class TextEditorFragment extends Fragment {
                 }
 
                 document.close();
-                fileBrowser.messageStarter("Successful_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
+                fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
 
                 fileBrowser.reloadFileBrowserDisplay();
             } catch (Exception e) {

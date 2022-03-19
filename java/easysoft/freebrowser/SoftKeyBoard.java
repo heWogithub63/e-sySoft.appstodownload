@@ -21,7 +21,7 @@ public class SoftKeyBoard extends Fragment {
     ArrayList<String[]> smallTabsTx;
     ArrayList<String[]> largeTabsTx;
     RelativeLayout keyBoardMainRel;
-    LinearLayout keyBoardLin;
+
     boolean shift = false;
     String kindOf_keys = "";
 

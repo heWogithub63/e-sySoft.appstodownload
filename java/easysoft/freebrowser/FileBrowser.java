@@ -38,6 +38,7 @@ import java.io.*;
 import java.lang.Process;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static androidx.constraintlayout.widget.Constraints.TAG;
@@ -45,9 +46,10 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class FileBrowser extends Activity  {
     final int ASK_PERMISSION_EXTStorage = 8080,
-            ASK_PERMISSION_PKGInstall = 8081,
-            PICKFILE_RESULT_CODE = 1;
+            ASK_PERMISSION_PKGInstall = 8081;
+
     Context context;
+
     ActivityManager aM;
     FragmentManager fragManager;
     FragmentTransaction fragTrans;
@@ -72,7 +74,6 @@ public class FileBrowser extends Activity  {
     public Uri fileUri;
     public String filePath;
 
-    static callMassage callmessage;
     static FileBrowser fileBrowser;
     static AssetManager asma;
     static PackageManager pgMa;
@@ -248,6 +249,7 @@ public class FileBrowser extends Activity  {
             }
         }
     }
+
 
     void serveAPK(String url, String mimeType){
 
@@ -495,12 +497,6 @@ public class FileBrowser extends Activity  {
         fragmentStart(showList, 3,"list_url", bund, iconpos[0], iconpos[1], width, (int) mS);
     }
 
-    public int calcHorizontalScrPos(HorizontalScrollView kindHorizontlScr) {
-        double scrpos = 0;
-        scrpos = kindHorizontlScr.getScrollX();
-        return (int)scrpos;
-    }
-
     public void createList(String kind, int column, String fUrl, int maxsize, int x, int y, int width, String direction) {
         float mS = 0;
             String[][] listString = new String[0][0];
@@ -696,18 +692,6 @@ public class FileBrowser extends Activity  {
         return arrayOfString;
     }
 
-    public String mimetypIndex (String m) {
-        calledBy = "";
-        String mime = "";
-        String[] mimes = docu_Loader("MimeTypes/mimeTypes.txt");
-        for(String s : mimes)
-            if(s.startsWith(m)) {
-                mime = s.substring(s.lastIndexOf(" ") + 1);
-                break;
-            }
-        return mime.trim();
-    }
-
     public void createSurface() {
         RelativeLayout.LayoutParams foldLinParam = new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams((int)(displayWidth),(int)(16*(displayHeight/20))));
 
@@ -794,8 +778,8 @@ public class FileBrowser extends Activity  {
                         }
                         if (tag.contains("Edit_open")) {
                             if (showList != null && showList.isVisible()) {
-                                closeListlinkedIcons(new ImageView[]{headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1], headMenueIcon02[3]},
-                                        new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
+                                closeListlinkedIcons(new ImageView[]{headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1], headMenueIcon02[3],headMenueIcon02[5]},
+                                        new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons", "sideRightMenueIcons"});
                                 fragmentShutdown(showList, 3);
                             }
                             if(!(urldevice == null || urldevice.equals(""))) {
@@ -861,8 +845,8 @@ public class FileBrowser extends Activity  {
 
                             if (tag.contains("open")) {
                                 if (showList != null && showList.isVisible()) {
-                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon[5], headMenueIcon[6],headMenueIcon01[1], headMenueIcon02[3]},
-                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon[5], headMenueIcon[6],headMenueIcon01[1], headMenueIcon02[3], headMenueIcon02[5]},
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons", "sideRightMenueIcons"});
                                     fragmentShutdown(showList, 3);
                                 }
 
@@ -922,13 +906,16 @@ public class FileBrowser extends Activity  {
                         int pos = Integer.parseInt(view.getTag().toString().substring(0, view.getTag().toString().indexOf(" ")));
 
                         if (view.getTag().toString().contains("closed")) {
+
                             if (tag.contains("Device")) {
                                 tag = tag.replace("closed", "open");
                                 view.setTag(view.getTag().toString().replace("closed", "open"));
                                 ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideLeftMenueIcons/" + tag));
 
                                 if (showList != null && showList.isVisible()) {
-                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon02[3]}, new String[] {"headMenueIcons", "sideRightMenueIcons"});
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon02[3]},
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideRightMenueIcons"});
+                                    fragmentShutdown(showList, 3);
                                 }
                                 createList_systemUrl(2, 4);
                             } else if (tag.contains("IVor") && filebrowser_01 != null && filebrowser_01.isVisible() &&
@@ -999,36 +986,49 @@ public class FileBrowser extends Activity  {
                         } else if (view.getTag().toString().contains("open") && (tag.contains("Device") || tag.contains("Trash"))) {
 
                             if (tag.contains("Trash")) {
-                                if(showList != null && showList.isVisible() && showList.caller.equals("TrashList")) {
+
+                                int[] iconpos = new int[2], listpos = new int[2];
+                                headMenueIcon01[7].getLocationOnScreen(iconpos);
+
+                                if (showList != null && showList.isVisible()) {
+                                    frameLy.get(3).getLocationOnScreen(listpos);
+                                    listpos[1] = listpos[1] - frameLy.get(3).getHeight();
+
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1], headMenueIcon02[3],
+                                                     headMenueIcon02[5]},
+                                                     new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons",
+                                                     "sideRightMenueIcons"});
                                     fragmentShutdown(showList, 3);
-                                } else {
+                                }
+                                if(listpos[0] == 0  || (listpos[0] != iconpos[0] + (int) (headMenueIcon01[7].getWidth() + 10) &&
+                                        listpos[1] != iconpos[1] - (int) (headMenueIcon01[7].getHeight() + 10))) {
 
                                     float f = 4;
-                                    if(yfact <= 0.625)
+                                    if (yfact <= 0.625)
                                         f = 3;
 
-                                    int[] iconpos = new int[2];
-                                    headMenueIcon01[7].getLocationOnScreen(iconpos);
 
-                                    fileBrowser.createList("TrashList",1, "Language/" + fileBrowser.language + "/TrashList.txt",6,
-                                            iconpos[0] +(int)(headMenueIcon01[7].getWidth() +10),iconpos[1] -(int)(headMenueIcon01[7].getHeight() +10),
-                                             (int)(displayWidth/f),"ru");
+                                    fileBrowser.createList("TrashList", 1, "Language/" + fileBrowser.language + "/TrashList.txt", 6,
+                                            iconpos[0] + (int) (headMenueIcon01[7].getWidth() + 10), iconpos[1] - (int) (headMenueIcon01[7].getHeight() + 10),
+                                            (int) (displayWidth / f), "ru");
 
                                     fileBrowser.frameLy.get(3).bringToFront();
-                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1],headMenueIcon02[3]},
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1], headMenueIcon02[3]},
                                             new String[]{"headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
                                 }
+
                                 return;
 
                             } else {
                                 tag = tag.replace("open", "closed");
                                 view.setTag(view.getTag().toString().replace("open", "closed"));
                                 ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideLeftMenueIcons/" + tag));
-                            }
-                            if (showList != null && showList.isVisible()) {
-                                fragmentShutdown(showList, 3);
-                                closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1],headMenueIcon02[3]},
-                                        new String[]{"headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
+
+                                if (showList != null && showList.isVisible()) {
+                                    fragmentShutdown(showList, 3);
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon01[1]},
+                                            new String[]{"sideLeftMenueIcons"});
+                                }
                             }
                         }
                     }
@@ -1090,8 +1090,10 @@ public class FileBrowser extends Activity  {
                                              8500);
                                     return;
                                 } else {
-                                    if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                                        fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon[2], fileBrowser.headMenueIcon01[1]}, new String[]{"headMenueIcons", "sideLeftMenueIcons"});
+                                    if (showList != null && showList.isVisible()) {
+                                        closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1],headMenueIcon02[5]},
+                                                new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
+                                        fragmentShutdown(showList, 3);
                                     }
                                     if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
                                         fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
@@ -1107,8 +1109,14 @@ public class FileBrowser extends Activity  {
                                             iconpos[0], iconpos[1], (int)(displayWidth / f), "lu");
                                 }
                             } else if (tag.contains("vLogo")) {
-                                fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon[3], headMenueIcon01[1]},
-                                        new String[]{"headMenueIcons", "headMenueIcons", "sideLeftMenueIcons"});
+                                if (showList != null && showList.isVisible()) {
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1],
+                                                    headMenueIcon02[3],
+                                                    },
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons",
+                                                    "sideRightMenueIcons"});
+                                    fragmentShutdown(showList, 3);
+                                }
                                 float f = 4;
                                 if(yfact <= 0.625)
                                     f = 3;
@@ -1204,8 +1212,14 @@ public class FileBrowser extends Activity  {
                                 fileBrowser.isPdf = false;
                                 fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2]}, new String[]{"sideRightMenueIcons"});
                                 headMenueIcon02[2].setEnabled(false);
-                                if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                if (showList != null && showList.isVisible()) {
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1],
+                                                    headMenueIcon02[3],
+                                            },
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons",
+                                                    "sideRightMenueIcons"});
+                                    fragmentShutdown(showList, 3);
+                                }
                                 if (fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
                                     fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
                             }
@@ -1217,23 +1231,61 @@ public class FileBrowser extends Activity  {
     }
 
     public void closeListlinkedIcons(ImageView[] iconViews, String[] iconType) {
-        int i=0;
-        for(ImageView iconView : iconViews) {
-            iconView.setTag(iconView.getTag().toString().replace("open", "closed"));
-            String iconName = iconView.getTag().toString().substring(iconView.getTag().toString().indexOf(" ") + 1);
-            iconView.setImageBitmap(bitmapLoader("Icons/" + iconType[i] + "/" + iconName));
-            i++;
+
+        if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            fileBrowser.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    int i=0;
+                    for (ImageView iconView : iconViews) {
+                        iconView.setTag(iconView.getTag().toString().replace("open", "closed"));
+                        String iconName = iconView.getTag().toString().substring(iconView.getTag().toString().indexOf(" ") + 1);
+                        iconView.setImageBitmap(bitmapLoader("Icons/" + iconType[i] + "/" + iconName));
+                        i++;
+                    }
+                }
+            });
+        } else {
+            int i=0;
+            for (ImageView iconView : iconViews) {
+                iconView.setTag(iconView.getTag().toString().replace("open", "closed"));
+                String iconName = iconView.getTag().toString().substring(iconView.getTag().toString().indexOf(" ") + 1);
+                iconView.setImageBitmap(bitmapLoader("Icons/" + iconType[i] + "/" + iconName));
+                i++;
+            }
         }
     }
     public void changeIcon(View v, String folder, String from, String to) {
         v.setTag(v.getTag().toString().replace(from, to));
-        try {
-            ((ImageView) v).setImageBitmap(fileBrowser.bitmapLoader("Icons/"+folder+"/" + v.getTag().toString().substring(v.getTag().toString().indexOf(" ") + 1)));
-        } catch(ClassCastException cE) {
-            if(to.equals("open"))
-                ((TextView) v).setTextColor(getResources().getColor(R.color.blue));
-            else if(to.equals("closed"))
-                ((TextView) v).setTextColor(getResources().getColor(R.color.black));
+        if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            fileBrowser.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ((ImageView) v).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + v.getTag().toString().substring(v.getTag().toString().indexOf(" ") + 1)));
+                    if(calledBy.equals("toTrash"))
+                        fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(true);
+                    else if(calledBy.equals("fromTrash"))
+                        fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(false);
+
+                    } catch (ClassCastException cE) {
+                        if (to.equals("open"))
+                            ((TextView) v).setTextColor(getResources().getColor(R.color.blue));
+                        else if (to.equals("closed"))
+                            ((TextView) v).setTextColor(getResources().getColor(R.color.black));
+                    }
+                    calledBy = "";
+                }
+            });
+        } else {
+            try {
+                ((ImageView) v).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + v.getTag().toString().substring(v.getTag().toString().indexOf(" ") + 1)));
+            } catch (ClassCastException cE) {
+                if (to.equals("open"))
+                    ((TextView) v).setTextColor(getResources().getColor(R.color.blue));
+                else if (to.equals("closed"))
+                    ((TextView) v).setTextColor(getResources().getColor(R.color.black));
+            }
         }
     }
 
@@ -1366,15 +1418,14 @@ public class FileBrowser extends Activity  {
         if (fileBrowser.intendStarted) {
             if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                 fileBrowser.showMediaDisplay.disrupt = true;
-                if(fileBrowser.showMediaDisplay.mP != null) {
-                    fileBrowser.showMediaDisplay.mP.stop();
-                    fileBrowser.showMediaDisplay.mP.release();
-                    fileBrowser.showMediaDisplay.mP = null;
-                }
-                if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
-                    fileBrowser.runningMediaList = new ArrayList<>();
+
+                if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
                     fileBrowser.runningMediaList = null;
-                }
+
+                if(fileBrowser.showMediaDisplay.videoView.isPlaying())
+                    fileBrowser.showMediaDisplay.videoView.stopPlayback();
+
+
                 fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
 
                 fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon02[2], fileBrowser.headMenueIcon02[3]},
@@ -1448,8 +1499,11 @@ public class FileBrowser extends Activity  {
                 bund.putString("FORMAT", form);
                 if(form.equals(".txt"))
                     bund.putStringArray("TEXT", docu_Loader(Url));
-                else
+                else {
+                    if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                     bund.putStringArray("TEXT", new String[]{Url});
+                }
 
                 fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1]}, new String[]{"headMenueIcons","sideLeftMenueIcons"});
 
@@ -1534,21 +1588,25 @@ public class FileBrowser extends Activity  {
         }
     }
 
-    public boolean frameContainerMove(int frameID, FrameLayout frameId, float xpos, float ypos, int width, int height) {
-
-        fileBrowser.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                frameId.setLayoutParams(new FrameLayout.LayoutParams(width, height));
-                frameId.setX(xpos);
-                frameId.setY(ypos);
-            }
-        });
+    public void frameContainerMove(int frameID, FrameLayout frameId, float xpos, float ypos, int width, int height) {
         frameLy.remove(frameID);
         frameLy.add(frameID,frameId);
-        frameLy.get(frameID).setClickable(true);
 
-        return true;
+        if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
+            fileBrowser.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    frameId.setLayoutParams(new FrameLayout.LayoutParams(width, height));
+                    frameLy.get(frameID).setClickable(true);
+                }
+            });
+        } else {
+            frameId.setLayoutParams(new FrameLayout.LayoutParams(width, height));
+            frameLy.get(frameID).setClickable(true);
+        }
+        frameId.setX(xpos);
+        frameId.setY(ypos);
+
     }
 
     //
@@ -1611,56 +1669,54 @@ public class FileBrowser extends Activity  {
             showMessage = showMessageFragment.newInstance();
             if (transParam != null)
                 showMessage.setArguments(transParam);
-            if(frameContainerMove(0, fileBrowser.findViewById(R.id.messageFrame), xpos, ypos, width, height))
-                fragTrans.replace(R.id.messageFrame, showMessage);
-
+            frameContainerMove(0, fileBrowser.findViewById(R.id.messageFrame), xpos, ypos, width, height);
+            fragTrans.replace(R.id.messageFrame, showMessage);
         } else if (kind_of.equals("fileBrowser01")) {
             filebrowser_01 = fileBrowser_01Fragment.newInstance();
             if (transParam != null)
                 filebrowser_01.setArguments(transParam);
 
-            if(frameContainerMove(1, findViewById(R.id.FileBrowser_01), gridMiddleFrame.getX(), gridMiddleFrame.getY() + mainDisplayGrid.getY(),
-                    gridMiddleFrame.getWidth(), gridMiddleFrame.getHeight()))
-                fragTrans.replace(R.id.FileBrowser_01, filebrowser_01);
+            frameContainerMove(1, findViewById(R.id.FileBrowser_01), gridMiddleFrame.getX(), gridMiddleFrame.getY() + mainDisplayGrid.getY(),
+                    gridMiddleFrame.getWidth(), gridMiddleFrame.getHeight());
+            fragTrans.replace(R.id.FileBrowser_01, filebrowser_01);
         } else if (kind_of.startsWith("list")) {
             showList = showListFragment.newInstance();
             if (transParam != null)
                 showList.setArguments(transParam);
 
-            if(frameContainerMove(3, findViewById(R.id.listFrame), xpos, ypos, width, height))
-                fragTrans.replace(R.id.listFrame, showList);
+            frameContainerMove(3, findViewById(R.id.listFrame), xpos, ypos, width, height);
+            fragTrans.replace(R.id.listFrame, showList);
 
         } else if (kind_of.equals("mediaDisplay")) {
             showMediaDisplay = MediaDisplayFragment.newInstance();
             if (transParam != null)
                 showMediaDisplay.setArguments(transParam);
-            if(frameContainerMove(4, findViewById(R.id.mediaDisplay), xpos, ypos, width, height))
-                fragTrans.replace(R.id.mediaDisplay, showMediaDisplay);
+            frameContainerMove(4, findViewById(R.id.mediaDisplay), xpos, ypos, width, height);
+            fragTrans.replace(R.id.mediaDisplay, showMediaDisplay);
         } else if (kind_of.equals("emailDisplay")) {
             createSendEmail = emailDisplayFragment.newInstance();
             if (transParam != null)
                 createSendEmail.setArguments(transParam);
-            if(frameContainerMove(5, findViewById(R.id.createSendEmail), xpos, ypos, width, height)) {
-                fragTrans.replace(R.id.createSendEmail, createSendEmail);
-            }
+            frameContainerMove(5, findViewById(R.id.createSendEmail), xpos, ypos, width, height);
+            fragTrans.replace(R.id.createSendEmail, createSendEmail);
         } else if (kind_of.equals("textEditorDisplay")) {
             createTxEditor = TextEditorFragment.newInstance();
             if (transParam != null)
                 createTxEditor.setArguments(transParam);
-            if(frameContainerMove(7, findViewById(R.id.createTextDisplay), xpos, ypos, width, height))
-                fragTrans.replace(R.id.createTextDisplay, createTxEditor);
+            frameContainerMove(7, findViewById(R.id.createTextDisplay), xpos, ypos, width, height);
+            fragTrans.replace(R.id.createTextDisplay, createTxEditor);
         } else if (kind_of.equals("webBrowserDisplay")) {
             webBrowserDisplay = WebBrowserFragment.newInstance();
             if (transParam != null)
                 webBrowserDisplay.setArguments(transParam);
-            if(frameContainerMove(8, findViewById(R.id.createWebbrowsertDisplay), xpos, ypos, width, height))
-                fragTrans.replace(R.id.createWebbrowsertDisplay, webBrowserDisplay);
+            frameContainerMove(8, findViewById(R.id.createWebbrowsertDisplay), xpos, ypos, width, height);
+            fragTrans.replace(R.id.createWebbrowsertDisplay, webBrowserDisplay);
         } else if (kind_of.equals("softKeyBoard")) {
             softKeyBoard = SoftKeyBoard.newInstance();
             if (transParam != null)
                 softKeyBoard.setArguments(transParam);
-            if(frameContainerMove(6, findViewById(R.id.softKeyBoard), xpos, ypos, width, height))
-                fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
+            frameContainerMove(6, findViewById(R.id.softKeyBoard), xpos, ypos, width, height);
+            fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
         }
 
         fragTrans.commit();
@@ -1671,26 +1727,26 @@ public class FileBrowser extends Activity  {
 
         fragTrans.remove(kind_of);
         fragTrans.commit();
-        if(n != 1) {
-            final CountDownLatch latch = new CountDownLatch(1);
+
+        if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
             fileBrowser.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
-                    frameLy.get(n).setX(0);
-                    frameLy.get(n).setY(0);
                     frameLy.get(n).setClickable(false);
-
-                    latch.countDown();
                 }
             });
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+        } else {
+            frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
+            frameLy.get(n).setClickable(false);
         }
+
+        frameLy.get(n).setX(0);
+        frameLy.get(n).setY(0);
+
     }
+
 
     public void messageStarter(String kind_of_message, String[] message, int timer) {
         int posx,posy,width,height;
@@ -1730,7 +1786,7 @@ public class FileBrowser extends Activity  {
         bund.putStringArray("MESSAGE_STRING", message);
         bund.putInt("MESSAGE_TIMER", timer);
 
-        new callMassage(bund,posx,posy,width,height).start();
+        fragmentStart(showMessage, 0, "message",bund,posx,posy,width,height);
     }
 
     public void doPrint(View view) {
@@ -1763,149 +1819,150 @@ public class FileBrowser extends Activity  {
         paramList = fileBrowser.createArrayList(urldevicePath);
 
         if (udPath.length() != 0 || udPath.contains("/")) {
-            fileBrowser.createFolder(urldevice);
-            fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1,"fileBrowser01",null, (int) (250 * xfact), (int) (440 * yfact),
-                    (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
-        } else
-            fileBrowser.createFolder(urldevice);
+            if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fileBrowser.createFolder(urldevice);
+                        fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
+                                (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
+                    }
+                });
+            } else {
+                fileBrowser.createFolder(urldevice);
+                fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
+                        (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
+            }
 
+        } else {
+            if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fileBrowser.createFolder(urldevice);
+                    }
+                });
+            } else
+                fileBrowser.createFolder(urldevice);
+        }
     }
 
     public void startTerminalCommands(String todo, String from, String to) {
-        String exe = "";
-        boolean twotimes = false;
-        String[] outputTx = new String[0];
-        String searchWhat = "";
-        Process process;
-        try {
-            if (todo.startsWith("ls")) {
-                outputTx = docu_Loader("Language/" + language + "/Search_Result.txt");
-                searchWhat = to.substring(to.lastIndexOf(" ") + 1);
-                to = "";
-            } else if(todo.startsWith("mvcp")) {
-                todo = todo.substring(todo.indexOf("cp"));
-                twotimes = true;
-            } else if(todo.startsWith("mkdir") || todo.startsWith("rm")) {
 
-            }
-            if(from.contains("/"))
-                if(from.substring(from.lastIndexOf("/") +1).contains(" "))
-                    from = "'"+from+"'";
-
-
-            exe = (todo + " " + from + " " + to).trim();
-            Log.e("mainExtProgram",exe);
-            process = Runtime.getRuntime().exec(exe);
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String strFolder = "", strRead;
-
-            while ((strRead = reader.readLine()) != null) {
-                if (strRead.endsWith(":")) {
-                    outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
-                    outputTx[outputTx.length - 1] = strRead;
-                    strFolder = strRead;
-                } else if (strRead.contains(searchWhat)) {
-                    outputTx[outputTx.length - 1] = outputTx[outputTx.length - 1] + strRead;
-                    outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
-                    outputTx[outputTx.length - 1] = strFolder;
-                }
-            }
-
-            reader.close();
-            process.waitFor();
-
-            if(twotimes) {
-                exe = "rm -rf " +from;
-                Log.e("secExtProgram",exe);
-                process = Runtime.getRuntime().exec(exe);
-                process.waitFor();
-
-            }
-
-            String kind = "";
-            if(todo.contains(" "))
-                switch(todo.substring(0,todo.indexOf(" "))) {
-                    case ("rm"): {
-                        kind = "delete";
-                        if (to.contains(".TrashIndex"))
-                            kind = kind + "toTrash";
-                        if (from.contains(".TrashIndex")) {
-                            kind = kind + "fromTrash";
+                if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+                    fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+                String exe = "";
+                boolean twotimes = false;
+                String[] outputTx = new String[0];
+                String searchWhat = "";
+                Process process;
+                try {
+                    if (todo.startsWith("ls")) {
+                        outputTx = docu_Loader("Language/" + language + "/Search_Result.txt");
+                        searchWhat = to.substring(to.lastIndexOf(" ") + 1);
+                        to = "";
+                    } else if (todo.startsWith("mvcp")) {
+                        todo = todo.substring(todo.indexOf("cp"));
+                        twotimes = true;
+                    } else if (todo.contains("-rfx")) {
+                        String[] temp = fileBrowser.read_writeFileOnInternalStorage("read",".TrashIndex","","");
+                        for(String s:temp) {
+                            new File(getFilesDir() + "/.TrashIndex", s).delete();
                         }
-                        break;
-                    }
-                    case ("cp"): {
-                        kind = "move";
-                        if (to.contains(".TrashIndex"))
-                            kind = kind + "toTrash";
-                        if (from.contains(".TrashIndex")) {
-                            kind = kind + "fromTrash";
-                        }
-                        break;
-                    }
-                    case ("ls"): {
-                        transList = new ArrayList<>();
-                        String[] goout = new String[0];
-                        for (int o = 0; o < outputTx.length; o++)
-                            if (!outputTx[o].endsWith(":")) {
-                                goout = Arrays.copyOf(goout, goout.length + 1);
-                                goout[goout.length - 1] = outputTx[o];
-                                transList.add(outputTx[o].replace(":", "/"));
-                            }
-
-                        fileBrowser.messageStarter("FindResult", goout, 0);
-
+                        fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", "");
+                        fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
                         return;
                     }
+
+                    if (from.contains("/"))
+                        if (from.substring(from.lastIndexOf("/") + 1).contains(" "))
+                            from = "'" + from + "'";
+
+
+                    exe = (todo + " " + from + " " + to).trim();
+                    Log.e("mainExtProgram", exe);
+                    process = Runtime.getRuntime().exec(exe);
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(process.getInputStream()));
+                    String strFolder = "", strRead;
+
+                    while ((strRead = reader.readLine()) != null) {
+                        if (strRead.endsWith(":")) {
+                            outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
+                            outputTx[outputTx.length - 1] = strRead;
+                            strFolder = strRead;
+                        } else if (strRead.contains(searchWhat)) {
+                            outputTx[outputTx.length - 1] = outputTx[outputTx.length - 1] + strRead;
+                            outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
+                            outputTx[outputTx.length - 1] = strFolder;
+                        }
+                    }
+
+                    reader.close();
+                    process.waitFor();
+
+                    if (twotimes) {
+                        exe = "rm -rf " + from;
+                        Log.e("secExtProgram", exe);
+                        process = Runtime.getRuntime().exec(exe);
+                        process.waitFor();
+
+                    }
+
+                    String kind = "";
+                    if (todo.contains(" "))
+                        switch (todo.substring(0, todo.indexOf(" "))) {
+                            case ("rm"): {
+                                kind = "delete";
+                                if (to.contains(".TrashIndex"))
+                                    kind = kind + "toTrash";
+                                if (from.contains(".TrashIndex")) {
+                                    kind = kind + "fromTrash";
+                                }
+                                break;
+                            }
+                            case ("cp"): {
+                                kind = "move";
+                                if (to.contains(".TrashIndex"))
+                                    kind = kind + "toTrash";
+                                if (from.contains(".TrashIndex")) {
+                                    kind = kind + "fromTrash";
+                                }
+                                break;
+                            }
+                            case ("ls"): {
+                                transList = new ArrayList<>();
+                                String[] goout = new String[0];
+                                for (int o = 0; o < outputTx.length; o++)
+                                    if (!outputTx[o].endsWith(":")) {
+                                        goout = Arrays.copyOf(goout, goout.length + 1);
+                                        goout[goout.length - 1] = outputTx[o];
+                                        transList.add(outputTx[o].replace(":", "/"));
+                                    }
+
+                                fileBrowser.messageStarter("FindResult", goout, 0);
+
+                                return;
+                            }
+                        }
+
+                    String[] mess = docu_Loader("Language/" + language + "/Successful_Action.txt");
+                    fileBrowser.messageStarter("successAction " + kind, mess, 5000);
+
+
+                } catch (Exception ie) {
+                    String[] mess = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt");
+                    mess = Arrays.copyOf(mess, mess.length + 1);
+                    mess[mess.length - 1] = ie.getMessage();
+                    fileBrowser.messageStarter("Instruction", mess, 5000);
+                    commandString = "";
                 }
 
-            try {
-                Thread.sleep(400);
-            } catch(InterruptedException ie) {}
-
-            fileBrowser.messageStarter("successAction " +kind, docu_Loader("Language/" + language + "/Successful_Action.txt"), 5000);
-            if (devicePath.length() > 0)
                 fileBrowser.reloadFileBrowserDisplay();
-
-        } catch (Exception ie) {
-            String[] mess = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt");
-            mess = Arrays.copyOf(mess,mess.length +1);
-            mess[mess.length -1] = ie.getMessage();
-            fileBrowser.messageStarter("Instruction", mess,  5000);
-            commandString = "";
-        }
     }
 
     public void startMovePanel (int frame) {
         new movePanel(frame).start();
-    }
-
-
-    public class callMassage extends Thread {
-        public Bundle b;
-        public int xp, yp, w, h;
-
-        public callMassage() {
-        }
-
-        public callMassage(Bundle bund, int xpos, int ypos, int width, int height) {
-            b = bund;
-            xp = xpos;
-            yp = ypos;
-            w = width;
-            h = height;
-        }
-
-        public void run() {
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    fragmentStart(showMessage, 0,"message", b, xp, yp, w, h);
-                }
-            });
-        }
     }
 
     static public class blinkIcon extends Thread {
@@ -1937,34 +1994,36 @@ public class FileBrowser extends Activity  {
                     Thread.sleep(250);
                 } catch (InterruptedException ie) {
                 }
+
                 fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                        @Override
+                        public void run() {
 
-                        if (iView.getTag().toString().contains("open"))
-                            iView.setTag(iView.getTag().toString().replace("open", "closed"));
-                        else if (iView.getTag().toString().contains("closed"))
-                            iView.setTag(iView.getTag().toString().replace("closed", "open"));
+                            if (iView.getTag().toString().contains("open"))
+                                iView.setTag(iView.getTag().toString().replace("open", "closed"));
+                            else if (iView.getTag().toString().contains("closed"))
+                                iView.setTag(iView.getTag().toString().replace("closed", "open"));
 
-                        try {
-                            ((ImageView) iView).setImageBitmap(fileBrowser.bitmapLoader("Icons/"+folder+"/" + iView.getTag().toString().substring(
-                                    iView.getTag().toString().indexOf(" ") + 1)));
-                        } catch (ClassCastException ce) {
-                            if (iView.getTag().toString().contains("open")) {
-                                ((TextView)iView).setTextColor(fileBrowser.getResources().getColor(R.color.green));
-                            } else {
-                                ((TextView)iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
+                            try {
+                                ((ImageView) iView).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + iView.getTag().toString().substring(
+                                        iView.getTag().toString().indexOf(" ") + 1)));
+                            } catch (ClassCastException ce) {
+                                if (iView.getTag().toString().contains("open")) {
+                                    ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.green));
+                                } else {
+                                    ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
+                                }
+                            }
+                            if (threadStop && n1 > 15) {
+                                run = false;
+                            }
+                            if (kind.contains("copyPath") && n1 >= 19) {
+                                run = false;
                             }
                         }
-                        if (threadStop && n1>15) {
-                            run = false;
-                        }
-                        if(kind.contains("copyPath") && n1>=19) {
-                            run = false;
-                        }
-                    }
-                });
-                n++;
+                    });
+                    n++;
+
             }
             if (threadStop) {
                 fileBrowser.runOnUiThread(new Runnable() {
