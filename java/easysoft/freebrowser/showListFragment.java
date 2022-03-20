@@ -511,6 +511,12 @@ public class showListFragment extends Fragment {
                                   } else if(caller.equals("PdfSaveList")) {
                                       if (!devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".") ||
                                            fileBrowser.createTxEditor.loadedFile.endsWith(".pdf")) {
+                                          File file = new File(devicePath);
+                                          boolean canWrite = file.canWrite();
+                                          if (!canWrite) {
+                                              fileBrowser.messageStarter("Instruction_Save_Not_Possible", docu_Loader("Language/" + language + "/Save_Not_Possible.txt"), 8000);
+                                          return;
+                                          }
                                           isPdf = false;
                                           String kind = "TxDocument_Save";
                                           if (tag.contains("PDF ")) {
