@@ -71,10 +71,10 @@ public class TextEditorFragment extends Fragment {
             kindOfFormat = getArguments().getString("FORMAT");
             readedText = getArguments().getStringArray("TEXT");
 
-            if(kindOfFormat.equals(".txt"))
+            if(kindOfFormat.equals(".txt") && !caller.endsWith("New"))
                for(String s: readedText)
                    mainTx = mainTx +s+ "\n";
-            else if(kindOfFormat.equals(".pdf")) {
+            else if(kindOfFormat.equals(".pdf")&& !caller.endsWith("New")) {
                 scaleFact = 1.0;
                 selectedTx_01 = 0;
                 pdfFileUrl = readedText[0];
@@ -90,6 +90,7 @@ public class TextEditorFragment extends Fragment {
         noAddr = true;
         isBackground = false;
         loadedFile = devicePath;
+
     }
 
     @Override
@@ -99,9 +100,9 @@ public class TextEditorFragment extends Fragment {
         mainRel = (RelativeLayout) view.findViewById(R.id.textEditorMainRel);
         mainRel.setBackgroundColor(getResources().getColor(R.color.white));
 
-        if(kindOfFormat.equals(".txt"))
+        if(kindOfFormat.equals(".txt") || caller.endsWith("New"))
            mainRel.addView(createTextEditorDisplay(createHaderIcons()));
-        else if(kindOfFormat.equals(".pdf")) {
+        else if(kindOfFormat.equals(".pdf") && !caller.endsWith("New")) {
             mainRel.addView(createPdfEditorDisplay(createHaderIcons()));
             mainRel.addView(createScaleButtons());
         }
@@ -363,7 +364,7 @@ public class TextEditorFragment extends Fragment {
                             (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf")))
                     icons[icons.length - 1].setEnabled(false);
 
-                if((caller.equals("textEditorDisplayNew") && s.contains("document-new")) ||
+                if((caller.contains("EditorDisplayNew") && s.contains("document-new")) ||
                         (logoPath.endsWith(".png") && s.contains("text"))) {
                     s = s.replace("closed", "open");
                     icons[icons.length - 1].setTag("true " + s);
@@ -766,9 +767,16 @@ public class TextEditorFragment extends Fragment {
         StaticLayout staticLayout;
         int pageWidth = view.getWidth(),
             pageHeight  = view.getHeight(),
-            txn = 2;
-        if(yfact < 0.62)
+            txn = 2,
+            maxLines = 38;
+        float spacingMultiplier = 1;
+        float spacingAddition = 0;
+        boolean includePadding = false;
+
+        if(yfact < 0.625) {
             txn = 3;
+            maxLines = 24;
+        }
 
         PdfDocument pdfDocument;
         PdfDocument.PageInfo mypageInfo;
@@ -783,10 +791,6 @@ public class TextEditorFragment extends Fragment {
         textPaint.setColor(0xFF000000);
 
 
-        float spacingMultiplier = 1;
-        float spacingAddition = 0;
-        boolean includePadding = false;
-
         bottomLine.setTextSize(textSize+4);
         bottomLine.setTextAlign(Paint.Align.CENTER);
 
@@ -799,6 +803,7 @@ public class TextEditorFragment extends Fragment {
                     .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                     .setLineSpacing(spacingAddition, spacingMultiplier)
                     .setIncludePad(includePadding)
+                    .setMaxLines(maxLines)
                     .build();
 
 
@@ -949,9 +954,10 @@ public class TextEditorFragment extends Fragment {
                 }
 
                 document.close();
+                devicePath = Destination;
                 fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
 
-                fileBrowser.reloadFileBrowserDisplay();
+                //fileBrowser.reloadFileBrowserDisplay();
             } catch (Exception e) {
                 fileBrowser.messageStarter("Instruction", docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),  5000);
             }

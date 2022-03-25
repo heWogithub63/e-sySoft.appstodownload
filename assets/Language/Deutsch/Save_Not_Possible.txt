@@ -1,0 +1,4 @@
+Für den im FileBrowser voreingestellten
+Ordner haben Sie derzeit keine
+Schreibberechtigung, daher ist das
+Sichern auf Diesen Device nicht möglich !!

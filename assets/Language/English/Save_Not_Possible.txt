@@ -1,0 +1,4 @@
+The predefined folder at the file browser
+has no write permission.
+That's why the save process is actuallay
+not possible !!

@@ -1,6 +1,8 @@
 package easysoft.freebrowser;
 
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
@@ -133,13 +135,21 @@ public class showMessageFragment extends Fragment {
                     }
                 });
             }
-            mTxLin.addView(messageTx[messageTx.length - 1]);
+
+            if(kindOf.equals("Instruction_Manuel") && (messageTx.length -1 == 0 || messageTx.length-1 == messageString.length -1)) {
+                RelativeLayout manualRelfirstline = new RelativeLayout(fileBrowser);
+                manualRelfirstline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT));
+                manualRelfirstline.addView(messageTx[messageTx.length - 1]);
+                manualRelfirstline.addView(createCopyButton(messageTx.length -1));
+                mTxLin.addView(manualRelfirstline);
+            } else
+                mTxLin.addView(messageTx[messageTx.length - 1]);
         }
         mTxScr.addView(mTxLin);
+
         if(!kindOf.equals("httpsRequest")) {
             lin.addView(mTxScr);
         }
-
 
         if(kindOf.startsWith("ask") || kindOf.startsWith("create") || kindOf.startsWith("find") || kindOf.endsWith("Document_Save") || kindOf.equals("httpsRequest")) {
 
@@ -186,7 +196,7 @@ public class showMessageFragment extends Fragment {
             requestedText.setShowSoftInputOnFocus(false);
             requestedText.requestFocus();
             fileBrowser.keyboardTrans = requestedText;
-            if(kindOf.equals("PdfCombinedDocument_Save"))  {
+            if(kindOf.equals("pdfCombinedDocument_Save"))  {
                 String[] folder = new File(devicePath).list();
                 String pdfs = "PdfName";
 
@@ -196,7 +206,7 @@ public class showMessageFragment extends Fragment {
                     }
                 tx = pdfs;
                 requestedText.setText(tx);
-                requestedText.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/2, displayHeight/18));
+                requestedText.setLayoutParams(new RelativeLayout.LayoutParams(2*fileBrowser.frameLy.get(0).getWidth()/2, fileBrowser.frameLy.get(0).getHeight()/6));
                 selectStartPos = 0;
                 selectStopPos = 7;
                 txLengthDiff = tx.length();
@@ -384,12 +394,12 @@ public class showMessageFragment extends Fragment {
 
                     int i1 = 0, act = 38;
                     if(yfact < 0.625)
-                        act = 22;
+                        act = 24;
 
                     if(!fileBrowser.createTxEditor.noAddr) {
                         act = 36;
                         if(yfact < 0.625)
-                            act = 20;
+                            act = 22;
                     }
 
                     String[] gesTxLines = text.split("\n") ;
@@ -411,8 +421,8 @@ public class showMessageFragment extends Fragment {
                                 break;
                             }
                             act = 38;
-                            if(yfact < 0.62)
-                                act = 22;
+                            if(yfact < 0.625)
+                                act = 24;
                             i1 = 0;
                             text_01 = "";
 
@@ -427,10 +437,11 @@ public class showMessageFragment extends Fragment {
                     fileBrowser.createTxEditor.generatePDFfromTx(txString, devicePath, tx);
 
                 } else if(fileBrowser.createTxEditor.kindOfFormat.equals(".pdf")) {
-                        fileBrowser.createTxEditor.generatePDFfromPdf();
+                    fileBrowser.createTxEditor.generatePDFfromPdf();
                 }
 
-            } else if(kindOf.startsWith("PdfCombined")) {
+
+            } else if(kindOf.startsWith("pdfCombined")) {
                 String destination = "";
                 if(tx.contains(",")) {
                     destination = tx.substring(0, tx.indexOf(",")).trim();
@@ -457,13 +468,40 @@ public class showMessageFragment extends Fragment {
         //fileBrowser.threadStop = true;
     }
 
+    private ImageView createCopyButton (int line) {
+        ImageView copyButton = new ImageView(fileBrowser);
+        copyButton.setLayoutParams(new RelativeLayout.LayoutParams((int) (60 * xfact), (int) (60 * xfact)));
+        copyButton.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/Kopie_closed.png"));
+        copyButton.setTag(line + " Kopie_closed.png");
+        copyButton.setX(displayWidth/3);
+
+        copyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fileBrowser.blink = new FileBrowser.blinkIcon(v, "copyall");
+                fileBrowser.blink.start();
+
+                    String ms = "";
+                    ClipboardManager clipBoard;
+                    clipBoard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
+                    if (messageString.length > 0)
+                        for (String s : messageString)
+                            ms = ms + s + "\n";
+                    ClipData clip = ClipData.newPlainText("label", ms);
+                    clipBoard.setPrimaryClip(clip);
+
+            }
+        });
+
+        return copyButton;
+    }
 
     private void createSelector () {
         ImageView selector = new ImageView(fileBrowser);
         selector.setLayoutParams(new RelativeLayout.LayoutParams((int) (60 * xfact), (int) (60 * xfact)));
         selector.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/txEditorSelector.png"));
         selector.setX(messageLayout.getWidth() -messageLayout.getWidth()/5);
-        selector.setY(messageLayout.getHeight()/4);
+        selector.setY(messageLayout.getHeight()/5);
         selector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -534,10 +572,6 @@ public class showMessageFragment extends Fragment {
             else if(kindOf.equals("InfoContact")) {
                 fileBrowser.threadStop = true;
             } else if(kindOf.equals("Instruction_MailAccount")) {
-
-                mailTx.requestFocus();
-                if(mailTx.getText().toString().contains("(!") && mailTx.getText().toString().contains("!)"))
-                   mailTx.setSelection(mailTx.getText().toString().indexOf("(!"), mailTx.getText().toString().indexOf("!)") +2);
                 fileBrowser.keyboardTrans = mailTx;
                 int fact = displayHeight/18,
                         fact01 = displayHeight/18;
@@ -548,15 +582,22 @@ public class showMessageFragment extends Fragment {
                 if(yfact >= 0.8) {
                     fact01 = displayHeight/12;
                 }
-                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
-                            displayWidth -10, (int)(displayHeight/3) +fact01);
+                final int fac = fact01, fa = fact;
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mailTx.requestFocus();
+                        if(mailTx.getText().toString().contains("(!") && mailTx.getText().toString().contains("!)"))
+                            mailTx.setSelection(mailTx.getText().toString().indexOf("(!"), mailTx.getText().toString().indexOf("!)") +2);
+                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fa),
+                                    displayWidth -10, (int)(displayHeight/3) +fac);
+
+                    }
+                });
+
 
             } else if(kindOf.equals("Instruction_EditorAccount")) {
-
-                TxEditor.requestFocus();
-                if(TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
-                   TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") +2);
                 fileBrowser.keyboardTrans = TxEditor;
                 int fact = displayHeight/18,
                         fact01 = displayHeight/18;
@@ -567,9 +608,20 @@ public class showMessageFragment extends Fragment {
                 if(yfact >= 0.8) {
                     fact01 = displayHeight/12;
                 }
-                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
-                            displayWidth -10, (int)(displayHeight/3) +fact01);
+                final int fac = fact01, fa = fact;
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TxEditor.requestFocus();
+                        if (TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
+                            TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") + 2);
+                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fa),
+                                    displayWidth -10, (int)(displayHeight/3) +fac);
+
+                    }
+                });
+
 
             } else if(kindOf.startsWith("successAction")) {
 
@@ -610,8 +662,15 @@ public class showMessageFragment extends Fragment {
             } else if(kindOf.equals("Successful_TxDocumentSave")) {
                 if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
-
-                fileBrowser.startExtApp(devicePath);
+                if(devicePath.endsWith(".pdf"))
+                   fileBrowser.startExtApp(devicePath);
+                else {
+                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                    if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                    fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2],headMenueIcon02[5]},new String[]{"sideRightMenueIcons","sideRightMenueIcons"});
+                }
             } else if(kindOf.equals("Successful_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);
             }

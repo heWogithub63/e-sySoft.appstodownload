@@ -218,7 +218,7 @@ public class FileBrowser extends Activity  {
                              0);
                 } else {
                     fileBrowser.messageStarter("PermissionDenied", docu_Loader("Language/" + language + "/Canceled_Permission.txt"),
-                            0);
+                            5000);
                 }
                 break;
             }
@@ -1642,7 +1642,7 @@ public class FileBrowser extends Activity  {
                 fragmentShutdown(webBrowserDisplay, 8);
             }
         }
-        if(kind_of.equals("textEditorDisplay")) {
+        if(kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
             if(showMediaDisplay != null && showMediaDisplay.isVisible()) {
                 changeIcon(headMenueIcon02[3],"sideRightMenueIcons","open","closed");
                 fragmentShutdown(showMediaDisplay, 4);
@@ -1699,7 +1699,7 @@ public class FileBrowser extends Activity  {
                 createSendEmail.setArguments(transParam);
             frameContainerMove(5, findViewById(R.id.createSendEmail), xpos, ypos, width, height);
             fragTrans.replace(R.id.createSendEmail, createSendEmail);
-        } else if (kind_of.equals("textEditorDisplay")) {
+        } else if (kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
             createTxEditor = TextEditorFragment.newInstance();
             if (transParam != null)
                 createTxEditor.setArguments(transParam);
@@ -1755,8 +1755,10 @@ public class FileBrowser extends Activity  {
             posy = displayHeight / 3;
             width = 2 * displayWidth / 3;
 
-            if(kind_of_message.equals("Instruction_Manuel"))
-                height = displayHeight/2;
+            if(kind_of_message.equals("Instruction_Manuel")) {
+                posy = displayHeight / 7;
+                height = 5 * displayHeight / 7;
+            }
             else if(timer == 0)
                 height = displayHeight / 3;
             else
@@ -1765,8 +1767,10 @@ public class FileBrowser extends Activity  {
             posx = displayWidth / 4;
             posy = displayHeight / 3;
             width = 2*displayWidth / 4;
-            if(kind_of_message.equals("Instruction_Manuel"))
-                height = displayHeight/2;
+            if(kind_of_message.equals("Instruction_Manuel")) {
+                posy = displayHeight / 7;
+                height = 5*displayHeight / 7;
+            }
             else if(timer == 0)
                height = displayHeight / 3;
            else
@@ -1779,6 +1783,10 @@ public class FileBrowser extends Activity  {
                 posx = displayWidth/9;
                 posy = displayHeight/14;
 
+        }
+        if(kind_of_message.equals("pdfCombinedDocument_Save")) {
+            height = 4*displayHeight / 7;
+            posy = (int)(displayHeight/7);
         }
 
         Bundle bund = new Bundle();
@@ -1984,7 +1992,8 @@ public class FileBrowser extends Activity  {
                 iconFolder ="sideRightMenueIcons";
             else if(kind.equals("searchMachine"))
                 iconFolder ="headMenueIcons";
-
+            else if(kind.equals("copyall"))
+                iconFolder ="browserIcons";
             final String folder = iconFolder;
 
             int n=0;
@@ -2017,7 +2026,7 @@ public class FileBrowser extends Activity  {
                             if (threadStop && n1 > 15) {
                                 run = false;
                             }
-                            if (kind.contains("copyPath") && n1 >= 19) {
+                            if (kind.contains("copy") && n1 >= 19) {
                                 run = false;
                             }
                         }

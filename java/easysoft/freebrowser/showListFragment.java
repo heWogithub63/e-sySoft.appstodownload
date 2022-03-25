@@ -138,9 +138,6 @@ public class showListFragment extends Fragment {
                       } else if(caller.equals("searchMachineList")) {
                           listTx[listTx.length - 1].setTag(listTx.length - 1 +" "+ listTx[listTx.length - 1].getText().toString().substring(listTx[listTx.length - 1].getText().toString().indexOf(" ") +1));
                           listTx[listTx.length - 1].setText(listTx[listTx.length - 1].getText().toString().substring(0,listTx[listTx.length - 1].getText().toString().indexOf(" ")));
-                      } else if(caller.equals("documentList") && arrayList.get(i)[i1].contains("PDF ")) {
-                          listTx[listTx.length - 1].setEnabled(false);
-                          listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.grey_overlay));
                       }
 
                       if(yfact > 0.625) {
@@ -490,11 +487,11 @@ public class showListFragment extends Fragment {
                                       showListLayout.bringToFront();
                                   } else if(caller.equals("PdfCombineList")) {
                                       int sz = 2;
-                                      if(yfact < 0.62)
+                                      if(yfact < 0.625)
                                           sz = 3;
                                       if(tag.substring(tag.indexOf(" ") +1).startsWith("PDF ")) {
                                           if (!devicePath.equals("") && !devicePath.substring(devicePath.lastIndexOf("/") + 1).contains("."))
-                                              fileBrowser.messageStarter("PdfCombinedDocument_Save",
+                                              fileBrowser.messageStarter("pdfCombinedDocument_Save",
                                                       docu_Loader("Language/" + language + "/" + "PdfCombinedDocument_Save" + ".txt"),  0);
                                           else
                                               fileBrowser.messageStarter("Instruction_TxDocumentSave", docu_Loader("Language/" + language + "/Instruction_PdfCombination.txt"),  8000);
@@ -543,6 +540,7 @@ public class showListFragment extends Fragment {
                                       bund.putString("CALLER", kind +"New");
                                       bund.putString("FORMAT",format);
                                       bund.putStringArray("TEXT", new String[0]);
+
                                       fileBrowser.fragmentStart(fileBrowser.createTxEditor, 7,kind, bund, 0, 0,
                                               displayWidth, displayHeight);
                                       fileBrowser.fragmentShutdown(fileBrowser.showList,3);
