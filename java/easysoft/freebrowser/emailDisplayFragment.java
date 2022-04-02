@@ -53,6 +53,8 @@ public class emailDisplayFragment extends Fragment {
     ScrollView folderInxScr;
 
     static boolean createMail = false;
+    boolean textIsHtml = false;
+
     public emailDisplayFragment() {
     }
 
@@ -301,15 +303,16 @@ public class emailDisplayFragment extends Fragment {
                 if (i1 == 2)
                     subject = "'" + collectionMemoryList.get(i)[i1].replace("/","°") + "'";
 
-                if (i1 == 3 && (folderName.startsWith("Mail") && (collectionMemoryList.get(i)[i1].contains("DOCTYPE") ||
-                        collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html") ||
-                        collectionMemoryList.get(i)[i1].contains("IMAPBody")))) {
+                if (i1 == 3 && (folderName.startsWith("Mail") && (textIsHtml || collectionMemoryList.get(i)[i1].contains("DOCTYPE") ||
+                        collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html") )) ||
+                        collectionMemoryList.get(i)[i1].contains("MimeMultipart@")) {
                     String kind = "";
                     if (collectionMemoryList.get(i)[i1].contains("DOCTYPE html") ||
                             collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html"))
                         kind = "Attached_HTML.html";
-                    else if (collectionMemoryList.get(i)[i1].contains("IMAPBodyPart"))
-                        kind = "Attached_IMAPBodyPart";
+                    else if (collectionMemoryList.get(i)[i1].contains("MimeMultipart@"))
+                        kind = "Attached_MimeMulty.html";
+
                     String sub = subject.replace("'", "").replace(".", "").replace(" ", "")
                             .replace("’", "").replace(",","").replace("(","")
                             .replace(")","").replace("?","").replace("/","").trim(),
@@ -317,6 +320,7 @@ public class emailDisplayFragment extends Fragment {
 
                     if (fileBrowser.read_writeFileOnInternalStorage("write", "/storage/self/primary/tmp/" + fold, "." + sub + "_" + kind, collectionMemoryList.get(i)[i1]).length == 0)
                         collectionMemoryList.get(i)[i1] = kind;
+
                 }
 
                 MailsInCreation.append(collectionMemoryList.get(i)[i1] + "\n");
@@ -1235,7 +1239,9 @@ public class emailDisplayFragment extends Fragment {
             }
             Object msgContent = message.getContent();
             String contentSubject = message.getSubject(),
-                   content = "";
+                   content = "",
+                    contentType = message.getContentType();
+
             //Subject
             if(contentSubject.length() > 50)
                 contentSubject = contentSubject.substring(0,50);
@@ -1290,15 +1296,16 @@ public class emailDisplayFragment extends Fragment {
                             Log.e("Deliverd: -> ", kindOfFile);
 
                     }
-                    else {
-                        content = multipart.getBodyPart(j).getContent().toString();  // the changed code
+                    else if(contentType.contains("multipart")){
+                        content = getText(message);
                     }
 
                 }
 
             }
-            else {
-                content = message.getContent().toString();
+            else if(contentType.contains("text/plain") || contentType.contains("text/html")){
+                if(msgContent != null)
+                   content = message.getContent().toString();
             }
 
             memList = Arrays.copyOf(memList, memList.length + 1);
@@ -1316,6 +1323,44 @@ public class emailDisplayFragment extends Fragment {
             }
 
             return buf;
+        }
+
+        private String getText(Part p) throws
+                MessagingException, IOException {
+            if (p.isMimeType("text/*")) {
+                String s = (String)p.getContent();
+                textIsHtml = p.isMimeType("text/html");
+                return s;
+            }
+
+            if (p.isMimeType("multipart/alternative")) {
+                Multipart mp = (Multipart)p.getContent();
+                String text = null;
+                for (int i = 0; i < mp.getCount(); i++) {
+                    Part bp = mp.getBodyPart(i);
+                    if (bp.isMimeType("text/plain")) {
+                        if (text == null)
+                            text = getText(bp);
+                        continue;
+                    } else if (bp.isMimeType("text/html")) {
+                        String s = getText(bp);
+                        if (s != null)
+                            return s;
+                    } else {
+                        return getText(bp);
+                    }
+                }
+                return text;
+            } else if (p.isMimeType("multipart/*")) {
+                Multipart mp = (Multipart)p.getContent();
+                for (int i = 0; i < mp.getCount(); i++) {
+                    String s = getText(mp.getBodyPart(i));
+                    if (s != null)
+                        return s;
+                }
+            }
+
+            return null;
         }
     }
 
