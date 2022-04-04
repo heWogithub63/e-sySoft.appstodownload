@@ -186,8 +186,9 @@ public class emailDisplayFragment extends Fragment {
 
                             for (String s : trans) {
                                 if (n < 3) {
-                                    if (n == 0 && folderName.startsWith("Mail") && s.contains(" -> "))
-                                        add = s.substring(0, s.indexOf(" -> "));
+                                    if (n == 0 && folderName.startsWith("Mail") && s.contains(" -> ")) {
+                                        add = s.substring(s.indexOf(" -> ") + 4);
+                                    }
                                     if (!folderName.startsWith("In"))
                                         s = praefix[n] + " " + s;
                                     memoryList[n] = s;
@@ -233,14 +234,15 @@ public class emailDisplayFragment extends Fragment {
                                         .replace("’", "").replace(",","").replace("(","")
                                         .replace(")","").replace("?","").replace("/","").trim();
                                         subject = subject.substring(subject.indexOf(":") +1);
-                                for(String s: tmp)
-                                    if(s.contains("AttachedFile")) {
+                                for(String s: tmp) {
+                                    if (s.contains("AttachedFile")) {
                                         if (s.contains(subject)) {
                                             attachedList.add(new String[]{"/storage/self/primary/tmp/" +
                                                     folder + "/" + s, s.substring(1)});
                                             mailAttached = true;
                                         }
                                     }
+                                }
                             }
 
                             saveAddressant(add);
@@ -295,19 +297,16 @@ public class emailDisplayFragment extends Fragment {
             StringBuffer MailsInCreation = new StringBuffer();
             for (int i1 = 0; i1 < collectionMemoryList.get(i).length; i1++) {
                 if (i1 == 0) {
-                    if (collectionMemoryList.get(i)[i1].contains("<"))
-                        collectionMemoryList.get(i)[i1] = collectionMemoryList.get(i)[i1].substring(collectionMemoryList.get(i)[i1].indexOf("<") + 1,
-                                collectionMemoryList.get(i)[i1].indexOf(">")) + collectionMemoryList.get(i)[i1].substring(collectionMemoryList.get(i)[i1].indexOf(">") + 1);
                     mailFrom = collectionMemoryList.get(i)[i1];
                 }
                 if (i1 == 2)
-                    subject = "'" + collectionMemoryList.get(i)[i1].replace("/","°") + "'";
+                    subject = collectionMemoryList.get(i)[i1].replace("/","°");
 
                 if (i1 == 3 && (folderName.startsWith("Mail") && (textIsHtml || collectionMemoryList.get(i)[i1].contains("DOCTYPE") ||
-                        collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html") )) ||
-                        collectionMemoryList.get(i)[i1].contains("MimeMultipart@")) {
+                        collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html") ) ||
+                        collectionMemoryList.get(i)[i1].contains("MimeMultipart@"))) {
                     String kind = "";
-                    if (collectionMemoryList.get(i)[i1].contains("DOCTYPE html") ||
+                    if (textIsHtml || collectionMemoryList.get(i)[i1].contains("DOCTYPE html") ||
                             collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html"))
                         kind = "Attached_HTML.html";
                     else if (collectionMemoryList.get(i)[i1].contains("MimeMultipart@"))
@@ -327,16 +326,17 @@ public class emailDisplayFragment extends Fragment {
 
             }
             MailsInCreation.append("Attached -->\n");
-
+            
             if(!new File(fileBrowser.context.getFilesDir() + folderName,mailFrom+subject).isFile())
                 if(fileBrowser.read_writeFileOnInternalStorage("write", folderName, mailFrom +
                         " " +subject, MailsInCreation.toString()).length == 0)
                     continue;
+
         }
         if(folderName.contains("Sent") || folderName.contains("Gesendete")) {
             fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailSent.txt"),  5000);
         } else if(folderName.contains("Mail Eingang") || folderName.contains("Arrived Mails")) {
-            fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailArrived.txt"), 5000);
+            fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailsArrived.txt"), 5000);
         } else {
             fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailSaved.txt"),  5000);
             fileBrowser.changeIcon(icons[5], "mailIcons", "closed","open");
@@ -647,8 +647,7 @@ public class emailDisplayFragment extends Fragment {
 
                                 if(folderName.startsWith("Mail")) {
                                     calledFrom = "email";
-
-                                    fileBrowser.startExtApp(tag.substring(tag.indexOf(" ") +1, tag.lastIndexOf("_")));
+                                    fileBrowser.startExtApp(tag.substring(tag.indexOf(" ") + 1, tag.lastIndexOf("_")));
                                 }
                                 return true;
                             }
@@ -877,7 +876,9 @@ public class emailDisplayFragment extends Fragment {
                                                     if(fileBrowser.language.equals("English"))
                                                         folder = "MailsArrived";
                                                     String[] tmp = new File("/storage/self/primary/tmp/"+folder).list();
-                                                    String subject = deleteIndividium.substring(deleteIndividium.indexOf("'") +1,
+                                                    String subject = deleteIndividium;
+                                                    if(subject.contains("'"))
+                                                        subject = deleteIndividium.substring(deleteIndividium.indexOf("'") +1,
                                                             deleteIndividium.lastIndexOf("'")).replace(" ","");
                                                     subject = subject.substring(subject.indexOf(":") +1).replace("'", "").replace(".", "").replace(" ", "")
                                                             .replace("’", "").replace(",","").replace("(","")
@@ -889,8 +890,10 @@ public class emailDisplayFragment extends Fragment {
                                                                 new File("/storage/self/primary/tmp/" + folder + "/" + s).delete();
                                                             }
                                                         }
+                                                    String deleteSubj = deleteIndividium.substring(deleteIndividium.indexOf(" >>")+3);
+                                                    deleteSubj = deleteSubj.replace("°°°","").replace(" '","");
                                                     deleteIndividium = deleteIndividium.replace("°","/");
-                                                    new sendThread("Delete " + deleteIndividium).start();
+                                                    new sendThread("Delete " + deleteSubj).start();
                                                 }
 
                                             }
@@ -1181,6 +1184,7 @@ public class emailDisplayFragment extends Fragment {
                         memList = new String[0];
                     } else {
                         String subject = message.getSubject();
+                        subjectTo = subjectTo.replace("Delete ","");
                         if (subject.contains(subjectTo)) {
                             kindOfAction = "delete";
                             message.setFlag(Flags.Flag.DELETED, true);
@@ -1223,12 +1227,18 @@ public class emailDisplayFragment extends Fragment {
 
             Address[] a;
             Date receivedDate = message.getReceivedDate();
+            String time = receivedDate.toString().substring(receivedDate.toString().indexOf(":")-2,
+                    receivedDate.toString().indexOf("GMT"));
             // FROM
             if ((a = message.getFrom()) != null) {
+
                 for (int j = 0; j < a.length; j++) {
                     memList = Arrays.copyOf(memList, memList.length + 1);
-                    memList[memList.length - 1] = a[j].toString() + " -> " + receivedDate.toString().substring(0, receivedDate.toString().indexOf("GMT"));
+                    memList[memList.length - 1] = receivedDate.toString().substring(0, receivedDate.toString().indexOf(":")-2)  + " -> " + a[j].toString();
                 }
+            } else {
+                memList = Arrays.copyOf(memList, memList.length + 1);
+                memList[memList.length - 1] = "";
             }
             // TO
             if ((a = message.getRecipients(Message.RecipientType.TO)) != null) {
@@ -1236,6 +1246,9 @@ public class emailDisplayFragment extends Fragment {
                     memList = Arrays.copyOf(memList, memList.length + 1);
                     memList[memList.length - 1] = a[j].toString();
                 }
+            } else {
+                memList = Arrays.copyOf(memList, memList.length + 1);
+                memList[memList.length - 1] = "";
             }
             Object msgContent = message.getContent();
             String contentSubject = message.getSubject(),
@@ -1243,11 +1256,15 @@ public class emailDisplayFragment extends Fragment {
                     contentType = message.getContentType();
 
             //Subject
-            if(contentSubject.length() > 50)
-                contentSubject = contentSubject.substring(0,50);
-            memList = Arrays.copyOf(memList, memList.length + 1);
-            memList[memList.length - 1] = contentSubject;
-
+            if(contentSubject != null && contentSubject.length() > 0) {
+                if (contentSubject.length() > 60)
+                    contentSubject = contentSubject.substring(0, 60)+"°°°";
+                memList = Arrays.copyOf(memList, memList.length + 1);
+                memList[memList.length - 1] = "' " + time +">>"+ contentSubject + " '";
+            } else {
+                memList = Arrays.copyOf(memList, memList.length + 1);
+                memList[memList.length - 1] = time + "";
+            }
             /* Check if content is pure text/html or in parts */
             if (msgContent instanceof Multipart) {
                 Multipart multipart = (Multipart) msgContent;
@@ -1258,58 +1275,20 @@ public class emailDisplayFragment extends Fragment {
                     String disposition = bodyPart.getDisposition();
 
                     if (disposition != null && (disposition.equalsIgnoreCase("ATTACHMENT"))) {
-                        String trans = message.getSubject().replace("'", "").replace(".", "").replace(" ", "")
-                                .replace("’", "").replace(",","").replace("(","")
-                                .replace(")","").replace("?","").replace("/","")
-                                .replace(":","").trim();
-
-                        DataHandler handler = bodyPart.getDataHandler();
-                        String folder = "MailEingang",
-                                kindOfFile = handler.getName(),
-                                savefileName = "." +trans+
-                                        "_AttachedFile" + kindOfFile.substring(kindOfFile.lastIndexOf("."));
-                        if(fileBrowser.language == "English")
-                            folder = "MailArrived";
-
-                            try {
-                                File dir = new File("/storage/self/primary/tmp/" +
-                                        folder);
-                                if (!dir.exists()) {
-                                    dir.mkdir();
-                                }
-                                File ofile = new File(dir, savefileName);
-
-                                InputStream is = handler.getInputStream();
-                                OutputStream ostream = new FileOutputStream(ofile);
-                                byte[] data = new byte[4096];
-                                int r = 0;
-                                while ((r = is.read(data, 0, data.length)) != -1) {
-                                    ostream.write(data, 0, r);
-                                }
-                                ostream.flush();
-                                ostream.close();
-
-                            } catch (Exception ex) {
-                                System.err.println(ex.getMessage());
-                            }
-
-                            Log.e("Deliverd: -> ", kindOfFile);
-
+                            isAttached(message, bodyPart, time, contentSubject);
                     }
-                    else if(contentType.contains("multipart")){
+                    else if(contentType.contains("multipart")) {
                         content = getText(message);
                     }
 
                 }
 
             }
-            else if(contentType.contains("text/plain") || contentType.contains("text/html")){
-                if(msgContent != null)
-                   content = message.getContent().toString();
+            else {
+                content = message.getContent().toString();
             }
-
-            memList = Arrays.copyOf(memList, memList.length + 1);
-            memList[memList.length - 1] = content;
+                memList = Arrays.copyOf(memList, memList.length + 1);
+                memList[memList.length - 1] = content;
         }
         private ByteArrayOutputStream inToStream(InputStream in) throws IOException {
 
@@ -1327,6 +1306,7 @@ public class emailDisplayFragment extends Fragment {
 
         private String getText(Part p) throws
                 MessagingException, IOException {
+            textIsHtml = false;
             if (p.isMimeType("text/*")) {
                 String s = (String)p.getContent();
                 textIsHtml = p.isMimeType("text/html");
@@ -1343,6 +1323,7 @@ public class emailDisplayFragment extends Fragment {
                             text = getText(bp);
                         continue;
                     } else if (bp.isMimeType("text/html")) {
+                        textIsHtml = true;
                         String s = getText(bp);
                         if (s != null)
                             return s;
@@ -1364,6 +1345,51 @@ public class emailDisplayFragment extends Fragment {
         }
     }
 
+    private void isAttached  (Message message, BodyPart bodyPart, String arrTime, String subj) {
+        String trans = subj.replace("'", "").replace(".", "").replace(" ", "")
+                .replace("’", "").replace(",","").replace("(","")
+                .replace(")","").replace("?","").replace("/","")
+                .replace(":","").trim();
+        DataHandler handler = null;
+        try {
+            handler = bodyPart.getDataHandler();
+
+        } catch(MessagingException me) {
+            return;
+        }
+
+        String folder = "MailEingang",
+                kindOfFile = handler.getName(),
+                savefileName = "." +arrTime.trim()+">>"+trans+
+                        "_AttachedFile" + kindOfFile.substring(kindOfFile.lastIndexOf("."));
+        if(fileBrowser.language == "English")
+            folder = "MailsArrived";
+
+        try {
+            File dir = new File("/storage/self/primary/tmp/" +
+                    folder);
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            File ofile = new File(dir, savefileName);
+
+            InputStream is = handler.getInputStream();
+            OutputStream ostream = new FileOutputStream(ofile);
+            byte[] data = new byte[4096];
+            int r = 0;
+            while ((r = is.read(data, 0, data.length)) != -1) {
+                ostream.write(data, 0, r);
+            }
+            ostream.flush();
+            ostream.close();
+
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+        Log.e("Deliverd: -> ", savefileName);
+
+    }
+
     class sendThread extends Thread {
         String kind="";
         public sendThread(String kindOf) {kind = kindOf;}
@@ -1377,9 +1403,7 @@ public class emailDisplayFragment extends Fragment {
                         else if(kind.equals("Call"))
                             new HandleMailWithAttachmen().handleMessages("");
                         else if(kind.startsWith("Delete")) {
-                            String deleteIndividium = kind.substring(kind.indexOf(" ")+1);
-                            new HandleMailWithAttachmen().handleMessages(deleteIndividium.substring(deleteIndividium.indexOf("'") + 1,
-                                    deleteIndividium.lastIndexOf("'")));
+                            new HandleMailWithAttachmen().handleMessages(kind);
                         }
                         break;
                     } else {

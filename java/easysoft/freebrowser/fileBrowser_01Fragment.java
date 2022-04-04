@@ -93,7 +93,8 @@ public class fileBrowser_01Fragment extends Fragment {
         for(int ln=1;ln<paramList.size();ln++) {
             if(devArr.length > ln)
                dev = dev +"/" +devArr[ln];
-            if(detscrPosY.length < ln) {
+
+            if(detscrPosY != null && detscrPosY.length < ln) {
                 detscrPosY = Arrays.copyOf(detscrPosY, detscrPosY.length + 1);
                 detscrPosY[detscrPosY.length - 1] = 0;
             }

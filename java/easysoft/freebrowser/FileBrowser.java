@@ -1817,41 +1817,43 @@ public class FileBrowser extends Activity  {
         return bmp;
     }
     public void reloadFileBrowserDisplay() {
-        devicePath_trans = devicePath;
-        String url = devicePath,
-                urldevicePath = urldevice;
-        if (!url.equals(urldevice))
-            urldevicePath = url.substring(urldevice.length() + 1);
-        final String udPath = urldevicePath;
+        if(urldevice != null && devicePath != null) {
+            devicePath_trans = devicePath;
+            String url = devicePath,
+                    urldevicePath = urldevice;
+            if (!url.equals(urldevice))
+                urldevicePath = url.substring(urldevice.length() + 1);
+            final String udPath = urldevicePath;
 
-        paramList = fileBrowser.createArrayList(urldevicePath);
+            paramList = fileBrowser.createArrayList(urldevicePath);
 
-        if (udPath.length() != 0 || udPath.contains("/")) {
-            if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fileBrowser.createFolder(urldevice);
-                        fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
-                                (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
-                    }
-                });
+            if (udPath.length() != 0 || udPath.contains("/")) {
+                if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fileBrowser.createFolder(urldevice);
+                            fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
+                                    (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
+                        }
+                    });
+                } else {
+                    fileBrowser.createFolder(urldevice);
+                    fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
+                            (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
+                }
+
             } else {
-                fileBrowser.createFolder(urldevice);
-                fileBrowser.fragmentStart(fileBrowser.filebrowser_01, 1, "fileBrowser01", null, (int) (250 * xfact), (int) (440 * yfact),
-                        (int) (4 * displayWidth / 5 - 80 * yfact), (int) (5 * displayHeight / 7));
+                if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fileBrowser.createFolder(urldevice);
+                        }
+                    });
+                } else
+                    fileBrowser.createFolder(urldevice);
             }
-
-        } else {
-            if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fileBrowser.createFolder(urldevice);
-                    }
-                });
-            } else
-                fileBrowser.createFolder(urldevice);
         }
     }
 

@@ -5,6 +5,7 @@ import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.text.Layout;
@@ -740,25 +741,31 @@ public class TextEditorFragment extends Fragment {
     }
 
     public Bitmap openPdf(int pageNumber, File pdfFile) throws IOException {
+        ParcelFileDescriptor fileDescriptor = null;
+        Bitmap bitmap;
+        try {
+            fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
+        } catch (IOException io) {
+            Log.e("fileDescriptor",io.getMessage());
+            return null;
+        }
 
-        int mode = ParcelFileDescriptor.MODE_READ_ONLY;
+            PdfRenderer mPdfRenderer;
+            PdfRenderer.Page mPdfPage;
 
-        ParcelFileDescriptor fileDescriptor =
-                ParcelFileDescriptor.open(pdfFile, mode);
+            mPdfRenderer = new PdfRenderer(fileDescriptor);
 
-        PdfRenderer mPdfRenderer;
-        PdfRenderer.Page mPdfPage;
+            pdfPageCount = mPdfRenderer.getPageCount();
+            pageNr = pageNumber;
+            mPdfPage = mPdfRenderer.openPage(pageNumber);
 
-        mPdfRenderer = new PdfRenderer(fileDescriptor);
+            bitmap = Bitmap.createBitmap(mPdfPage.getWidth(),
+                    mPdfPage.getHeight(),
+                    Bitmap.Config.ARGB_8888);
+            mPdfPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
-        pdfPageCount = mPdfRenderer.getPageCount();
-        pageNr = pageNumber;
-        mPdfPage = mPdfRenderer.openPage(pageNumber);
-
-        Bitmap bitmap = Bitmap.createBitmap(mPdfPage.getWidth(),
-                mPdfPage.getHeight(),
-                Bitmap.Config.ARGB_8888);
-        mPdfPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+            fileDescriptor.close();
+            devicePath = pdfFile.getPath();
 
         return bitmap;
     }
