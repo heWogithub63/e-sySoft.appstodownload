@@ -1470,7 +1470,12 @@ public class FileBrowser extends Activity  {
             fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
 
         progrIntent = new Intent(Intent.ACTION_VIEW);
-        String form = Url.substring(Url.lastIndexOf("."));
+        String form = "";
+        if(Url.substring(Url.length() -6).contains("."))
+           form = Url.substring(Url.lastIndexOf("."));
+         else if(!(Url.startsWith("http") || Url.startsWith("https")))
+            form = "*";
+
         if(form.contains(" "))
             form = form.substring(0,form.indexOf(" "));
 
@@ -1573,6 +1578,9 @@ public class FileBrowser extends Activity  {
             case (".apk"): {
                 serveAPK(Url, "application/vnd.android.package-archive");
                 return;
+            }
+            case ("*"): {
+                progrIntent.setData(Uri.parse(Url));
             }
         }
 

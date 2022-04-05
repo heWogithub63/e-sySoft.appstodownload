@@ -459,8 +459,9 @@ public class showMessageFragment extends Fragment {
         } else if(kindOf.equals("httpsRequest")) {
             if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
                 fileBrowser.webBrowserDisplay.webView.loadUrl(requestedText.getText().toString());
-                if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard,6);
+                if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                }
                 fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
 
             }

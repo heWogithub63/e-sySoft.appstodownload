@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -12,10 +13,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.ValueCallback;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
 
@@ -61,6 +59,7 @@ public class WebBrowserFragment extends Fragment {
         urlCollection = new ArrayList<>();
         urlCollectionCounter = -1;
         webLayout = fileBrowser.frameLy.get(8);
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -109,6 +108,11 @@ public class WebBrowserFragment extends Fragment {
         setting.setUseWideViewPort(true);
         setting.setLoadWithOverviewMode(true);
         setting.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        setting.setLightTouchEnabled(true);
+        setting.setBuiltInZoomControls(true);
+        setting.setSupportZoom(true);
+        setting.setDisplayZoomControls(false);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             setting.setAllowFileAccessFromFileURLs(true);
         }
@@ -117,9 +121,24 @@ public class WebBrowserFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.M)
     public WebView WebAction(){
 
+        final ProgressDialog progressDialog = new ProgressDialog(fileBrowser);
+        progressDialog.setMessage("Loading Data...");
+        progressDialog.setCancelable(false);
+
         webView = new WebView(fileBrowser);
         webView.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
         initWebSetting(webView);
+        webView.requestFocus();
+        webView.setWebChromeClient(new WebChromeClient() {
+            public void onProgressChanged(WebView view, int progress) {
+                if (progress > 100) {
+                    progressDialog.show();
+                }
+                if (progress <= 100) {
+                    progressDialog.dismiss();
+                }
+            }
+        });
         webView.loadUrl(uri);
 
         webView.setWebViewClient(new WebViewClient() {
@@ -132,7 +151,13 @@ public class WebBrowserFragment extends Fragment {
                 steerImgs[0].setEnabled(false);
                 fileBrowser.changeIcon(steerImgs[4], "browserIcons", "open", "closed");
                 steerImgs[4].setEnabled(false);
-                fileBrowser.messageStarter("notFoundWebPage", fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NoFoundWebSide.txt"),  6000);
+
+                if(description.contains("ERR_UNKNOWN_URL_SCHEME")) {
+                    webView.loadUrl(uri);
+                    fileBrowser.startExtApp(failingUrl);
+                }
+                else
+                    fileBrowser.messageStarter("notFoundWebPage", fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NoFoundWebSide.txt"),  6000);
             }
 
             @Override
