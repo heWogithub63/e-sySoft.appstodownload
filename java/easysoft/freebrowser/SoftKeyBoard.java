@@ -137,9 +137,13 @@ public class SoftKeyBoard extends Fragment {
         keyboardicon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
-                fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
+                if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible() && fileBrowser.showMessage.requestedText != null) {
+                    threadStop = true;
+                    fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+                }
+                if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
+                    fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
+                }
                 fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
             }
         });
