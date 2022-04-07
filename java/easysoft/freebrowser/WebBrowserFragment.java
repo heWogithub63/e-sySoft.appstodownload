@@ -153,8 +153,14 @@ public class WebBrowserFragment extends Fragment {
                 steerImgs[4].setEnabled(false);
 
                 if(description.contains("ERR_UNKNOWN_URL_SCHEME")) {
-                    webView.loadUrl(uri);
-                    fileBrowser.startExtApp(failingUrl);
+                    webView.loadUrl(urlCollection.get(urlCollectionCounter));
+                    fileBrowser.runOnUiThread(new Runnable() {
+                                                  @Override
+                                                  public void run() {
+                                                      fileBrowser.startExtApp(failingUrl);
+                                                  }
+                                              });
+
                 }
                 else
                     fileBrowser.messageStarter("notFoundWebPage", fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NoFoundWebSide.txt"),  6000);

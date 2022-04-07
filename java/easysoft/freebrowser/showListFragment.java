@@ -99,8 +99,9 @@ public class showListFragment extends Fragment {
 
         listTx = new TextView[0];
         int hlength = arrayList.size();
-        if(arrayList.size() > 5)
-            hlength = 6;
+        if(arrayList.size() >= 5) {
+            hlength = 4;
+        }
               for(int i=0; i<arrayList.size(); i++) {
                   for(int i1=0;i1<columnCount;i1++) {
                       listTx = Arrays.copyOf(listTx, listTx.length + 1);

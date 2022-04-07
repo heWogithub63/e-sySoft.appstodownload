@@ -38,6 +38,8 @@ public class emailDisplayFragment extends Fragment {
     ArrayList<String[]> collectionMemoryList;
     String[] memoryList, sd;
     HorizontalScrollView headEMScroll;
+
+    String emailAddress = "";
     
     static boolean attachment = false, mailAttached = false;
     static ImageView[] icons;
@@ -67,10 +69,14 @@ public class emailDisplayFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        if (getArguments() != null) {
+            emailAddress = getArguments().getString("EMAILADD");
+            fileBrowser.webBrowserDisplay.webView.loadUrl(fileBrowser.webBrowserDisplay.urlCollection.get(fileBrowser.webBrowserDisplay.urlCollectionCounter));
+        }
         memoryList = new String[]{"","","",""};
         mailAccountData = fileBrowser.read_writeFileOnInternalStorage("read", "AccountData", "MailAccountData.txt", "");
         if(mailAccountData != null && mailAccountData.length > 0) {
+
             int i = 0;
             for(i=0; i< mailAccountData.length; i++)
                 if(mailAccountData[i].contains("(!"))
@@ -158,9 +164,9 @@ public class emailDisplayFragment extends Fragment {
             folderInx.setPadding(15,15,15,15);
             folderInx.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
 
-            int txSize = 2;
-            if(yfact < 0.62)
-                txSize = 3;
+            int txSize = 3;
+            if(yfact < 0.625)
+                txSize = 4;
             for (String s : sd) {
                 if (!s.startsWith(".")) {
                     folderNames = Arrays.copyOf(folderNames, folderNames.length + 1);
@@ -302,12 +308,11 @@ public class emailDisplayFragment extends Fragment {
                 if (i1 == 2)
                     subject = collectionMemoryList.get(i)[i1].replace("/","°");
 
-                if (i1 == 3 && (folderName.startsWith("Mail") && (textIsHtml || collectionMemoryList.get(i)[i1].contains("DOCTYPE") ||
+                if (i1 == 3 && (folderName.startsWith("Mail") && (textIsHtml ||
                         collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html") ) ||
                         collectionMemoryList.get(i)[i1].contains("MimeMultipart@"))) {
                     String kind = "";
-                    if (textIsHtml || collectionMemoryList.get(i)[i1].contains("DOCTYPE html") ||
-                            collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html"))
+                    if (textIsHtml || collectionMemoryList.get(i)[i1].contains("HTML") || collectionMemoryList.get(i)[i1].contains("html"))
                         kind = "Attached_HTML.html";
                     else if (collectionMemoryList.get(i)[i1].contains("MimeMultipart@"))
                         kind = "Attached_MimeMulty.html";
@@ -397,11 +402,11 @@ public class emailDisplayFragment extends Fragment {
         AttachLin.setOrientation(LinearLayout.HORIZONTAL);
         AttachLin.setPadding(20,0,20,0);
 
-        if(posIcon.contains("New") || createMail)
+        if(posIcon.contains("New") || createMail || emailAddress.length() > 0)
             praefix = fileBrowser.docu_Loader("Language/"+language+"/MailHeadLines.txt");
         else
             praefix = new String[0];
-        if (mailAccountData != null && mailAccountData.length > 0 && createMail) {
+        if (mailAccountData != null && mailAccountData.length > 0 && (createMail || emailAddress.length() > 0)) {
             for (int i = 0; i < headerTx.length; i++) {
 
                 headerLin = Arrays.copyOf(headerLin, headerLin.length + 1);
@@ -426,6 +431,8 @@ public class emailDisplayFragment extends Fragment {
                 headerEdit[headerEdit.length - 1].setBackgroundColor(getResources().getColor(R.color.grey_overlay));
                 headerEdit[headerEdit.length - 1].setPadding(10, 5, 10, 5);
                 headerEdit[headerEdit.length - 1].setText(memoryList[i]);
+                if(headerEdit.length -1 == 1 && emailAddress.length() > 1)
+                    headerEdit[headerEdit.length - 1].setText(emailAddress);
                 headerEdit[headerEdit.length - 1].setTag(i+"");
                 headerEdit[headerEdit.length - 1].setShowSoftInputOnFocus(false);
                 headerEdit[headerEdit.length - 1].setOnClickListener(new View.OnClickListener() {
@@ -464,9 +471,9 @@ public class emailDisplayFragment extends Fragment {
                             if(v.getTag().toString().contains("closed")) {
                                 fileBrowser.changeIcon(v, "browserIcons", "closed", "open");
 
-                                float f = 3;
+                                double f = 2;
                                 if(yfact <= 0.625)
-                                    f = 2;
+                                    f = 1.5;
 
                                 int[] iconpos = new int[2];
                                 v.getLocationOnScreen(iconpos);
@@ -1224,7 +1231,7 @@ public class emailDisplayFragment extends Fragment {
         }
 
         public void printEnvelope(Message message) throws Exception {
-
+            textIsHtml = false;
             Address[] a;
             Date receivedDate = message.getReceivedDate();
             String time = receivedDate.toString().substring(receivedDate.toString().indexOf(":")-2,
@@ -1309,7 +1316,6 @@ public class emailDisplayFragment extends Fragment {
             textIsHtml = false;
             if (p.isMimeType("text/*")) {
                 String s = (String)p.getContent();
-                textIsHtml = p.isMimeType("text/html");
                 return s;
             }
 

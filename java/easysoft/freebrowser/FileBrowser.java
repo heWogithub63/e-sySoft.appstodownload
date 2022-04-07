@@ -94,7 +94,7 @@ public class FileBrowser extends Activity  {
     static String commandString = "";
     static String urldevice, memoryUrlDevice;
     static String searchMashineUrl;
-    static String calledBy = "", calledFrom = "";
+    static String calledBy = "", calledFrom = "",calledBack ="";
     static ArrayList<String[]> arrayList;
     static ArrayList<String[]> paramList;
     static ArrayList<String[]> memoryParamList;
@@ -1471,10 +1471,13 @@ public class FileBrowser extends Activity  {
 
         progrIntent = new Intent(Intent.ACTION_VIEW);
         String form = "";
-        if(Url.substring(Url.length() -6).contains("."))
-           form = Url.substring(Url.lastIndexOf("."));
-         else if(!(Url.startsWith("http") || Url.startsWith("https")))
+        if(Url.substring(Url.length() -6).contains(".")) {
+            form = Url.substring(Url.lastIndexOf("."));
+            if(Url.startsWith("mailto"))
+                form = "mailto";
+        } else if(!(Url.startsWith("http") || Url.startsWith("https")))
             form = "*";
+
 
         if(form.contains(" "))
             form = form.substring(0,form.indexOf(" "));
@@ -1579,6 +1582,16 @@ public class FileBrowser extends Activity  {
                 serveAPK(Url, "application/vnd.android.package-archive");
                 return;
             }
+            case ("mailto"): {
+
+                if(fileBrowser.createSendEmail == null || !fileBrowser.createSendEmail.isVisible()) {
+                    Bundle bund = new Bundle();
+                    bund.putString("EMAILADD", Url.substring(Url.indexOf(":")+1).trim());
+                    fragmentStart(createSendEmail, 5, "emailDisplay", bund, 0, 0,
+                            displayWidth, displayHeight);
+                }
+                return;
+            }
             case ("*"): {
                 progrIntent.setData(Uri.parse(Url));
             }
@@ -1645,10 +1658,10 @@ public class FileBrowser extends Activity  {
                 changeIcon(headMenueIcon02[5],"sideRightMenueIcons","open","closed");
                 fragmentShutdown(createTxEditor, 7);
             }
-            if(webBrowserDisplay != null && webBrowserDisplay.isVisible()) {
+            /*if(webBrowserDisplay != null && webBrowserDisplay.isVisible()) {
                 changeIcon(headMenueIcon[6],"headMenueIcons","open","closed");
                 fragmentShutdown(webBrowserDisplay, 8);
-            }
+            }*/
         }
         if(kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
             if(showMediaDisplay != null && showMediaDisplay.isVisible()) {
@@ -1730,11 +1743,13 @@ public class FileBrowser extends Activity  {
         fragTrans.commit();
     }
 
-    public void fragmentShutdown(Fragment kind_of, int n) {
+    public void fragmentShutdown (Fragment kind_of, int n) {
         fragTrans = fragManager.beginTransaction();
 
         fragTrans.remove(kind_of);
-        fragTrans.commit();
+        try {
+            fragTrans.commit();
+        } catch( Exception e) {}
 
         if(Thread.currentThread() != Looper.getMainLooper().getThread()) {
             fileBrowser.runOnUiThread(new Runnable() {
@@ -2064,9 +2079,9 @@ public class FileBrowser extends Activity  {
     static public class movePanel extends Thread {
         boolean go = true;
         int framely = 0;
-        public movePanel(int frame) {
-            framely = frame;
-        }
+
+        public movePanel(int frame) {framely = frame;}
+
 
         public void run() {
             int n = 0;
@@ -2092,18 +2107,25 @@ public class FileBrowser extends Activity  {
                             fileBrowser.headMenueIcon02[2].setEnabled(true);
                         }
                     });
+                    if(framely == 5 && fileBrowser.webBrowserDisplay !=null && fileBrowser.webBrowserDisplay.isVisible()) {
+                        fileBrowser.fragmentShutdown(fileBrowser.createSendEmail,5);
+                    }
 
                 } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 5) {
 
-                    if(framely == 5 && fileBrowser.createSendEmail.attachedList != null) {
-                        fileBrowser.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                fileBrowser.createSendEmail.createMail = true;
-                                fileBrowser.createSendEmail.attachment = false;
-                                fileBrowser.createSendEmail.createNewDisplay();
-                            }
-                        });
+                    if(framely == 5) {
+                         if (fileBrowser.createSendEmail.attachedList != null){
+
+                            fileBrowser.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fileBrowser.createSendEmail.createMail = true;
+                                    fileBrowser.createSendEmail.attachment = false;
+                                    fileBrowser.createSendEmail.createNewDisplay();
+                                }
+                            });
+                        }
+
                     } else if(framely == 7) {
                         fileBrowser.runOnUiThread(new Runnable() {
                             @Override
