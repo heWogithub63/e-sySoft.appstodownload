@@ -74,7 +74,7 @@ public class showMessageFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_show_message, container, false);
         mainLinLy = (LinearLayout) view.findViewById(R.id.mainLin);
         mainLinLy.setBackgroundColor(backgrColor);
-        //mainLinLy.setPadding(5,5,5,5);
+        mainLinLy.setPadding(5,5,5,5);
         createMessagePanel(mainLinLy);
 
         messageLayout.bringToFront();
@@ -83,12 +83,13 @@ public class showMessageFragment extends Fragment {
 
     public void createMessagePanel(LinearLayout lin) {
 
-        RelativeLayout.LayoutParams txRelParam = new RelativeLayout.LayoutParams(messageLayout.getWidth() -10, 2*messageLayout.getHeight()/3);
+        RelativeLayout.LayoutParams txRelParam = new RelativeLayout.LayoutParams(2*displayWidth/5, displayHeight/5);
 
         LinearLayout mTxLin = new LinearLayout(fileBrowser);
         mTxLin.setLayoutParams(txRelParam);
         mTxLin.setPadding(5,5,5,5);
         mTxLin.setOrientation(LinearLayout.VERTICAL);
+
         int scFact = 4;
         if(messageTimer != 0)
             scFact = 6;
@@ -158,7 +159,7 @@ public class showMessageFragment extends Fragment {
             RelativeLayout.LayoutParams requestParam = new RelativeLayout.LayoutParams(displayWidth/3, displayHeight/18);
             requestParam.addRule(RelativeLayout.CENTER_IN_PARENT);
             editRel.setLayoutParams(requestParam);
-
+            editRel.setPadding(15,5,5,5);
             String tx = "";
             if(devicePath != null && devicePath.length() > 0) {
                 if (devicePath.substring(1).contains("."))
@@ -271,7 +272,7 @@ public class showMessageFragment extends Fragment {
             }
 
             TextView[] steerButton = new TextView[0];
-            RelativeLayout.LayoutParams steerParam = new RelativeLayout.LayoutParams((displayWidth/2), displayHeight/12);
+            LinearLayout.LayoutParams steerParam = new LinearLayout.LayoutParams((displayWidth/2), displayHeight/12);
             LinearLayout RelLy = new LinearLayout(fileBrowser);
             RelLy.setLayoutParams(new LinearLayout.LayoutParams(steerParam));
             RelLy.setPadding((int)(ux*xfact),(int)(uy*xfact),0,0);
@@ -280,8 +281,6 @@ public class showMessageFragment extends Fragment {
             steerRel.setLayoutParams(steerParam);
 
             for (int i = 0; i < steerPanel.length; i++) {
-                fileBrowser.frameLy.get(0).setY((float)(fileBrowser.frameLy.get(0).getY() - 65*yfact));
-
                 steerButton = Arrays.copyOf(steerButton, steerButton.length + 1);
                 steerButton[steerButton.length - 1] = new TextView(fileBrowser);
                 steerButton[steerButton.length - 1].setTextColor(getResources().getColor(R.color.white));
@@ -289,7 +288,7 @@ public class showMessageFragment extends Fragment {
                 steerButton[steerButton.length - 1].setTextSize((float) (textSize));
                 steerButton[steerButton.length - 1].setTag(kindOf + "  " + steerPanel[i]);
                 steerButton[steerButton.length - 1].setPadding(10,0,10,0);
-                steerButton[steerButton.length - 1].setX((float)(i*messageLayout.getWidth()/3));
+                steerButton[steerButton.length - 1].setX((float)(i*displayWidth/5));
                 steerButton[steerButton.length - 1].setBackgroundColor(getResources().getColor(R.color.black_overlay));
                 steerButton[steerButton.length - 1].setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -378,8 +377,14 @@ public class showMessageFragment extends Fragment {
         } else if (kindOf.equals("Extern_Device_Permission")) {
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.equals("mailSendRequest")) {
-            fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
+            String ms = fileBrowser.createSendEmail.mailTx.getText().toString();
+            ClipboardManager clipBoard;
+            clipBoard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("label", ms);
+            clipBoard.setPrimaryClip(clip);
             fileBrowser.createSendEmail.startMailSend();
+
+            fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.endsWith("Document_Save")) {
             String tx = requestedText.getText().toString();
             if (tx.contains(".") && !tx.contains(","))

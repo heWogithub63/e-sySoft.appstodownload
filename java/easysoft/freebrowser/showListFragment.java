@@ -409,12 +409,17 @@ public class showListFragment extends Fragment {
                                           fileBrowser.createSendEmail.showFolderIndex(tag.substring(tag.indexOf(" ") + 1, tag.lastIndexOf("_")));
                                           fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[2], "mailIcons","open","closed");
                                       }
-                                  } else if(caller.equals("mailAccountList")) {
+                                  } else if(caller.equals("mailCallAccountList") || caller.equals("mailSentAccountList")) {
+                                      String kind = caller.substring(4,caller.indexOf("Account"));
                                       nn = Integer.parseInt(tag.substring(0,tag.indexOf(" ")));
+                                      int o = 3;
+                                      if(caller.contains("Sent"))
+                                          o = 6;
 
-                                      fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[3], "Call");
+                                      fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[o], "Call");
                                       fileBrowser.blink.start();
-                                      fileBrowser.createSendEmail.handleSendThread("Call");
+
+                                      fileBrowser.createSendEmail.handleSendThread(kind);
                                       if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                                           fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                       }
@@ -548,6 +553,8 @@ public class showListFragment extends Fragment {
                                   } else if(caller.equals("searchMachineList")) {
                                       int nr = Integer.parseInt(tag.substring(0,tag.indexOf(" ")));
                                       fileBrowser.searchMashineUrl = tag.substring(tag.indexOf(" ")+1);
+                                      fileBrowser.changeIcon(headMenueIcon[7],"headMenueIcons","open","closed");
+                                      fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                   } else if(caller.equals("webSideMemoryList")) {
                                       ImageView trash = new ImageView(fileBrowser);
                                       trash.setLayoutParams(new RelativeLayout.LayoutParams(showListLayout.getWidth()/5, showListLayout.getWidth()/5));

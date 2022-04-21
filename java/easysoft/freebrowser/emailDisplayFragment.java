@@ -1,5 +1,7 @@
 package easysoft.freebrowser;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -129,6 +131,9 @@ public class emailDisplayFragment extends Fragment {
                                 icons[0].getTag().toString().indexOf(" ") +1)));
                         arrayList = new ArrayList<>();
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                    }
+                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                     }
                     fileBrowser.startMovePanel(5);
                 }
@@ -749,7 +754,7 @@ public class emailDisplayFragment extends Fragment {
 
                                 if (tag.contains("Info")) {
                                     createMail = false;
-                                    memoryList[3] = "";
+                                    calledBack = "InfoView";
                                     try {
                                         mailAccountData = fileBrowser.read_writeFileOnInternalStorage("read", "AccountData", "MailAccountData.txt", "");
                                     } catch (Exception fe) {}
@@ -796,7 +801,7 @@ public class emailDisplayFragment extends Fragment {
                                     attachedList = new ArrayList<>();
                                 } else if (tag.contains("Call")) {
                                     arrayList = new ArrayList<>();
-                                    String accountName = "Account ", kind = "mailAccountList";
+                                    String accountName = "Account ", kind = "mailCallAccountList";
                                     if(fileBrowser.language.equals("Deutsch"))
                                         accountName = "Konto ";
                                     for(int i=0;i<n1; i++) {
@@ -804,9 +809,9 @@ public class emailDisplayFragment extends Fragment {
                                     }
                                     fileBrowser.changeIcon(v, "mailIcons", "closed","open");
 
-                                    float f = 4;
+                                    float f = 6;
                                     if(yfact <= 0.625)
-                                        f = 3;
+                                        f = 5;
 
                                     int[] iconpos = new int[2];
                                     v.getLocationOnScreen(iconpos);
@@ -830,13 +835,31 @@ public class emailDisplayFragment extends Fragment {
                                     fileBrowser.startMovePanel(5);
                                     return;
                                 } else if (tag.contains("Send")) {
-                                    fileBrowser.blink = new FileBrowser.blinkIcon(v, "Send");
-                                    fileBrowser.blink.start();
                                     refreshMemoryList();
                                     collectionMemoryList = new ArrayList<>();
                                     collectionMemoryList.add(memoryList);
 
-                                    new sendThread("Sent").start();
+                                    arrayList = new ArrayList<>();
+                                    String accountName = "Account ", kind = "mailSentAccountList";
+                                    if(fileBrowser.language.equals("Deutsch"))
+                                        accountName = "Konto ";
+                                    for(int i=0;i<n1; i++) {
+                                        arrayList.add(new String[]{accountName + (i + 1)});
+                                    }
+
+                                    fileBrowser.changeIcon(v, "mailIcons", "closed","open");
+
+                                    float f = 6;
+                                    if(yfact <= 0.625)
+                                        f = 5;
+
+                                    int[] iconpos = new int[2];
+                                    v.getLocationOnScreen(iconpos);
+
+                                    fileBrowser.createList(kind, 1, "", 5,
+                                            iconpos[0] +v.getWidth() +10, iconpos[1] + v.getHeight()/2, (int)(displayWidth / f), "ru");
+
+                                    fileBrowser.frameLy.get(3).bringToFront();
 
                                     return;
                                 } else if (tag.contains("Save")) {
@@ -939,7 +962,7 @@ public class emailDisplayFragment extends Fragment {
 
                             } else if (tag.contains("open")) {
                                 if (tag.contains("Info_open")) {
-
+                                    calledBack = "";
                                     String[] nextAccount = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/MailAccountData.txt");
                                     nextAccount = Arrays.copyOfRange(nextAccount,2, nextAccount.length);
                                     if (!mailTx.getText().toString().contains("(!")) {
@@ -988,7 +1011,15 @@ public class emailDisplayFragment extends Fragment {
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                     }
                                 } else if (tag.contains("Send")) {
-                                    fileBrowser.changeIcon(v,"mailIcons","open", "closed");
+                                    fileBrowser.threadStop = true;
+                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                                        fileBrowser.changeIcon(v, "mailIcons", "open","closed");
+                                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                    }
+                                    if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
+                                        fileBrowser.changeIcon(v, "mailIcons", "open","closed");
+                                        fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+                                    }
                                     return;
                                 } else if (tag.contains("Save")) {
                                     fileBrowser.changeIcon(v,"mailIcons","open", "closed");
@@ -1081,10 +1112,24 @@ public class emailDisplayFragment extends Fragment {
             if (!mailAccountData[3].contains("(!") && !mailAccountData[4].contains("(!")) {
                 to = memoryList[1];
                 used_from = memoryList[0];
-                host_out = mailAccountData[3].split(":")[1].trim().replace("(", "").replace(")", "");
-                password = mailAccountData[8].split(":")[1].trim().replace("(", "").replace(")", "");
+
+                nn = nn*8;
+                host_out = mailAccountData[3 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                password = mailAccountData[8 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
                 port = "587";
+
+                if(host_out.contains("protonmail")) {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fileBrowser.threadStop = true;
+                            fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
+                        }
+                    });
+                    return null;
+                }
             }
+
             final String passwd = password, user = used_from;
 
             Properties properties = new Properties();
@@ -1156,6 +1201,17 @@ public class emailDisplayFragment extends Fragment {
             password = mailAccountData[8 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
             port = mailAccountData[9 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
             Folder inbox;
+            if(host_in.contains("protonmail")) {
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        fileBrowser.threadStop = true;
+                        fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
+                    }
+                });
+
+                return;
+            }
             Properties properties = new Properties();
 
             // server setting
@@ -1405,7 +1461,7 @@ public class emailDisplayFragment extends Fragment {
                 for(int i=0;i<3; i++) {
                     if (fileBrowser.haveNetwork()) {
                         if(kind.equals("Sent"))
-                        fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/MailSendRequest.txt"),  0);
+                            fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/MailSendRequest.txt"), 0);
                         else if(kind.equals("Call"))
                             new HandleMailWithAttachmen().handleMessages("");
                         else if(kind.startsWith("Delete")) {
@@ -1415,7 +1471,7 @@ public class emailDisplayFragment extends Fragment {
                     } else {
                         if(i >= 2) {
                             fileBrowser.messageStarter("mailNoInternet", docu_Loader("Language/" + language + "/NoInternet_avaliable.txt"), 6000);
-
+                            fileBrowser.threadStop = true;
                             break;
                         }
                         Thread.sleep(3000);

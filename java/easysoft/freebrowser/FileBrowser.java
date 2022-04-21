@@ -189,8 +189,6 @@ public class FileBrowser extends Activity  {
 
     }
 
-    ///
-
     protected void askPermissions() {
 
         String[] permissions = new String[]{
@@ -637,6 +635,30 @@ public class FileBrowser extends Activity  {
         } catch (Exception e) {
         }
         return arrayOfString;
+    }
+
+    public String injectedJs(String filePath) {
+        BufferedReader stream = null;
+        StringBuilder jsBuilder = new StringBuilder();
+        try {
+            stream = new BufferedReader(new InputStreamReader(getAssets().open(filePath)));
+            String line;
+            while ((line = stream.readLine()) != null) {
+                jsBuilder.append(line.trim());
+            }
+            return jsBuilder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
     }
 
     public String[] read_writeFileOnInternalStorage(String rw, String folder, String sFileName, String sBody) {
@@ -1475,8 +1497,12 @@ public class FileBrowser extends Activity  {
             form = Url.substring(Url.lastIndexOf("."));
             if(Url.startsWith("mailto"))
                 form = "mailto";
-        } else if(!(Url.startsWith("http") || Url.startsWith("https")))
+        } else if(!(Url.startsWith("http") || Url.startsWith("https"))) {
             form = "*";
+        } else if(Url.startsWith("http") || Url.startsWith("https")){
+            if(Url.contains("protonmail"))
+                form = "protonmail";
+        }
 
 
         if(form.contains(" "))
@@ -1590,6 +1616,13 @@ public class FileBrowser extends Activity  {
                     fragmentStart(createSendEmail, 5, "emailDisplay", bund, 0, 0,
                             displayWidth, displayHeight);
                 }
+                return;
+            }
+            case ("protonmail"): {
+                Bundle bund = new Bundle();
+                bund.putString("URL", Url);
+                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 0, 0,
+                        displayWidth, displayHeight);
                 return;
             }
             case ("*"): {
@@ -1767,7 +1800,8 @@ public class FileBrowser extends Activity  {
 
         frameLy.get(n).setX(0);
         frameLy.get(n).setY(0);
-
+        if(n == 8)
+            calledBack = "";
     }
 
 
@@ -2110,7 +2144,9 @@ public class FileBrowser extends Activity  {
                     if(framely == 5 && fileBrowser.webBrowserDisplay !=null && fileBrowser.webBrowserDisplay.isVisible()) {
                         fileBrowser.fragmentShutdown(fileBrowser.createSendEmail,5);
                     }
-
+                    if(framely == 8 && fileBrowser.createSendEmail !=null && fileBrowser.createSendEmail.isVisible()) {
+                        fileBrowser.fragmentShutdown(fileBrowser.webBrowserDisplay,8);
+                    }
                 } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 5) {
 
                     if(framely == 5) {

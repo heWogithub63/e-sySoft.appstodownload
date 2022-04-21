@@ -142,6 +142,9 @@ public class TextEditorFragment extends Fragment {
                         fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon01[1], fileBrowser.createTxEditor.icons[1], fileBrowser.createTxEditor.icons[2], fileBrowser.createTxEditor.icons[3]},
                                 new String[] {"sideLeftMenueIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
                     }
+                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                    }
                     if(devicePath != null && devicePath.length() > 0)
                         fileBrowser.reloadFileBrowserDisplay();
                     fileBrowser.startMovePanel(7);
@@ -383,6 +386,7 @@ public class TextEditorFragment extends Fragment {
                             if (tag.contains("Info")) {
                                 memoryAction = action;
                                 action = "info";
+                                calledBack = "InfoView";
                                 memoryTx = TxEditor.getText().toString();
                                 textRel.removeView(headIconLin);
                                 fileBrowser.closeListlinkedIcons(new ImageView[] {icons[1], icons[3], icons[4]}, new String[]{
@@ -521,6 +525,7 @@ public class TextEditorFragment extends Fragment {
 
                             fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
                             if (tag.contains("Info")) {
+                                calledBack = "";
                                 if (!TxEditor.getText().toString().contains("(!")) {
                                     String[] splitStr = TxEditor.getText().toString().split("\n");
                                     int n = 0;
