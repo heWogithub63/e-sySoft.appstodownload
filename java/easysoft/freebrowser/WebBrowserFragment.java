@@ -156,11 +156,10 @@ public class WebBrowserFragment extends Fragment {
                 new Object() {
                     @JavascriptInterface
                     public void onClick(String tag,String id) {
-                        System.err.println(tag+"...."+id);
                         actionId = id;
+                        actionIdChanged = true;
                         if(tag.equals("INPUT"))
-                           actionIdChanged = true;
-                        handleJavascriptInput("", 0, 0);
+                            handleJavascriptInput("", 0, 0);
                     }
                 },
                 "appHost"

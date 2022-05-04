@@ -180,7 +180,7 @@ public class FileBrowser extends Activity  {
         }
         hide = 1;
         device = "/storage";
-        searchMashineUrl = "https://duckduckgo.com/";
+        searchMashineUrl = "https://de.search.yahoo.com";
 
         createSurface();
         if(!Api30and()) {
