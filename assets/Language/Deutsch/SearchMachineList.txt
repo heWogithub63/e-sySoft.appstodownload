@@ -1,5 +1,9 @@
 DucDucGo https://duckduckgo.com
-Wikipedia https://de.wikipedia.org
+Yahoo https://de.search.yahoo.com
+WebArchives https://www.loc.gov/web-archives/?all=true&sp=5
+SimpleSearch http://www.supersimplesearch.com/
+Bing https://www.bing.com/
 Google https://search.google.com
+Wikipedia https://de.wikipedia.org
 Ebay https://www.ebay.com
 Amazone https://www.amazon.com/search/s?k=search

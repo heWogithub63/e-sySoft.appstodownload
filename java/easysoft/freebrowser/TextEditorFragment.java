@@ -2,10 +2,10 @@ package easysoft.freebrowser;
 
 import android.app.Fragment;
 import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.text.Layout;
@@ -15,10 +15,10 @@ import android.util.Log;
 import android.view.*;
 import android.widget.*;
 
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
-import javax.mail.Quota;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class TextEditorFragment extends Fragment {
     String[] readedText, accountAddrData;
     static double scaleFact = 1;
     static String logoPath = "", memoryTx = "", loadedFile = "", isBackgroundPath = "";
-    static boolean importImg = false, noAddr = true, isBackground = false;
+    static boolean importImg = false, noAddr = true, isBackground = false, isLogo = false;
 
 
     public TextEditorFragment() {
@@ -189,11 +189,28 @@ public class TextEditorFragment extends Fragment {
         TextLin.setLayoutParams(new RelativeLayout.LayoutParams(txEditorLayout.getWidth() - factx,  txEditorLayout.getHeight() - (facty)));
         TextLin.setPadding(txEditorLayout.getWidth()/16,txEditorLayout.getHeight()/28, txEditorLayout.getWidth()/18,txEditorLayout.getHeight()/16);
         TextLin.setOrientation(LinearLayout.HORIZONTAL);
+
         if(isBackground) {
             mainTx = "";
-            TextLin.setBackground(Drawable.createFromPath(isBackgroundPath));
-            for(int i=0;i<50;i++)
+
+            for(int i=0;i<65;i++)
                 mainTx = mainTx +"\n";
+
+            if(isBackgroundPath.endsWith(".pdf")) {
+
+                Bitmap bitmap;
+                try {
+                    bitmap = openPdf(0, new File(isBackgroundPath));
+                    isBackgroundPath = isBackgroundPath.replace("pdf","png");
+                    OutputStream output = new FileOutputStream(new File(isBackgroundPath));
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 1, output);
+                } catch(IOException io) {Log.e("output", io.getMessage());}
+
+                this.mainLin.removeView(pdfDisplayLin);
+            }
+
+            Drawable draw = Drawable.createFromPath(isBackgroundPath);
+            textRel.setBackground(draw);
         }
 
         headIconLin = new LinearLayout(fileBrowser);
@@ -364,9 +381,10 @@ public class TextEditorFragment extends Fragment {
 
 
                 if((kindOfFormat.equals(".pdf") && s.contains("Info")) || (kindOfFormat.equals(".txt") && s.contains("pdf")) ||
-                        ((kindOfFormat.equals(".pdf") && !caller.equals("pdfEditorDisplayNew")) && !(s.contains("pdf") || s.contains("document-new") || s.contains("Drucker"))) ||
-                            (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf")))
+                        ((kindOfFormat.equals(".pdf") && !caller.equals("pdfEditorDisplayNew")) && !(s.contains("pdf") || s.contains("document-new") || s.contains("Drucker")|| s.contains("save"))) ||
+                            (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf"))) {
                     icons[icons.length - 1].setEnabled(false);
+                }
 
                 if((caller.contains("EditorDisplayNew") && s.contains("document-new")) ||
                         (logoPath.endsWith(".png") && s.contains("text"))) {
@@ -654,6 +672,7 @@ public class TextEditorFragment extends Fragment {
     }
 
     public LinearLayout createPdfEditorDisplay (LinearLayout mainLin) {
+        String imgPath = "";
         Bitmap bitmap = null;
         RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
@@ -670,10 +689,12 @@ public class TextEditorFragment extends Fragment {
             pdfDisplayRel.setLayoutParams(pdfDisRelParam);
 
             pdfDisplayLin = new LinearLayout(fileBrowser);
-            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight()-displayHeight/8));
-            pdfDisplayLin.setPadding(txEditorLayout.getWidth()/18,0,0,0);
-        }
+            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(18*txEditorLayout.getWidth()/22, txEditorLayout.getHeight()-displayHeight/10));
+            pdfDisplayLin.setX(2*txEditorLayout.getWidth()/22);
 
+        }
+        if (importImg)
+            imgPath = devicePath;
         try {
             bitmap = openPdf(pageNr, new File(pdfFileUrl));
             imgView = new ImageView(fileBrowser);
@@ -728,7 +749,7 @@ public class TextEditorFragment extends Fragment {
                     }
                 });
 
-                importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(devicePath));
+                importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(imgPath));
                 mainRel.addView(importImgView[importImgView.length - 1]);
                 activImgView = importImgView[importImgView.length - 1];
 
@@ -783,7 +804,7 @@ public class TextEditorFragment extends Fragment {
             maxLines = 38;
         float spacingMultiplier = 1;
         float spacingAddition = 0;
-        boolean includePadding = false;
+        boolean includePadding = true;
 
         if(yfact < 0.625) {
             txn = 3;
@@ -801,7 +822,6 @@ public class TextEditorFragment extends Fragment {
         textPaint.setAntiAlias(true);
         textPaint.setTextSize(txn*textSize);
         textPaint.setColor(0xFF000000);
-
 
         bottomLine.setTextSize(textSize+4);
         bottomLine.setTextAlign(Paint.Align.CENTER);
@@ -825,9 +845,16 @@ public class TextEditorFragment extends Fragment {
             Canvas canvas = myPage.getCanvas();
             if(!noAddr && i==0) {
                 headIconLin.draw(canvas);
-                canvas.translate(10,headIconLin.getHeight());
+                canvas.translate(0,headIconLin.getHeight());
             }
-            staticLayout.draw(canvas);
+            if(isBackground) {
+                Bitmap bmp = fileBrowser.viewToBitmap(textRel);
+                canvas.drawBitmap(bmp, 40, 5, paint);
+                textRel.draw(canvas);
+                canvas.translate(0,textRel.getHeight());
+            } else {
+                staticLayout.draw(canvas);
+            }
 
             pdfDocument.finishPage(myPage);
         }
@@ -883,12 +910,15 @@ public class TextEditorFragment extends Fragment {
 
             for( int n=0; n<addedImg.length; n++) {
                 mainRel.removeView(addedImg[n]);
-                addedImg[n].setX(addedImg[n].getX() -(pdfDisplayRel.getX() + pdfDisplayLin.getX() + txEditorLayout.getWidth()/18));
+                addedImg[n].setX(addedImg[n].getX() -(pdfDisplayRel.getX() + pdfDisplayLin.getX()));
                 addedImg[n].setY(addedImg[n].getY() -(pdfDisplayRel.getY() + pdfDisplayLin.getY())+(float)(pdfScroll.getScrollY()));
                 pdfDisplayRel.addView(addedImg[n]);
             }
 
-            bmp = fileBrowser.viewToBitmap(pdfDisplayRel);
+            if(isBackground)
+                bmp = fileBrowser.viewToBitmap(textRel);
+            else
+                bmp = fileBrowser.viewToBitmap(pdfDisplayRel);
 
             paint.reset();
 
@@ -896,8 +926,11 @@ public class TextEditorFragment extends Fragment {
             PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
 
             canvas = myPage.getCanvas();
-            canvas.drawBitmap(bmp, 40, 5, paint);
-            pdfDisplayRel.draw(canvas);
+            canvas.drawBitmap(bmp, 0, 5, paint);
+            if(isBackground)
+                textRel.draw(canvas);
+            else
+                pdfDisplayRel.draw(canvas);
 
             pdfDocument.finishPage(myPage);
         }

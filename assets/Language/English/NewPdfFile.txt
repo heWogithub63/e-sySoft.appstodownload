@@ -1,2 +1,3 @@
 PDF merge
 Image import
+Text adding

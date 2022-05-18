@@ -392,6 +392,7 @@ public class showMessageFragment extends Fragment {
             if (kindOf.startsWith("Tx")) {
                 fileBrowser.createTxEditor.buildTxFile(devicePath, tx);
             } else if (kindOf.startsWith("PDF") || kindOf.startsWith("Pdf")) {
+
                 if(fileBrowser.createTxEditor.kindOfFormat.equals(".txt")) {
                     String[] txString = new String[0];
                     String  text = fileBrowser.createTxEditor.TxEditor.getText().toString(),
