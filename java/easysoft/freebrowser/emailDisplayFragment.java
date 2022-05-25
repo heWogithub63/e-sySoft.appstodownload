@@ -345,8 +345,8 @@ public class emailDisplayFragment extends Fragment {
         }
         if(folderName.contains("Sent") || folderName.contains("Gesendete")) {
             fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailSent.txt"),  5000);
-        } else if(folderName.contains("Mail Eingang") || folderName.contains("Arrived Mails")) {
-            fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailsArrived.txt"), 5000);
+        } else if(folderName.contains("Mail Eingang") || folderName.contains("Mails Arrived")) {
+            fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailArrived.txt"), 5000);
         } else {
             fileBrowser.messageStarter("mailSaved", docu_Loader("Language/" + language + "/MailSaved.txt"),  5000);
             fileBrowser.changeIcon(icons[5], "mailIcons", "closed","open");
@@ -1107,85 +1107,87 @@ public class emailDisplayFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length - 3], "Send");
             fileBrowser.blink.start();
+            nn = nn*8;
+            if(mailAccountData.length >= nn) {
 
-            String to = "", host_out = "", password = "", used_from = "", port = "";
-            if (!mailAccountData[3].contains("(!") && !mailAccountData[4].contains("(!")) {
-                to = memoryList[1];
-                used_from = memoryList[0];
+                String to = "", host_out = "", password = "", used_from = "", port = "";
+                if (!mailAccountData[3].contains("(!") && !mailAccountData[4].contains("(!")) {
+                    to = memoryList[1];
+                    used_from = memoryList[0];
 
-                nn = nn*8;
-                host_out = mailAccountData[3 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-                password = mailAccountData[8 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-                port = "587";
+                    host_out = mailAccountData[3 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                    password = mailAccountData[8 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                    port = "587";
 
-                if(host_out.contains("protonmail")) {
-                    fileBrowser.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            fileBrowser.threadStop = true;
-                            fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
-                        }
-                    });
-                    return null;
-                }
-            }
-
-            final String passwd = password, user = used_from;
-
-            Properties properties = new Properties();
-            properties.put("mail.smtp.host", host_out);
-            properties.put("mail.smtp.port", port);
-            properties.put("mail.smtp.auth", "true");
-            properties.put("mail.smtp.starttls.enable", "true");
-
-
-            Session session = Session.getInstance(properties,
-                    new javax.mail.Authenticator() {
-                        protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(user, passwd);
-                        }
-                    });
-
-            try {
-                MimeMessage message = new MimeMessage(session);
-                message.setFrom(new InternetAddress(user));
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-                message.setSubject(memoryList[2]);
-
-                BodyPart messageBodyPart1 = new MimeBodyPart();
-                messageBodyPart1.setText(memoryList[3]);
-
-                Multipart multipart = new MimeMultipart();
-                multipart.addBodyPart(messageBodyPart1);
-
-                MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
-
-                for (int i = 0; i < attachedList.size(); i++) {
-                    mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
-                    mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
-
-                    String filename = attachedList.get(i)[1];
-                    DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
-                    mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
-                    mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
-
-                    multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
+                    if (host_out.contains("protonmail")) {
+                        fileBrowser.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                fileBrowser.threadStop = true;
+                                fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
+                            }
+                        });
+                        return null;
+                    }
                 }
 
-                message.setContent(multipart);
+                final String passwd = password, user = used_from;
 
-                Transport.send(message);
+                Properties properties = new Properties();
+                properties.put("mail.smtp.host", host_out);
+                properties.put("mail.smtp.port", port);
+                properties.put("mail.smtp.auth", "true");
+                properties.put("mail.smtp.starttls.enable", "true");
 
-                fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/mailSent.txt"),  5000);
+
+                Session session = Session.getInstance(properties,
+                        new javax.mail.Authenticator() {
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(user, passwd);
+                            }
+                        });
+
+                try {
+                    MimeMessage message = new MimeMessage(session);
+                    message.setFrom(new InternetAddress(user));
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
+                    message.setSubject(memoryList[2]);
+
+                    BodyPart messageBodyPart1 = new MimeBodyPart();
+                    messageBodyPart1.setText(memoryList[3]);
+
+                    Multipart multipart = new MimeMultipart();
+                    multipart.addBodyPart(messageBodyPart1);
+
+                    MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
+
+                    for (int i = 0; i < attachedList.size(); i++) {
+                        mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
+                        mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
+
+                        String filename = attachedList.get(i)[1];
+                        DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
+                        mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
+                        mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
+
+                        multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
+                    }
+
+                    message.setContent(multipart);
+
+                    Transport.send(message);
+
+                    fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/mailSent.txt"), 5000);
 
 
-                String folder = "Sent Mails";
-                if (language.equals("Deutsch"))
-                    folder = "Gesendete Mails";
+                    String folder = "Sent Mails";
+                    if (language.equals("Deutsch"))
+                        folder = "Gesendete Mails";
 
-                saveEmail(folder);
-            } catch (MessagingException ex) {
-                ex.printStackTrace();
+                    saveEmail(folder);
+                } catch (MessagingException ex) {
+                    ex.printStackTrace();
+                }
             }
             return null;
         }
@@ -1196,93 +1198,96 @@ public class emailDisplayFragment extends Fragment {
             memList = new String[0];
             nn = nn*8;
             String host_in = "", used_from = "", port = "", password = "";
-            used_from = mailAccountData[6 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-            host_in = mailAccountData[4 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-            password = mailAccountData[8 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-            port = mailAccountData[9 +nn].split(":")[1].trim().replace("(", "").replace(")", "");
-            Folder inbox;
-            if(host_in.contains("protonmail")) {
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fileBrowser.threadStop = true;
-                        fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
-                    }
-                });
+            if(mailAccountData.length >= nn){
 
-                return;
-            }
-            Properties properties = new Properties();
-
-            // server setting
-            properties.put("mail.imap.host", host_in);
-            properties.put("mail.imap.port", port);
-
-            // SSL setting
-            properties.setProperty("mail.imap.socketFactory.class",
-                    "javax.net.ssl.SSLSocketFactory");
-            properties.setProperty("mail.imap.socketFactory.fallback", "false");
-            properties.setProperty("mail.imap.socketFactory.port", port);
-
-            Session session = Session.getDefaultInstance(properties);
-
-            try {
-                // connects to the message store
-                Store store = session.getStore("imap");
-                store.connect(used_from, password);
-
-                // opens the inbox folder
-                Folder folderInbox = store.getFolder("INBOX");
-                folderInbox.open(Folder.READ_WRITE);
-
-                // fetches new messages from server
-                Message[] arrayMessages = folderInbox.getMessages();
-
-                for (int i = 0; i < arrayMessages.length; i++) {
-                    Message message = arrayMessages[i];
-
-                    if (subjectTo.equals("")) {
-                        printEnvelope(message);
-                        collectionMemoryList.add(memList);
-                        memList = new String[0];
-                    } else {
-                        String subject = message.getSubject();
-                        subjectTo = subjectTo.replace("Delete ","");
-                        if (subject.contains(subjectTo)) {
-                            kindOfAction = "delete";
-                            message.setFlag(Flags.Flag.DELETED, true);
+                used_from = mailAccountData[6 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                host_in = mailAccountData[4 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                password = mailAccountData[8 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                port = mailAccountData[9 + nn].split(":")[1].trim().replace("(", "").replace(")", "");
+                Folder inbox;
+                if (host_in.contains("protonmail")) {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fileBrowser.threadStop = true;
+                            fileBrowser.startExtApp("https://mail.protonmail.com/u/0/inbox");
                         }
+                    });
+
+                    return;
+                }
+                Properties properties = new Properties();
+
+                // server setting
+                properties.put("mail.imap.host", host_in);
+                properties.put("mail.imap.port", port);
+
+                // SSL setting
+                properties.setProperty("mail.imap.socketFactory.class",
+                        "javax.net.ssl.SSLSocketFactory");
+                properties.setProperty("mail.imap.socketFactory.fallback", "false");
+                properties.setProperty("mail.imap.socketFactory.port", port);
+
+                Session session = Session.getDefaultInstance(properties);
+
+                try {
+                    // connects to the message store
+                    Store store = session.getStore("imap");
+                    store.connect(used_from, password);
+
+                    // opens the inbox folder
+                    Folder folderInbox = store.getFolder("INBOX");
+                    folderInbox.open(Folder.READ_WRITE);
+
+                    // fetches new messages from server
+                    Message[] arrayMessages = folderInbox.getMessages();
+
+                    for (int i = 0; i < arrayMessages.length; i++) {
+                        Message message = arrayMessages[i];
+
+                        if (subjectTo.equals("")) {
+                            printEnvelope(message);
+                            collectionMemoryList.add(memList);
+                            memList = new String[0];
+                        } else {
+                            String subject = message.getSubject();
+                            subjectTo = subjectTo.replace("Delete ", "");
+                            if (subject.contains(subjectTo)) {
+                                kindOfAction = "delete";
+                                message.setFlag(Flags.Flag.DELETED, true);
+                            }
+                        }
+
+                    }
+                    if (collectionMemoryList.size() > 0) {
+                        String folder = "Mails Arrived";
+                        if (fileBrowser.language.equals("Deutsch"))
+                            folder = "Mail Eingang";
+
+                        saveEmail(folder);
+                        fileBrowser.changeIcon(icons[2], "mailIcons", "closed", "open");
+
+                    } else if (!kindOfAction.equals("delete")) {
+                        boolean expunge = true;
+                        folderInbox.close(expunge);
+                        fileBrowser.messageStarter("mailNoDelivered", docu_Loader("Language/" + language + "/mailNoDelivered.txt"), 5000);
                     }
 
+                    // disconnect
+                    store.close();
+                } catch (NoSuchProviderException ex) {
+                    System.out.println("No provider.");
+                    ex.printStackTrace();
+                } catch (MessagingException ex) {
+                    System.out.println("Could not connect to the message store.");
+                    String[] message = docu_Loader("Language/" + language + "/mailNoAccountPermission.txt");
+                    message = Arrays.copyOf(message, message.length + 2);
+                    message[message.length - 2] = host_in.substring(host_in.indexOf(".") + 1).toUpperCase();
+                    message[message.length - 1] = ex.toString();
+                    fileBrowser.messageStarter("mailNoAccountPermission", message, 8000);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                if (collectionMemoryList.size() > 0) {
-                    String folder = "Mails Arrived";
-                    if (fileBrowser.language.equals("Deutsch"))
-                        folder = "Mail Eingang";
-
-                    saveEmail(folder);
-                    fileBrowser.changeIcon(icons[2], "mailIcons", "closed", "open");
-
-                } else if (!kindOfAction.equals("delete")){
-                    boolean expunge = true;
-                    folderInbox.close(expunge);
-                    fileBrowser.messageStarter("mailNoDelivered", docu_Loader("Language/" + language + "/mailNoDelivered.txt"), 5000);
-                }
-
-                // disconnect
-                store.close();
-            } catch (NoSuchProviderException ex) {
-                System.out.println("No provider.");
-                ex.printStackTrace();
-            } catch (MessagingException ex) {
-                System.out.println("Could not connect to the message store.");
-                String[] message = docu_Loader("Language/" + language + "/mailNoAccountPermission.txt");
-                message = Arrays.copyOf(message,message.length +2);
-                message[message.length -2]=host_in.substring(host_in.indexOf(".")+1).toUpperCase();
-                message[message.length -1]=ex.toString();
-                fileBrowser.messageStarter("mailNoAccountPermission",message,  8000);
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
 
