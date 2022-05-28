@@ -86,6 +86,8 @@ public class showMessageFragment extends Fragment {
         RelativeLayout.LayoutParams txRelParam = new RelativeLayout.LayoutParams(2*displayWidth/5, displayHeight/5);
 
         LinearLayout mTxLin = new LinearLayout(fileBrowser);
+        if(kindOf.equals("Instruction_Manuel"))
+            txRelParam = new RelativeLayout.LayoutParams(displayWidth/2, 3*displayHeight/5);
         mTxLin.setLayoutParams(txRelParam);
         mTxLin.setPadding(5,5,5,5);
         mTxLin.setOrientation(LinearLayout.VERTICAL);
@@ -349,7 +351,7 @@ public class showMessageFragment extends Fragment {
                 if (index.contains("/"))
                     index = index.substring(index.lastIndexOf("/") + 1);
                 commandString = commandString + "/" + index;
-                if (kindOf.endsWith("Ordner"))
+                //if (kindOf.endsWith("Ordner"))
                     from = from + "/" + index;
                 //new FileBrowser.dataHandler(todo, from, to,null).start();
 

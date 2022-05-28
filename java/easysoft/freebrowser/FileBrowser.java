@@ -12,9 +12,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.*;
 
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
-import android.preference.Preference;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -31,14 +28,12 @@ import androidx.core.app.ActivityCompat;
 
 import androidx.core.content.FileProvider;
 import androidx.core.os.EnvironmentCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.print.PrintHelper;
+import pub.devrel.easypermissions.BuildConfig;
 
 import java.io.*;
 import java.lang.Process;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static androidx.constraintlayout.widget.Constraints.TAG;
@@ -270,8 +265,8 @@ public class FileBrowser extends Activity  {
     }
     Uri uriFromFile(Context context, File file) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file);
+        if (SDK_INT >= Build.VERSION_CODES.N) {
+            return FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", file);
         } else {
             return Uri.fromFile(file);
         }
@@ -281,7 +276,8 @@ public class FileBrowser extends Activity  {
         if (SDK_INT >= 30) {
             if (!Environment.isExternalStorageManager()) {
                 try {
-                    Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
+                    //Uri uri = Uri.parse("package:" + BuildConfig.LIBRARY_PACKAGE_NAME);
+                    Uri uri = Uri.parse("package:" + context.getApplicationContext().getPackageName());
                     Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
                     startActivityForResult(intent, ASK_PERMISSION_PKGInstall);
                 } catch (Exception ex) {

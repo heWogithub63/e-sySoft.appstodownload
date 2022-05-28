@@ -157,7 +157,8 @@ public class MediaDisplayFragment extends Fragment {
 
     public void createMediaPlay(String url)  {
 
-        Uri url1 = Uri.parse(fileBrowser.uriFromFile(fileBrowser,new File(url)).toString());
+        //Uri url1 = Uri.parse(fileBrowser.uriFromFile(fileBrowser,new File(url)).toString());
+        Uri url1 = Uri.parse(url);
         videoView.setVideoURI(url1);
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
