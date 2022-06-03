@@ -8,6 +8,7 @@ import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.provider.Settings;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -16,6 +17,7 @@ import android.view.*;
 import android.widget.*;
 
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import androidx.core.view.MotionEventCompat;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
@@ -25,11 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import static android.view.MotionEvent.*;
 import static easysoft.freebrowser.FileBrowser.*;
 import static easysoft.freebrowser.FileBrowser.fileBrowser;
 import static easysoft.freebrowser.showListFragment.selectedTx_01;
 
-public class TextEditorFragment extends Fragment { 
+public class TextEditorFragment extends Fragment {
     View view;
     FrameLayout txEditorLayout;
     ImageView selector;
@@ -37,10 +40,13 @@ public class TextEditorFragment extends Fragment {
     LinearLayout headIconLin, mainLin;
     LinearLayout pdfDisplayLin;
     RelativeLayout pdfDisplayRel;
+    LinearLayout scaleLin;
     ScrollView pdfScroll;
     int pageNr = 0;
     HorizontalScrollView headTxScroll;
     boolean lockImgMove = false;
+    float pdfPosX=0,pdfPosY=0;
+    int pdfWidth=0,pdfHeight;
 
     static EditText TxEditor;
     TextView txDate, txSenderAddress;
@@ -531,7 +537,6 @@ public class TextEditorFragment extends Fragment {
                                     fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
                                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-
                                 }
                             } else if (tag.contains("Drucker")) {
                                 if(kindOfFormat.equals(".txt"))
@@ -583,6 +588,8 @@ public class TextEditorFragment extends Fragment {
                                     fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
                                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                    mainRel.removeView(scaleLin);
+                                    mainRel.addView(createScaleButtons());
                                 }
                             }
                             if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
@@ -604,49 +611,109 @@ public class TextEditorFragment extends Fragment {
 
     public LinearLayout createScaleButtons() {
 
-        LinearLayout scaleLin = new LinearLayout(fileBrowser);
+        scaleLin = new LinearLayout(fileBrowser);
         scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(3*displayHeight/9, displayHeight/9));
         scaleLin.setOrientation(LinearLayout.HORIZONTAL);
         scaleLin.setPadding(10,10,10,10);
         scaleLin.setX(displayWidth -displayHeight/7);
         scaleLin.setY(displayHeight -displayHeight/7);
 
-        String[] scaleTx = new String[]{"minus", "lupe", "plus"};
+        String[] scaleTx = new String[]{"Empty","Empty","hand_closed"};
+        if(caller.equals("addImg"))
+            scaleTx = new String[]{"minus", "lupe", "plus"};
         ImageView[] scaleImg = new ImageView[scaleTx.length];
         for(int i=0;i<scaleTx.length;i++) {
             scaleImg[i] = new ImageView(fileBrowser);
             scaleImg[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+scaleTx[i]+".png"));
             scaleImg[i].setTag(scaleTx[i]);
 
-            if(scaleTx.equals("lupe"))
+            if(scaleTx.length > 1 && i==1)
                 scaleImg[i].setEnabled(false);
+            if(!scaleTx[i].equals("Empty"))
+                scaleImg[i].setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String tag = view.getTag().toString();
+                        if (tag.equals("minus"))
+                            scaleFact = scaleFact - 0.1;
+                        else if (tag.equals("plus"))
+                            scaleFact = scaleFact + 0.1;
 
-            scaleImg[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    String tag = view.getTag().toString();
-                    if(tag.equals("minus"))
-                        scaleFact = scaleFact -0.1;
-                    else
-                        scaleFact = scaleFact +0.1;
+                        if (caller.equals("addImg")) {
+                            if (tag.equals("minus"))
+                                activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth() - activImgView.getWidth() / 10,
+                                        activImgView.getHeight() - activImgView.getHeight() / 12));
+                            else
+                                activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth() + activImgView.getWidth() / 10,
+                                        activImgView.getHeight() + activImgView.getHeight() / 12));
+                        } else {
+                            if(tag.contains("closed")) {
+                                pdfPosX = pdfDisplayRel.getX();
+                                pdfPosY = pdfDisplayRel.getY();
+                                pdfWidth = pdfDisplayRel.getWidth();
+                                pdfHeight = pdfDisplayRel.getHeight();
+                                view.setTag(view.getTag().toString().replace("closed","open"));
+                                ((ImageView)view).setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+view.getTag().toString()+".png"));
+                                pdfDisplayRel.setOnTouchListener(new View.OnTouchListener() {
+                                    float x, y;
+                                    int pC;
+                                    @Override
+                                    public boolean onTouch(View view, MotionEvent me) {
+                                        pC = me.getPointerCount();
 
-                    if(caller.equals("addImg")) {
-                        if(tag.equals("minus"))
-                           activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth() - activImgView.getWidth()/10,
-                                   activImgView.getHeight() -activImgView.getHeight()/12));
-                        else
-                            activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth() + activImgView.getWidth()/10,
-                                    activImgView.getHeight() +activImgView.getHeight()/12));
-                    } else {
-                        if(tag.equals("minus"))
-                            activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth(),
-                                    activImgView.getHeight() -activImgView.getHeight()/12));
-                        else
-                            activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth(),
-                                    activImgView.getHeight() +activImgView.getHeight()/12));
+                                        switch (me.getAction()) {
+                                            case (MotionEvent.ACTION_DOWN): {
+                                                x = me.getX();
+                                                y = me.getY();
+                                                break;
+                                            }
+                                            case (MotionEvent.ACTION_MOVE): {
+                                                if(pC == 1) {
+                                                    pdfDisplayRel.setY(view.getY() + (me.getY() - y));
+                                                    pdfDisplayRel.setX(view.getX() + (me.getX() - x));
+                                                } else if(pC == 2) {
+                                                    scaleFact = scaleFact +(-(me.getY() - y) *0.001);
+                                                    pdfDisplayRel.setScaleX((float) scaleFact);
+                                                    pdfDisplayRel.setScaleY((float) scaleFact);
+                                                }
+                                                break;
+                                            }
+                                            case (ACTION_UP): {
+                                                try {
+                                                    Thread.sleep(250);
+                                                } catch (InterruptedException ie) {}
+                                                break;
+                                            }
+                                        }
+
+                                        return true;
+                                    }
+                                });
+                            } else {
+                                pdfDisplayRel.setOnTouchListener(null);
+                                scaleFact = 1;
+                                pdfDisplayRel.setScaleX((float)scaleFact);
+                                pdfDisplayRel.setScaleY((float)scaleFact);
+                                pdfDisplayRel.setX(0);
+                                pdfDisplayRel.setY(0);
+                                view.setTag(view.getTag().toString().replace("open","closed"));
+                                ((ImageView)view).setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+view.getTag().toString()+".png"));
+
+                            }
+
+                            /*
+                            if(tag.equals("minus"))
+                                activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth(),
+                                        activImgView.getHeight() -activImgView.getHeight()/12));
+                            else
+                                activImgView.setLayoutParams(new RelativeLayout.LayoutParams(activImgView.getWidth(),
+                                        activImgView.getHeight() +activImgView.getHeight()/12));*/
+                        }
+
                     }
-                }
-            });
+
+                });
+
             scaleLin.addView(scaleImg[i]);
         }
         return scaleLin;
@@ -674,8 +741,8 @@ public class TextEditorFragment extends Fragment {
     public LinearLayout createPdfEditorDisplay (LinearLayout mainLin) {
         String imgPath = "";
         Bitmap bitmap = null;
-        RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-
+        //RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         if(pdfDisplayRel != null) {
             pdfDisplayRel.removeAllViews();
             pdfScroll.removeAllViews();
@@ -689,7 +756,7 @@ public class TextEditorFragment extends Fragment {
             pdfDisplayRel.setLayoutParams(pdfDisRelParam);
 
             pdfDisplayLin = new LinearLayout(fileBrowser);
-            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(18*txEditorLayout.getWidth()/22, txEditorLayout.getHeight()-displayHeight/10));
+            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(18*txEditorLayout.getWidth()/22, txEditorLayout.getHeight()));
             pdfDisplayLin.setX(2*txEditorLayout.getWidth()/22);
 
         }
@@ -703,7 +770,7 @@ public class TextEditorFragment extends Fragment {
 
 
                 scaleFact = 1;
-                RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight());
+                RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() -txEditorLayout.getHeight()/8);
                 imgRelParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 
                 imgView = new ImageView(fileBrowser);
@@ -750,6 +817,8 @@ public class TextEditorFragment extends Fragment {
                 });
 
                 importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(imgPath));
+                mainRel.removeView(scaleLin);
+                mainRel.addView(createScaleButtons());
                 mainRel.addView(importImgView[importImgView.length - 1]);
                 activImgView = importImgView[importImgView.length - 1];
 
@@ -759,8 +828,9 @@ public class TextEditorFragment extends Fragment {
 
             importImg = false;
         }
-        pdfScroll.addView(pdfDisplayRel);
-        pdfDisplayLin.addView(pdfScroll);
+        /*pdfScroll.addView(pdfDisplayRel);
+        pdfDisplayLin.addView(pdfScroll);*/
+        pdfDisplayLin.addView(pdfDisplayRel);
         mainLin.addView(pdfDisplayLin);
 
         return mainLin;
@@ -798,10 +868,11 @@ public class TextEditorFragment extends Fragment {
 
     public void generatePDFfromTx(String[] txts, String folder, String file) {
         StaticLayout staticLayout;
-        int pageWidth = view.getWidth(),
-            pageHeight  = view.getHeight(),
+        Bitmap bmp = fileBrowser.viewToBitmap(textRel);
+        int pageWidth = bmp.getWidth(),
+                pageHeight  = bmp.getHeight(),
             txn = 2,
-            maxLines = 38;
+            maxLines = 36;
         float spacingMultiplier = 1;
         float spacingAddition = 0;
         boolean includePadding = true;
@@ -831,13 +902,12 @@ public class TextEditorFragment extends Fragment {
 
             mainTx = (txts[i]);
             staticLayout = StaticLayout.Builder
-                    .obtain(mainTx, 0, mainTx.length(), textPaint, TxEditor.getWidth())
+                    .obtain(mainTx, 0, mainTx.length(), textPaint, pageWidth)
                     .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                     .setLineSpacing(spacingAddition, spacingMultiplier)
                     .setIncludePad(includePadding)
                     .setMaxLines(maxLines)
                     .build();
-
 
             mypageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (i+1)).create();
             PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
@@ -848,8 +918,7 @@ public class TextEditorFragment extends Fragment {
                 canvas.translate(0,headIconLin.getHeight());
             }
             if(isBackground) {
-                Bitmap bmp = fileBrowser.viewToBitmap(textRel);
-                canvas.drawBitmap(bmp, 40, 5, paint);
+                canvas.drawBitmap(bmp, 40, 0, paint);
                 textRel.draw(canvas);
                 canvas.translate(0,textRel.getHeight());
             } else {
@@ -861,6 +930,11 @@ public class TextEditorFragment extends Fragment {
 
         try {
             pdfDocument.writeTo(new FileOutputStream(FILE));
+            devicePath = FILE;
+            kindOfFormat = ".pdf";
+            if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+                fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+            fileBrowser.messageStarter("Successfull_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
 
         } catch (IOException e) {
             String[] noSuccessful = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),
@@ -869,25 +943,23 @@ public class TextEditorFragment extends Fragment {
                 noSuccsess = Arrays.copyOf(noSuccsess, noSuccsess.length + 1);
                 noSuccsess[noSuccsess.length - 1] = s;
             }
+            if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+                fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
 
             fileBrowser.messageStarter("Instruction", noSuccsess, 5000);
         }
 
         pdfDocument.close();
 
-        devicePath = FILE;
-        fileBrowser.messageStarter("Successful_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
 
     }
-    public void generatePDFfromPdf() {
-        int pageWidth = view.getWidth(),
-                pageHeight  = view.getHeight();
+    public void generatePDFfromPdf(String folder, String file) {
         Bitmap bmp = null;
         PdfDocument pdfDocument;
         PdfDocument.PageInfo mypageInfo;
         Canvas canvas;
 
-        String FILE = loadedFile;
+        String FILE = folder + "/" + file + ".pdf";
         Paint paint = new Paint();
         pdfDocument = new PdfDocument();
 
@@ -921,12 +993,11 @@ public class TextEditorFragment extends Fragment {
                 bmp = fileBrowser.viewToBitmap(pdfDisplayRel);
 
             paint.reset();
-
-            mypageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, i).create();
+            mypageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), (bmp.getHeight() - bmp.getHeight()/11), i).create();
             PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
 
             canvas = myPage.getCanvas();
-            canvas.drawBitmap(bmp, 0, 5, paint);
+            canvas.drawBitmap(bmp, 0, 20, paint);
             if(isBackground)
                 textRel.draw(canvas);
             else
@@ -939,6 +1010,10 @@ public class TextEditorFragment extends Fragment {
 
             pdfDocument.writeTo(new FileOutputStream(FILE));
 
+            pdfDocument.close();
+            devicePath = FILE;
+            fileBrowser.messageStarter("Successfull_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
+
         } catch (IOException e) {
             String[] noSuccessful = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),
                     noSuccsess = new String[]{e.getMessage()};
@@ -946,15 +1021,10 @@ public class TextEditorFragment extends Fragment {
                 noSuccsess = Arrays.copyOf(noSuccsess, noSuccsess.length + 1);
                 noSuccsess[noSuccsess.length - 1] = s;
             }
-
+            if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+                fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
             fileBrowser.messageStarter("Instruction", noSuccsess, 5000);
         }
-
-
-        pdfDocument.close();
-        devicePath = FILE;
-
-        fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
 
     }
 

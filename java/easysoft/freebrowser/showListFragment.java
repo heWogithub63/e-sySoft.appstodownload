@@ -546,9 +546,8 @@ public class showListFragment extends Fragment {
                                           String kind = "TxDocument_Save";
                                           if (tag.contains("PDF ")) {
                                               kind = "PDFDocument_Save";
-                                              if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
-                                                  if(fileBrowser.createTxEditor.loadedFile.endsWith(".pdf"))
-                                                      kind = "PdfDocument_Save";
+                                              if(fileBrowser.createTxEditor.loadedFile.endsWith(".pdf"))
+                                                 kind = "PDF01Document_Save";
 
                                           }
 

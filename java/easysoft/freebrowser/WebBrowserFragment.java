@@ -139,7 +139,7 @@ public class WebBrowserFragment extends Fragment {
                     popupSoftkeyboard();
                 }
 
-            }, 200);
+            }, 250);
         }
         actionIdChanged = false;
     }

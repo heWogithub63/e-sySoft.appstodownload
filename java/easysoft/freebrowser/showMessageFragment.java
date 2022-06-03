@@ -315,6 +315,7 @@ public class showMessageFragment extends Fragment {
         }
     }
     public void clickOk () {
+
         if (kindOf.contains("ask") ) {
             String todo = commandString.substring(0, commandString.indexOf("  ")),
                     from = commandString.substring(commandString.indexOf("  ") + 2),
@@ -400,12 +401,12 @@ public class showMessageFragment extends Fragment {
                     String  text = fileBrowser.createTxEditor.TxEditor.getText().toString(),
                             text_01 = "";
 
-                    int i1 = 0, act = 38;
+                    int i1 = 0, act = 34;
                     if(yfact < 0.625)
                         act = 24;
 
                     if(!fileBrowser.createTxEditor.noAddr) {
-                        act = 36;
+                        act = 34;
                         if(yfact < 0.625)
                             act = 22;
                     }
@@ -428,7 +429,7 @@ public class showMessageFragment extends Fragment {
                                 txString[txString.length - 1] = text.substring(text.indexOf(text_01) + text_01.length());
                                 break;
                             }
-                            act = 38;
+                            act = 34;
                             if(yfact < 0.625)
                                 act = 24;
                             i1 = 0;
@@ -445,7 +446,7 @@ public class showMessageFragment extends Fragment {
                     fileBrowser.createTxEditor.generatePDFfromTx(txString, devicePath, tx);
 
                 } else if(fileBrowser.createTxEditor.kindOfFormat.equals(".pdf")) {
-                    fileBrowser.createTxEditor.generatePDFfromPdf();
+                    fileBrowser.createTxEditor.generatePDFfromPdf(devicePath, tx);
                 }
 
 
@@ -668,7 +669,7 @@ public class showMessageFragment extends Fragment {
 
 
 
-            } else if(kindOf.equals("Successful_TxDocumentSave")) {
+            } else if(kindOf.equals("Successfull_TxDocumentSave")) {
                 if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
                 if(devicePath.endsWith(".pdf"))
@@ -680,7 +681,7 @@ public class showMessageFragment extends Fragment {
                         fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                     fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2],headMenueIcon02[5]},new String[]{"sideRightMenueIcons","sideRightMenueIcons"});
                 }
-            } else if(kindOf.equals("Successful_PdfDocumentSave")) {
+            } else if(kindOf.equals("Successfull_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);
             }
             fileBrowser.threadStop = true;
