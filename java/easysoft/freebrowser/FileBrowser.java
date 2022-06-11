@@ -1866,7 +1866,6 @@ public class FileBrowser extends Activity  {
 
         Bitmap.Config bmpConfig = Bitmap.Config.ARGB_8888;
         Bitmap bmp = Bitmap.createBitmap(view.getWidth(), view.getHeight(), bmpConfig);
-
         return bmp;
     }
     public void reloadFileBrowserDisplay() {

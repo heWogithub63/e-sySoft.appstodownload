@@ -741,8 +741,9 @@ public class TextEditorFragment extends Fragment {
     public LinearLayout createPdfEditorDisplay (LinearLayout mainLin) {
         String imgPath = "";
         Bitmap bitmap = null;
-        //RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        //RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         if(pdfDisplayRel != null) {
             pdfDisplayRel.removeAllViews();
             pdfScroll.removeAllViews();
@@ -756,8 +757,9 @@ public class TextEditorFragment extends Fragment {
             pdfDisplayRel.setLayoutParams(pdfDisRelParam);
 
             pdfDisplayLin = new LinearLayout(fileBrowser);
-            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(18*txEditorLayout.getWidth()/22, txEditorLayout.getHeight()));
-            pdfDisplayLin.setX(2*txEditorLayout.getWidth()/22);
+            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight()));
+            pdfDisplayLin.setPadding(txEditorLayout.getWidth()/22, 0, txEditorLayout.getWidth()/22, 0);
+            //pdfDisplayLin.setX(txEditorLayout.getWidth()/22);
 
         }
         if (importImg)
@@ -771,11 +773,11 @@ public class TextEditorFragment extends Fragment {
 
                 scaleFact = 1;
                 RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() -txEditorLayout.getHeight()/8);
-                imgRelParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                imgRelParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 
                 imgView = new ImageView(fileBrowser);
                 imgView.setLayoutParams(imgRelParams);
-                imgView.setScaleType(ImageView.ScaleType.FIT_XY);
+                //imgView.setScaleType(ImageView.ScaleType.FIT_XY);
                 imgView.setImageBitmap(bitmap);
                 activImgView = imgView;
 
