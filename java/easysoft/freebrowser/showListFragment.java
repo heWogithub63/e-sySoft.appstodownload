@@ -1,9 +1,7 @@
 package easysoft.freebrowser;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.app.Fragment;
-import android.util.Log;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -238,9 +236,9 @@ public class showListFragment extends Fragment {
                                                   //commandString = "copy  " + devicePath_trans;
                                                   commandString = "cp -r  " + devicePath_trans;
                                               } else {
-                                                  kind_of = "askForMove";
+                                                  kind_of = "Move";
                                                   //commandString = "move  " + devicePath_trans;
-                                                  commandString = "mvcp -r  " + devicePath_trans;
+                                                  commandString = "mv -f  " + devicePath_trans;
                                               }
                                               fileBrowser.messageStarter("Instruction", docu_Loader("Language/" + language + "/Instruction_" +
                                                               kind_of + ".txt"),  5000);
@@ -249,8 +247,8 @@ public class showListFragment extends Fragment {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
                                               kind_of = "askForRename";
-                                              //commandString = "rename  " + devicePath_trans;
-                                              commandString = "mvcp -r  " + devicePath_trans;
+                                              //commandString = "rename -l  " + devicePath_trans;
+                                              commandString = "mv -f  " + devicePath_trans;
                                               fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Rename.txt"),  0);
                                           } else if ((kind_of.contains("Löschen") || kind_of.contains("Delete"))) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
@@ -262,15 +260,15 @@ public class showListFragment extends Fragment {
                                           } else if (kind_of.contains("-->")) {
                                               fileBrowser.blink = new FileBrowser.blinkIcon(v, "FileAction");
                                               fileBrowser.blink.start();
-                                              /*String toTrash = fileBrowser.context.getFilesDir() +"/.TrashIndex";
+                                              /*String toTrash = fileBrowser.context.getFilesDir() +"/TrashIndex";
                                               if(!devicePath_trans.substring(devicePath_trans.lastIndexOf("/") +1).contains("."))*/
-                                              String toTrash = fileBrowser.context.getFilesDir() +"/.TrashIndex" + devicePath_trans.substring(devicePath_trans.lastIndexOf("/"));
-                                              commandString = "move  " +devicePath_trans;
+                                              String toTrash = fileBrowser.context.getFilesDir() +"/TrashIndex" + devicePath_trans.substring(devicePath_trans.lastIndexOf("/"));
+                                              commandString = "mv -f  " +devicePath_trans;
                                               //new FileBrowser.dataHandler("move  ", devicePath_trans, toTrash,null).start();
                                               fileBrowser.runOnUiThread(new Runnable() {
                                                   @Override
                                                   public void run() {
-                                                      fileBrowser.startTerminalCommands("mvcp -r ", devicePath_trans, toTrash);
+                                                      fileBrowser.startTerminalCommands("mv -f  ", devicePath_trans, toTrash);
                                                   }
                                               });
                                               return;
@@ -296,9 +294,7 @@ public class showListFragment extends Fragment {
                                                       from = commandString.substring(commandString.indexOf("  ") + 2),
                                                       kind = from.substring(from.lastIndexOf("/") +1),
                                                       to = devicePath;
-                                              if(kind.contains(" ")) {
-                                                  kind = kind.replace(" ","\\ ");
-                                              }
+
                                               to = to +"/"+ kind;
                                               final String to1 = to;
 
@@ -359,8 +355,8 @@ public class showListFragment extends Fragment {
                                   } else if(caller.equals("TrashList")) {
                                       if(tag.substring(tag.indexOf(" ")+1).contains(" ")) {
                                           kind_of = "_askTrashDelete";
-                                          //commandString = fileBrowser.context.getFilesDir() + "/.TrashIndex";
-                                          commandString = "rm -rfx  " + fileBrowser.context.getFilesDir() + "/.TrashIndex";
+                                          //commandString = fileBrowser.context.getFilesDir() + "/TrashIndex";
+                                          commandString = "rm -rfx  " + fileBrowser.context.getFilesDir() + "/TrashIndex";
                                           fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Delete.txt"), 0);
                                       } else {
                                           calledBy = "TreshIndex";
@@ -373,7 +369,7 @@ public class showListFragment extends Fragment {
                                           }
 
                                           float f = 3;
-                                          if(yfact <= 0.625)
+                                          if(yfact < 0.625)
                                               f = 2;
                                           int[] iconpos = new int[2];
                                           headMenueIcon01[7].getLocationOnScreen(iconpos);
@@ -387,10 +383,10 @@ public class showListFragment extends Fragment {
 
                                   } else if(caller.equals("TrashRecoverList")) {
                                       int p = Integer.parseInt(tag.substring(0, tag.indexOf(" ")));
-                                      commandString = fileBrowser.context.getFilesDir() +"/.TrashIndex/"+ arrayList.get(p)[0];
+                                      commandString = fileBrowser.context.getFilesDir() +"/TrashIndex/"+ arrayList.get(p)[0];
                                       kind_of = "Recover Trash";
                                       //new FileBrowser.dataHandler("move",  commandString, arrayList.get(p)[1],null).start();
-                                      fileBrowser.startTerminalCommands("mvcp -r ",commandString, arrayList.get(p)[1] +"/"+ arrayList.get(p)[0]);
+                                      fileBrowser.startTerminalCommands("mv -f ",commandString, arrayList.get(p)[1] +"/"+ arrayList.get(p)[0]);
 
                                       devicePath = arrayList.get(p)[1];
                                       arrayList.remove(p);
@@ -416,7 +412,7 @@ public class showListFragment extends Fragment {
                                       }
                                   } else if(caller.equals("mailCallAccountList") || caller.equals("mailSentAccountList")) {
                                       String kind = caller.substring(4,caller.indexOf("Account"));
-                                      nn = Integer.parseInt(tag.substring(0,tag.indexOf(" ")));
+                                      nn = Integer.parseInt(tag.substring(0,tag.indexOf(" "))) +1;
                                       int o = 3;
                                       if(caller.contains("Sent"))
                                           o = 6;
@@ -445,29 +441,30 @@ public class showListFragment extends Fragment {
                                       fileBrowser.createSendEmail.memoryList[1] = fileBrowser.createSendEmail.headerEdit[1].getText().toString().trim();
                                   } else if(caller.equals("TextList")) {
                                       if(tag.contains("Logo")) {
-                                          fileBrowser.createTxEditor.noAddr = false;
-                                          fileBrowser.createTxEditor.isLogo = true;
-                                          fileBrowser.createTxEditor.isBackground = false;
-                                          fileBrowser.createTxEditor.action = "text + AddressLogo";
-                                          if (devicePath.endsWith(".png"))
+                                          if (devicePath.endsWith(".png")) {
+                                              fileBrowser.createTxEditor.noAddr = false;
+                                              fileBrowser.createTxEditor.isLogo = true;
+                                              fileBrowser.createTxEditor.isBackground = false;
+                                              fileBrowser.createTxEditor.action = "text + AddressLogo";
                                               logoPath = devicePath;
-                                          else if (logoPath.length() > 0 && !logoPath.endsWith(".png"))
-                                              logoPath = logoPath + ".png";
-                                          else if (logoPath.length() == 0) {
+                                          } else if (logoPath.length() == 0) {
                                               fileBrowser.messageStarter("Instruction_LogoAccount", docu_Loader("Language/" + language + "/Instruction_LogoAccount.txt"),  8000);
                                               return;
                                           }
-
+                                          fileBrowser.createTxEditor.refreshToFillIn();
                                           fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
 
                                       } else if(tag.contains("AbsAddress")) {
                                           fileBrowser.createTxEditor.noAddr = false;
                                           fileBrowser.createTxEditor.isLogo = false;
                                           fileBrowser.createTxEditor.isBackground = false;
-                                          if(fileBrowser.createTxEditor.accountAddrData != null && fileBrowser.createTxEditor.accountAddrData.length > 0 &&
-                                                  !fileBrowser.createTxEditor.accountAddrData[4].contains("(!"))  {
+
+                                          if(fileBrowser.createTxEditor.accountAddrData != null && fileBrowser.createTxEditor.accountAddrData.length > 6 &&
+                                                  !fileBrowser.createTxEditor.accountAddrData[5].contains("(!"))  {
                                               fileBrowser.createTxEditor.action = "text + Address";
+                                              fileBrowser.createTxEditor.refreshToFillIn();
                                               fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+
                                           } else {
                                               fileBrowser.messageStarter("Instruction_LogoAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"),  8000);
                                               return;
@@ -476,9 +473,11 @@ public class showListFragment extends Fragment {
                                           fileBrowser.createTxEditor.isLogo = false;
                                           fileBrowser.createTxEditor.isBackground = true;
                                           fileBrowser.createTxEditor.noAddr = true;
-                                          if(devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".png") || devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".jpg")) {
+                                          if(devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".png") || devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".jpg") ||
+                                                  devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".JPG")) {
                                               fileBrowser.createTxEditor.isBackground = true;
                                               fileBrowser.createTxEditor.isBackgroundPath = devicePath;
+                                              fileBrowser.createTxEditor.refreshToFillIn();
                                               fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
                                           } else {
                                               fileBrowser.messageStarter("Instruction_BackgroundPicture", docu_Loader("Language/" + language + "/Instruction_BackgroundPicture.txt"), 8000);

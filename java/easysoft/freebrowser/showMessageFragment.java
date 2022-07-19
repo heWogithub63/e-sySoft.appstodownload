@@ -1,30 +1,25 @@
 package easysoft.freebrowser;
 
 
+import android.app.Fragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.provider.Settings;
-import android.util.Log;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
-import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
 import static easysoft.freebrowser.FileBrowser.*;
-import static easysoft.freebrowser.emailDisplayFragment.mailTx;
 import static easysoft.freebrowser.TextEditorFragment.TxEditor;
+import static easysoft.freebrowser.emailDisplayFragment.mailTx;
 
 public class showMessageFragment extends Fragment {
 
@@ -55,7 +50,7 @@ public class showMessageFragment extends Fragment {
             progressBar = getArguments().getBoolean("PROGRESS_BAR");
 
             steerPanel = new String[]{"CANCEL", "OK"};
-            if(kindOf.equals("Instruction_Manuel") || kindOf.equals("Extern_Device_Permission"))
+            if(kindOf.equals("Extern_Device_Permission") || kindOf.equals("Instruction_Manuel"))
                 steerPanel = new String[]{"OK"};
             if(kindOf.equals("FindResult"))
                 steerPanel = new String[]{"CANCEL"};
@@ -139,14 +134,7 @@ public class showMessageFragment extends Fragment {
                 });
             }
 
-            if(kindOf.equals("Instruction_Manuel") && (messageTx.length -1 == 0 || messageTx.length-1 == messageString.length -1)) {
-                RelativeLayout manualRelfirstline = new RelativeLayout(fileBrowser);
-                manualRelfirstline.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT));
-                manualRelfirstline.addView(messageTx[messageTx.length - 1]);
-                manualRelfirstline.addView(createCopyButton(messageTx.length -1));
-                mTxLin.addView(manualRelfirstline);
-            } else
-                mTxLin.addView(messageTx[messageTx.length - 1]);
+            mTxLin.addView(messageTx[messageTx.length - 1]);
         }
         mTxScr.addView(mTxLin);
 
@@ -308,6 +296,8 @@ public class showMessageFragment extends Fragment {
                 });
                 steerRel.addView(steerButton[steerButton.length - 1]);
             }
+            if(kindOf.equals("Instruction_Manuel"))
+               steerRel.addView(createCopyButton(messageTx.length -1));
             RelLy.addView(steerRel);
             lin.addView(RelLy);
         } else {
@@ -327,7 +317,7 @@ public class showMessageFragment extends Fragment {
                 newName = requestedText.getText().toString().replace(" ", "").trim();
 
 
-            if(kindOf.endsWith("Reaname")) {
+            if(kindOf.endsWith("Rename")) {
                 if(from.substring(from.lastIndexOf("/")+1).contains("."))
                     kind = from.substring(from.lastIndexOf("."));
 
@@ -403,12 +393,12 @@ public class showMessageFragment extends Fragment {
 
                     int i1 = 0, act = 34;
                     if(yfact < 0.625)
-                        act = 24;
+                        act = 30;
 
                     if(!fileBrowser.createTxEditor.noAddr) {
                         act = 34;
                         if(yfact < 0.625)
-                            act = 22;
+                            act = 30;
                     }
 
                     String[] gesTxLines = text.split("\n") ;
@@ -431,7 +421,7 @@ public class showMessageFragment extends Fragment {
                             }
                             act = 34;
                             if(yfact < 0.625)
-                                act = 24;
+                                act = 32;
                             i1 = 0;
                             text_01 = "";
 
@@ -471,7 +461,7 @@ public class showMessageFragment extends Fragment {
                 if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
                     fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                 }
-                fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
+                //fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
 
             }
         }
@@ -480,7 +470,7 @@ public class showMessageFragment extends Fragment {
 
     private ImageView createCopyButton (int line) {
         ImageView copyButton = new ImageView(fileBrowser);
-        copyButton.setLayoutParams(new RelativeLayout.LayoutParams((int) (60 * xfact), (int) (60 * xfact)));
+        copyButton.setLayoutParams(new RelativeLayout.LayoutParams((int) (80 * xfact), (int) (80 * xfact)));
         copyButton.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/Kopie_closed.png"));
         copyButton.setTag(line + " Kopie_closed.png");
         copyButton.setX(displayWidth/3);
@@ -634,26 +624,30 @@ public class showMessageFragment extends Fragment {
 
 
             } else if(kindOf.startsWith("successAction")) {
-
+                kindOf = kindOf.substring(kindOf.indexOf(" ")+1);
                 if(kindOf.contains("delete")) {
                     if(kindOf.endsWith("delete")) {
                         devicePath = devicePath.substring(0,devicePath.lastIndexOf("/"));
                     }
 
-                } else if(kindOf.contains("move")) {
-
                     if (kindOf.endsWith("toTrash")) {
                         calledBy = "trashList";
-                        fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", devicePath +"\n");
-                        calledBy = "toTrash";
-                        fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "closed", "open");
+                        if(fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", devicePath +"\n").length == 0) {
+                            calledBy = "toTrash";
+                            fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "closed", "open");
+                        }
 
                     } else if (kindOf.endsWith("fromTrash")) {
-                        String str = "";
-                        for(int s=0;s<arrayList.size();s++)
-                            str = str + arrayList.get(s)[1] +"/"+ arrayList.get(s)[0]  +"\n";
+                        String[] str = fileBrowser.read_writeFileOnInternalStorage("read", "pathCollection", "PathList.txt", "str");
+                        String filestr = kindOf.substring(kindOf.indexOf(" ") +1,kindOf.lastIndexOf(" "));
+                        String newstr = "";
+                        if(str.length > 0)
+                            for(String s : str) {
+                                if (!s.equals(devicePath +filestr))
+                                    newstr = newstr + s + "\n";
+                            }
 
-                        fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", str);
+                        fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", newstr);
 
                         if(arrayList.size() == 0) {
                             calledBy = "fromTrash";

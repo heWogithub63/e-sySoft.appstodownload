@@ -1,35 +1,37 @@
 package easysoft.freebrowser;
 
 import android.app.Fragment;
-import android.graphics.*;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.provider.Settings;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfImportedPage;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfWriter;
 
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import androidx.core.view.MotionEventCompat;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import static android.view.MotionEvent.*;
+import static android.view.MotionEvent.ACTION_UP;
 import static easysoft.freebrowser.FileBrowser.*;
-import static easysoft.freebrowser.FileBrowser.fileBrowser;
 import static easysoft.freebrowser.showListFragment.selectedTx_01;
 
 public class TextEditorFragment extends Fragment {
@@ -55,7 +57,7 @@ public class TextEditorFragment extends Fragment {
     ImageView[] importImgView = new ImageView[0];
     LinearLayout TextLin;
     float previousX, previousY;
-    String caller = "", mainTx = "", kindOfFormat = "", action = "", memoryAction = "", pdfFileUrl = "";
+    String caller = "", mainTx = "", headerTx = "", kindOfFormat = "", action = "", memoryAction = "", pdfFileUrl = "";
     String[] readedText, accountAddrData;
     static double scaleFact = 1;
     static String logoPath = "", memoryTx = "", loadedFile = "", isBackgroundPath = "";
@@ -79,8 +81,13 @@ public class TextEditorFragment extends Fragment {
             readedText = getArguments().getStringArray("TEXT");
 
             if(kindOfFormat.equals(".txt") && !caller.endsWith("New"))
-               for(String s: readedText)
-                   mainTx = mainTx +s+ "\n";
+               for(String s: readedText) {
+                   if(s.startsWith("An: ") || s.startsWith("To: ")) {
+                       headerTx = mainTx;
+                       mainTx = "";
+                   }
+                   mainTx = mainTx + s + "\n";
+               }
             else if(kindOfFormat.equals(".pdf")&& !caller.endsWith("New")) {
                 scaleFact = 1.0;
                 selectedTx_01 = 0;
@@ -162,7 +169,17 @@ public class TextEditorFragment extends Fragment {
     }
 
     public void refreshToFillIn() {
-        mainTx = (TxEditor.getText().toString());
+
+        String[] strings = (TxEditor.getText().toString()).split("\n");
+        mainTx = "";
+
+        for(String s : strings) {
+            if (s.startsWith("An: ") || s.startsWith("To: ")) {
+                headerTx = mainTx;
+                mainTx = "";
+            }
+            mainTx = mainTx + s + "\n";
+        }
     }
 
     public LinearLayout createTextEditorDisplay(LinearLayout mainLin) {
@@ -232,6 +249,9 @@ public class TextEditorFragment extends Fragment {
         if((action.length() > 0 && action.contains("Address")) && !(mainTx.contains("(!") && mainTx.contains("!)"))) {
             noAddr = false;
             calledBy = "textEditor";
+            if(mainTx.contains(headerTx))
+               mainTx = mainTx.substring(headerTx.length());
+
             if(logoPath.endsWith(".png")&& action.contains("Logo")) {
                 ImageView headIconView = new ImageView(fileBrowser);
                 headIconView.setLayoutParams(headiconRelParam);
@@ -240,15 +260,6 @@ public class TextEditorFragment extends Fragment {
                 headiconRel.addView(headIconView);
 
             }
-
-            txDate = new TextView(fileBrowser);
-            txDate.setTextSize(textSize);
-            txDate.setText(new SimpleDateFormat("dd.MM.y").format(new Date()));
-            txDate.setTextColor(getResources().getColor(R.color.black));
-            txDate.setX(10);
-            txDate.setY(displayHeight / 24);
-
-            headiconRel.addView(txDate);
 
             if(accountAddrData != null && accountAddrData.length > 0) {
                 StringBuffer trans = new StringBuffer();
@@ -266,6 +277,15 @@ public class TextEditorFragment extends Fragment {
 
                 headiconRel.addView(txSenderAddress);
 
+                txDate = new TextView(fileBrowser);
+                txDate.setTextSize(textSize);
+                txDate.setText(new SimpleDateFormat("dd.MM.y").format(new Date()));
+                txDate.setTextColor(getResources().getColor(R.color.black));
+                txDate.setX(10);
+                txDate.setY(displayHeight / 24);
+
+                headiconRel.addView(txDate);
+
                 if (mainTx.length() == 0) {
                     String[] headLines = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/MailHeadLines.txt");
                     for (int i = 1; i < headLines.length; i++) {
@@ -282,8 +302,11 @@ public class TextEditorFragment extends Fragment {
             textRel.addView(headIconLin);
             TextLin.setY(headiconRelParam.height);
 
-        } else
+        } else {
             TextLin.setY(0);
+            mainTx = headerTx + mainTx;
+            headerTx = "";
+        }
 
         TxEditor = new EditText(fileBrowser);
         TxEditor.setTextColor(getResources().getColor(R.color.black));
@@ -404,9 +427,9 @@ public class TextEditorFragment extends Fragment {
                     public void onClick(View v) {
                         calledBy = "TextEditorIcons";
                         String tag = v.getTag().toString();
-
-                        fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
                         if (tag.contains("closed")) {
+                            fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
+
                             if (tag.contains("Info")) {
                                 memoryAction = action;
                                 action = "info";
@@ -426,6 +449,7 @@ public class TextEditorFragment extends Fragment {
                                     }
                                     mainTx = trans.toString();
                                     mainLin.removeView(textRel);
+                                    refreshToFillIn();
                                     createTextEditorDisplay(mainLin);
 
                                     fileBrowser.messageStarter("Instruction_EditorAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"), 8000);
@@ -467,14 +491,14 @@ public class TextEditorFragment extends Fragment {
                                 if (caller.endsWith("New"))
                                     kind = "PdfCombineList";
                                 if(!fileBrowser.isPdf)
-                                   arrayList = new ArrayList<>();
+                                    arrayList = new ArrayList<>();
 
                                 if (!caller.endsWith("New") && fileBrowser.pdfPageCount > 0) {
                                     fileBrowser.isPdf = false;
                                     String page = "Seite";
                                     if(language.equals("English")) page = "Page";
                                     for (int i = 1; i <= fileBrowser.pdfPageCount; i++)
-                                            arrayList.add(new String[]{page + " " + (i)});
+                                        arrayList.add(new String[]{page + " " + (i)});
                                 } else {
                                     if(!fileBrowser.isPdf) {
                                         String[] st = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NewPdfFile.txt");
@@ -497,8 +521,8 @@ public class TextEditorFragment extends Fragment {
                                 fileBrowser.frameLy.get(3).bringToFront();
                             } else if(tag.contains("save")) {
                                 if(devicePath.length() > 0 && devicePath.contains("/")) {
-                                  if(devicePath.substring(devicePath.lastIndexOf("/")).contains("."))
-                                     devicePath = devicePath.substring(0, devicePath.lastIndexOf("/"));
+                                    if(devicePath.substring(devicePath.lastIndexOf("/")).contains("."))
+                                        devicePath = devicePath.substring(0, devicePath.lastIndexOf("/"));
 
                                     fileBrowser.closeListlinkedIcons(new ImageView[]{icons[2], icons[1], icons[4], icons[5]}, new String[]{
                                             "TextEditorIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
@@ -528,23 +552,22 @@ public class TextEditorFragment extends Fragment {
                                 }
                             } else if (tag.contains("document")) {
                                 action = "createDocument";
-                                if(kindOfFormat.equals(".txt")) {
-                                    mainRel.removeAllViews();
-                                    mainRel.addView(createTextEditorDisplay(createHaderIcons()));
-                                } else if(kindOfFormat.equals(".pdf")) {
+                                if(kindOfFormat.equals(".pdf")) {
                                     caller = "pdfEditorDisplayNew";
                                     arrayList = new ArrayList<>();
                                     fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
                                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                }
+                                } else
+                                    fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
                             } else if (tag.contains("Drucker")) {
                                 if(kindOfFormat.equals(".txt"))
-                                   fileBrowser.doPrint(textRel);
+                                    fileBrowser.doPrint(textRel);
                                 else if(kindOfFormat.equals(".pdf"))
                                     fileBrowser.doPrint(pdfDisplayLin);
                             }
-                        } else if (tag.contains("open")) {
+                        }
+                        else if (tag.contains("open")) {
 
                             fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
                             if (tag.contains("Info")) {
@@ -559,9 +582,7 @@ public class TextEditorFragment extends Fragment {
                                         }
                                     }
                                     if (n > 0) {
-                                        for(int i=0;i<3;i++)
-                                            if(TxEditor.getText().toString().endsWith("\n"))
-                                                TxEditor.setText(TxEditor.getText().toString().substring(0, TxEditor.getText().toString().lastIndexOf("\n")));
+                                        TxEditor.setText(TxEditor.getText().toString().trim());
 
                                         accountAddrData = TxEditor.getText().toString().split("\n");
                                         fileBrowser.read_writeFileOnInternalStorage("write", "accountAddrData", "accountAddrData.txt", TxEditor.getText().toString());
@@ -575,14 +596,12 @@ public class TextEditorFragment extends Fragment {
                                 createTextEditorDisplay(mainLin);
                             } else if (tag.contains("text")) {
                                 if(logoPath.endsWith(".png"))
-                                   logoPath = logoPath.substring(0, logoPath.lastIndexOf("."));
+                                    logoPath = logoPath.substring(0, logoPath.lastIndexOf("."));
                                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                     fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
 
                             } else if (tag.contains("document")) {
-                                if(kindOfFormat.equals(".txt"))
-                                   mainLin.removeView(textRel);
-                                else if(kindOfFormat.equals(".pdf")) {
+                                if(kindOfFormat.equals(".pdf")) {
                                     caller = "pdfEditorDisplay";
                                     fileBrowser.isPdf = false;
                                     fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
@@ -590,11 +609,13 @@ public class TextEditorFragment extends Fragment {
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                     mainRel.removeView(scaleLin);
                                     mainRel.addView(createScaleButtons());
-                                }
+                                } else
+                                    fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
                             }
                             if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                 fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                         }
+
                     }
                 });
                 iconLin.addView(icons[icons.length - 1]);

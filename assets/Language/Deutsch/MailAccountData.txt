@@ -2,9 +2,9 @@
   Mail-Accounts sind -->
    -------------------------------------------   
   Mail Ausgangs-Server: (!z.B. smtp.gmail.com!)
-  Mail Eingangs-Server: (!z.B. pop.gmail.com!)
+  Mail Eingangs-Server: (!z.B. imap.gmail.com!)
   
   Benutzer-Id: (!z.B.Mustermann@gmail.com!)
   e-mail_Addresse: (!z.B.Mustermann@gmail.com!)
-  Kennwort: (!z.B. meinPasswort!)
+  Kennwort/App Passwort: (!z.B. meinPasswort/zxychtvcxdwibvgf!)
   Port: (!z.B. 993!)

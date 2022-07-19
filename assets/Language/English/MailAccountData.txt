@@ -2,9 +2,9 @@
   your mail accounts are -->
    -------------------------------------------   
   Mail outgoin-server: (!e.g. smtp.gmail.com!)
-  Mail income-Server: (!e.g. pop.gmail.com!)
+  Mail income-Server: (!e.g. imap.gmail.com!)
   
   User-Id: (!e.g. miller@gmail.com!)
   e-mail_Addresse: (!e.g. miller@gmail.com!)
-  Password: (!e.g. myPassword!)
+  Password/App password: (!e.g. myPassword/cdkliginckzhsdek!)
   Port: (!e.g. 993!)

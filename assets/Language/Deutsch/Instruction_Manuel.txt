@@ -65,3 +65,7 @@ Zur Bedienung:
     E-mail: alle Funktionen eines e-mail Programms, sind erst
             nach Eingabe der Account Daten unter -> Info benutzbar.
             !! Benutze den SelektierungsPfeil !!
+            In deinem emai-account must Du die 'to steps security'
+            activieren und ein app-Passwort generieren.
+            Dein Passwort unter Info ersetzt Du dann durch Dieses.
+            Der app-name ist 'freeFileBrowser'

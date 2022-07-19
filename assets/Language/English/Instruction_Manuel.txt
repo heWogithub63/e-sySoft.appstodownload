@@ -68,3 +68,8 @@ About the using:
             useable after the input of 'account Data'
             under -> Info Button.
             "!! Use the Preselection Arrow !!"
+            At your email account you have to
+            activate 'two steps security' and
+            to generate a app password, wich you
+            have to replace with your account password
+            under Info. The app-name is 'freeFileBrowser'

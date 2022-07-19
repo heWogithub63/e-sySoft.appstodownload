@@ -1,39 +1,41 @@
 package easysoft.freebrowser;
 
 import android.app.*;
-import android.content.*;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.*;
-
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.*;
-
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-
 import android.widget.*;
-
-
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-
 import androidx.core.content.FileProvider;
 import androidx.core.os.EnvironmentCompat;
 import androidx.print.PrintHelper;
-import pub.devrel.easypermissions.BuildConfig;
+import com.google.android.gms.security.ProviderInstaller;
 
 import java.io.*;
-import java.lang.Process;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 import static android.os.Build.VERSION.SDK_INT;
 import static androidx.constraintlayout.widget.Constraints.TAG;
@@ -112,17 +114,18 @@ public class FileBrowser extends Activity  {
 
 
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.file_browser);
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         fileBrowser = this;
         context = this;
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        try {
+            ProviderInstaller.installIfNeeded(context);
+        } catch(Exception e) {}
 
         mainRelDisplay = findViewById(R.id.mainRel);
         mainRelDisplay.setBackgroundColor(getResources().getColor(R.color.grey));
@@ -184,6 +187,7 @@ public class FileBrowser extends Activity  {
 
     }
 
+
     protected void askPermissions() {
 
         String[] permissions = new String[]{
@@ -242,7 +246,6 @@ public class FileBrowser extends Activity  {
             }
         }
     }
-
 
     void serveAPK(String url, String mimeType){
 
@@ -477,7 +480,7 @@ public class FileBrowser extends Activity  {
         bund.putInt("COLUMN_COUNT", column);
         bund.putString("CALLER", "startListUrl");
 
-        float mS = (float)(calculateListLength(arrayList.size(), 8));
+        float mS = (float)(calculateListLength(arrayList.size(), 10));
         if(mS < displayHeight/20)
             mS = displayHeight/20;
 
@@ -530,6 +533,11 @@ public class FileBrowser extends Activity  {
             double flfact = 1.5;
             if(yfact > 0.625)
                 flfact = 1.70;
+            mS = (float) (flfact * mS);
+        } else if(kind.equals("TrashList")) {
+            double flfact = 1.7;
+            if(yfact > 0.625)
+                flfact = 1.85;
             mS = (float) (flfact * mS);
         }
 
@@ -613,8 +621,8 @@ public class FileBrowser extends Activity  {
         String[] arrayOfString = new String[0];
         InputStream inputStream = null;
         try {
-            if(calledBy.equals("extFileCall")) {
-                inputStream = new FileInputStream(new File(paramString));
+            if(calledBy.equals("extFileCall") || calledBy.equals("scriptMail")) {
+                inputStream = new FileInputStream(paramString);
                 calledBy = "";
             } else
                 inputStream = asma.open(paramString);
@@ -661,7 +669,7 @@ public class FileBrowser extends Activity  {
         String[] arrayOfString = new String[0];
         File dir;
         boolean append = false;
-        if(calledBy.equals("trashList")) {
+        if(calledBy.equals("trashList") || calledBy.equals("scriptMail")) {
             append = true;
             calledBy = "";
         }
@@ -673,8 +681,10 @@ public class FileBrowser extends Activity  {
         if (!dir.exists()) {
             dir.mkdir();
         }
+
         if (rw.equals("write") && !sBody.equals("delete"))
             try {
+
                 File gpxfile = new File(dir, sFileName);
                 gpxfile.setExecutable(true);
                 FileWriter writer = new FileWriter(gpxfile,append);
@@ -899,11 +909,11 @@ public class FileBrowser extends Activity  {
         for (int i = 0; i < sideLeftMenueStringArray.length; i++) {
             headMenueIcon01 = Arrays.copyOf(headMenueIcon01, headMenueIcon01.length + 1);
             headMenueIcon01[headMenueIcon01.length - 1] = new ImageView(this);
-            headMenueIcon01[headMenueIcon01.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth/14 * xfact), (int) (displayWidth/14 * xfact)));
+            headMenueIcon01[headMenueIcon01.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth/10 * xfact), (int) (displayWidth/10 * xfact)));
             headMenueIcon01[headMenueIcon01.length - 1].setTag(headMenueIcon01.length - 1 + " " + sideLeftMenueStringArray[i]);
 
             if(sideLeftMenueStringArray[i].contains("Trash")) {
-                String[] st = read_writeFileOnInternalStorage("read", ".TrashIndex", "", "");
+                String[] st = read_writeFileOnInternalStorage("read", "TrashIndex", "", "");
 
                 if (st != null && st.length > 0) {
                     headMenueIcon01[headMenueIcon01.length - 1].setTag(headMenueIcon01[headMenueIcon01.length - 1].getTag().
@@ -1022,7 +1032,7 @@ public class FileBrowser extends Activity  {
                                         listpos[1] != iconpos[1] - (int) (headMenueIcon01[7].getHeight() + 10))) {
 
                                     float f = 4;
-                                    if (yfact <= 0.625)
+                                    if (yfact < 0.625)
                                         f = 3;
 
 
@@ -1086,7 +1096,7 @@ public class FileBrowser extends Activity  {
             headMenueIcon02[headMenueIcon02.length - 1].setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + sideRightMenueStringArray[i]));
             if (sideRightMenueStringArray[i].contains(fileBrowser.language))
                 headMenueIcon02[headMenueIcon02.length - 1].setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + sideRightMenueStringArray[i].replace("closed", "open")));
-            headMenueIcon02[headMenueIcon02.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth/14 * xfact), (int) (displayWidth/14 * xfact)));
+            headMenueIcon02[headMenueIcon02.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth/10 * xfact), (int) (displayWidth/10 * xfact)));
             headMenueIcon02[headMenueIcon02.length - 1].setTag(headMenueIcon02.length - 1 + " " + sideRightMenueStringArray[i]);
             if (sideRightMenueStringArray[i].contains("mediaBack"))
                 headMenueIcon02[headMenueIcon02.length - 1].setEnabled(false);
@@ -1500,7 +1510,6 @@ public class FileBrowser extends Activity  {
                 form = "protonmail";
         }
 
-
         if(form.contains(" "))
             form = form.substring(0,form.indexOf(" "));
 
@@ -1911,116 +1920,115 @@ public class FileBrowser extends Activity  {
 
     public void startTerminalCommands(String todo, String from, String to) {
 
-                if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
-                String exe = "";
-                boolean twotimes = false;
-                String[] outputTx = new String[0];
-                String searchWhat = "";
-                Process process;
-                try {
-                    if (todo.startsWith("ls")) {
-                        outputTx = docu_Loader("Language/" + language + "/Search_Result.txt");
-                        searchWhat = to.substring(to.lastIndexOf(" ") + 1);
-                        to = "";
-                    } else if (todo.startsWith("mvcp")) {
-                        todo = todo.substring(todo.indexOf("cp"));
-                        twotimes = true;
-                    } else if (todo.contains("-rfx")) {
-                        String[] temp = fileBrowser.read_writeFileOnInternalStorage("read",".TrashIndex","","");
-                        for(String s:temp) {
-                            new File(getFilesDir() + "/.TrashIndex", s).delete();
+        String f = from, t = to;
+
+        while (from.contains("/") && f.contains(" ")) {
+            String tab = f.substring(0,f.indexOf(" ")), nx = f.substring(f.indexOf(" "));
+            int lst = 0, nex = f.length();
+            if(tab.contains("/"))
+                lst = f.indexOf(" ") -(f.indexOf(" ") -(tab.lastIndexOf("/") + 1));
+            if(nx.contains("/"))
+                nex = f.indexOf(" ")  + nx.indexOf("/");
+            f= f.substring(0,lst)+f.substring(nex);
+
+            from = from.substring(0,lst) +"'"+ from.substring(lst,nex).replace(" ","\\ ") +"'" + from.substring(nex);
+        }
+
+        while (to.contains("/") && t.contains(" ")) {
+            String tab = t.substring(0,t.indexOf(" ")), nx = t.substring(t.indexOf(" "));
+            int lst = 0, nex = t.length();
+            if(tab.contains("/"))
+                lst = t.indexOf(" ") -(t.indexOf(" ") -(t.lastIndexOf("/") + 1));
+            if(nx.contains("/"))
+                nex = t.indexOf(" ")  + nx.indexOf("/");
+            t= t.substring(0,lst)+t.substring(nex);
+
+            to = to.substring(0,lst) +"'"+ to.substring(lst,nex).replace(" ","\\ ") +"'" + to.substring(nex);
+        }
+
+        if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+            fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
+        String exe = "";
+        String[] outputTx = new String[0];
+        String searchWhat = "";
+        Process process;
+        try {
+            if (todo.startsWith("ls")) {
+                outputTx = docu_Loader("Language/" + language + "/Search_Result.txt");
+                searchWhat = to.substring(to.lastIndexOf(" ") + 1);
+                to = "";
+            } else if (todo.contains("-rfx")) {
+                String[] temp = fileBrowser.read_writeFileOnInternalStorage("read","TrashIndex","","");
+                for(String s:temp) {
+                    new File(getFilesDir() + "/TrashIndex", s).delete();
+                }
+                fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", "");
+                fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
+                return;
+            }
+
+            exe = (todo + " " + from + " " + to).trim();
+            Log.e("mainExtProgram", exe);
+            process = Runtime.getRuntime().exec(exe);
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            String strFolder = "", strRead;
+
+            while ((strRead = reader.readLine()) != null) {
+                if (strRead.endsWith(":")) {
+                    outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
+                    outputTx[outputTx.length - 1] = strRead;
+                    strFolder = strRead;
+                } else if (strRead.contains(searchWhat)) {
+                    outputTx[outputTx.length - 1] = outputTx[outputTx.length - 1] + strRead;
+                    outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
+                    outputTx[outputTx.length - 1] = strFolder;
+                }
+            }
+
+            reader.close();
+            process.waitFor();
+
+            String kind = "";
+            if (todo.contains(" "))
+                switch (todo.substring(0, todo.indexOf(" "))) {
+                    case ("mv"): {
+                        if (to.contains("TrashIndex"))
+                            kind = "delete toTrash";
+                        else if (from.contains("TrashIndex")) {
+                            kind = "delete "+to.substring(to.lastIndexOf("/"))+" fromTrash";
                         }
-                        fileBrowser.read_writeFileOnInternalStorage("write", "pathCollection", "PathList.txt", "");
-                        fileBrowser.changeIcon(headMenueIcon01[headMenueIcon01.length - 1], "sideLeftMenueIcons", "open", "closed");
+                        break;
+                    }
+                    case ("ls"): {
+                        transList = new ArrayList<>();
+                        String[] goout = new String[0];
+                        for (int o = 0; o < outputTx.length; o++)
+                            if (!outputTx[o].endsWith(":")) {
+                                goout = Arrays.copyOf(goout, goout.length + 1);
+                                goout[goout.length - 1] = outputTx[o];
+                                transList.add(outputTx[o].replace(":", "/"));
+                            }
+
+                        fileBrowser.messageStarter("FindResult", goout, 0);
+
                         return;
                     }
-
-                    if (from.contains("/"))
-                        if (from.substring(from.lastIndexOf("/") + 1).contains(" "))
-                            from = "'" + from + "'";
-
-
-                    exe = (todo + " " + from + " " + to).trim();
-                    Log.e("mainExtProgram", exe);
-                    process = Runtime.getRuntime().exec(exe);
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(process.getInputStream()));
-                    String strFolder = "", strRead;
-
-                    while ((strRead = reader.readLine()) != null) {
-                        if (strRead.endsWith(":")) {
-                            outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
-                            outputTx[outputTx.length - 1] = strRead;
-                            strFolder = strRead;
-                        } else if (strRead.contains(searchWhat)) {
-                            outputTx[outputTx.length - 1] = outputTx[outputTx.length - 1] + strRead;
-                            outputTx = Arrays.copyOf(outputTx, outputTx.length + 1);
-                            outputTx[outputTx.length - 1] = strFolder;
-                        }
-                    }
-
-                    reader.close();
-                    process.waitFor();
-
-                    if (twotimes) {
-                        exe = "rm -rf " + from;
-                        Log.e("secExtProgram", exe);
-                        process = Runtime.getRuntime().exec(exe);
-                        process.waitFor();
-
-                    }
-
-                    String kind = "";
-                    if (todo.contains(" "))
-                        switch (todo.substring(0, todo.indexOf(" "))) {
-                            case ("rm"): {
-                                kind = "delete";
-                                if (to.contains(".TrashIndex"))
-                                    kind = kind + "toTrash";
-                                if (from.contains(".TrashIndex")) {
-                                    kind = kind + "fromTrash";
-                                }
-                                break;
-                            }
-                            case ("cp"): {
-                                kind = "move";
-                                if (to.contains(".TrashIndex"))
-                                    kind = kind + "toTrash";
-                                if (from.contains(".TrashIndex")) {
-                                    kind = kind + "fromTrash";
-                                }
-                                break;
-                            }
-                            case ("ls"): {
-                                transList = new ArrayList<>();
-                                String[] goout = new String[0];
-                                for (int o = 0; o < outputTx.length; o++)
-                                    if (!outputTx[o].endsWith(":")) {
-                                        goout = Arrays.copyOf(goout, goout.length + 1);
-                                        goout[goout.length - 1] = outputTx[o];
-                                        transList.add(outputTx[o].replace(":", "/"));
-                                    }
-
-                                fileBrowser.messageStarter("FindResult", goout, 0);
-
-                                return;
-                            }
-                        }
-
-                    String[] mess = docu_Loader("Language/" + language + "/Successful_Action.txt");
-                    fileBrowser.messageStarter("successAction " + kind, mess, 5000);
-
-
-                } catch (Exception ie) {
-                    String[] mess = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt");
-                    mess = Arrays.copyOf(mess, mess.length + 1);
-                    mess[mess.length - 1] = ie.getMessage();
-                    fileBrowser.messageStarter("Instruction", mess, 5000);
-                    commandString = "";
                 }
 
-                fileBrowser.reloadFileBrowserDisplay();
+            String[] mess = docu_Loader("Language/" + language + "/Successful_Action.txt");
+            fileBrowser.messageStarter("successAction " + kind, mess, 5000);
+
+
+        } catch (Exception ie) {
+            String[] mess = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt");
+            mess = Arrays.copyOf(mess, mess.length + 1);
+            mess[mess.length - 1] = ie.getMessage();
+            fileBrowser.messageStarter("Instruction", mess, 5000);
+            commandString = "";
+        }
+
+        fileBrowser.reloadFileBrowserDisplay();
     }
 
     public void startMovePanel (int frame) {

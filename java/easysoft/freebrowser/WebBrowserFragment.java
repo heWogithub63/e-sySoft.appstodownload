@@ -7,26 +7,18 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-
 import android.os.Handler;
-import android.util.Log;
-import android.view.*;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 
 import static easysoft.freebrowser.FileBrowser.*;
 
@@ -35,7 +27,7 @@ public class WebBrowserFragment extends Fragment {
     View view;
     FrameLayout webLayout;
     WebView webView;
-    RelativeLayout mainRel, header;
+    RelativeLayout mainRel, header, review;
     LinearLayout steerLin;
     ImageView[] steerImgs;
     EditText https;
@@ -116,6 +108,29 @@ public class WebBrowserFragment extends Fragment {
 
             imm.hideSoftInputFromWindow(webView.getWindowToken(), 0);
 
+    }
+
+    private void createReview () {
+        RelativeLayout.LayoutParams reviewParam = new RelativeLayout.LayoutParams((int)(80*xfact), (int)(80*xfact));
+        reviewParam.addRule(RelativeLayout.CENTER_IN_PARENT);
+        review = new RelativeLayout(fileBrowser);
+        review.setLayoutParams(new RelativeLayout.LayoutParams((int)(100*xfact), (int)(100*xfact)));
+        review.setX((float)(displayWidth -120*xfact));
+        review.setY((float)(displayHeight -160*xfact));
+
+        ImageView reviewImg = new ImageView(fileBrowser);
+        reviewImg.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/review.png"));
+        reviewImg.setLayoutParams(reviewParam);
+        reviewImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                header.setY(displayHeight -displayHeight/11);
+                mainRel.removeView(review);
+            }
+        });
+        review.addView(reviewImg);
+
+        mainRel.addView(review);
     }
 
     public void handleJavascriptInput(String charIndex, int startpos, int stoppos) {
@@ -278,7 +293,8 @@ public class WebBrowserFragment extends Fragment {
                     fileBrowser.startMovePanel(8);
 
                 } else if (previousY < newY) {
-                    header.setY(displayHeight - displayHeight / 22);
+                    header.setY(displayHeight);
+                    createReview();
                 } else if (previousY > newY) {
                     header.setY(displayHeight - displayHeight / 11);
                 }
