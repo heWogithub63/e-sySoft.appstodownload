@@ -223,6 +223,8 @@ public class emailDisplayFragment extends Fragment {
                                 memoryList[n] = s0;
                                 if (n == 2)
                                     memoryList[n] = s0.replace("'", "");
+                                if(fold.startsWith("Mail") && n == 1)
+                                    add = s0;
                             } else {
                                 coll = coll + s0 + "\n";
                             }
@@ -501,16 +503,17 @@ public class emailDisplayFragment extends Fragment {
                     headerEdit[headerEdit.length - 1].setText(emailAddress);
                 headerEdit[headerEdit.length - 1].setTag(i + "");
                 headerEdit[headerEdit.length - 1].setShowSoftInputOnFocus(false);
-                headerEdit[headerEdit.length - 1].setOnClickListener(new View.OnClickListener() {
+                headerEdit[headerEdit.length - 1].setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
-                    public void onClick(View v) {
-                        int i = Integer.parseInt(v.getTag().toString());
-                        memoryList[i] = "";
-                        if (i == 2 && memoryList[i - 1].contains("@"))
-                            saveAddressant(memoryList[i - 1]);
-
-                        ((EditText) v).setText("");
-                        fileBrowser.keyboardTrans = ((EditText) v);
+                    public void onFocusChange(View view, boolean b) {
+                        int i = Integer.parseInt(view.getTag().toString());
+                        if(!b) {
+                            memoryList[i] = headerEdit[i].getText().toString();
+                            if (i == 1 && memoryList[i].contains("@")) {
+                                saveAddressant(memoryList[1]);
+                            }
+                        }
+                        fileBrowser.keyboardTrans = ((EditText) view);
                         int fact = displayHeight / 18,
                                 fact01 = displayHeight / 18;
                         if (yfact < 0.625) {
@@ -523,8 +526,10 @@ public class emailDisplayFragment extends Fragment {
                         if (fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
                             fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6, "softKeyBoard", null, 5, (int) (2 * displayHeight / 3 - fact),
                                     displayWidth - 10, (int) (displayHeight / 3) + fact01);
+
                     }
                 });
+
                 if (i == 0 && (mailAccountData != null && mailAccountData.length > 0))
                     headerEdit[headerEdit.length - 1].setText(mailAccountData[6].substring(mailAccountData[6].indexOf(": ") + 2).trim());
 
