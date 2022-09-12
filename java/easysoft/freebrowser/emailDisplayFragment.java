@@ -198,74 +198,74 @@ public class emailDisplayFragment extends Fragment {
                 folderNames[folderNames.length - 1].setTag(s0 + "_closed");
                 folderNames[folderNames.length - 1].setTextColor(getResources().getColor(R.color.black));
                 if(!folderName.equals("Gesendete Mails") && !folderName.equals("Sent Mails"))
-                 folderNames[folderNames.length - 1].setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        String add = "";
-                        String tag = v.getTag().toString().replace("_closed", "").replace("_open", "");
-                        String fold = folderName.replace(" ", "");
-                        String[] trans = fileBrowser.read_writeFileOnInternalStorage("read", fold, tag, "");
-                        if (trans.length > 0)
-                            trans = Arrays.copyOfRange(trans, 1, trans.length);
-                        praefix = fileBrowser.docu_Loader("Language/" + language + "/MailHeadLines.txt");
+                    folderNames[folderNames.length - 1].setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            String add = "";
+                            String tag = v.getTag().toString().replace("_closed", "").replace("_open", "");
+                            String fold = folderName.replace(" ", "");
+                            String[] trans = fileBrowser.read_writeFileOnInternalStorage("read", fold, tag, "");
+                            if (trans.length > 0)
+                                trans = Arrays.copyOfRange(trans, 1, trans.length);
+                            praefix = fileBrowser.docu_Loader("Language/" + language + "/MailHeadLines.txt");
 
-                        memoryList = new String[4];
-                        createMail = false;
-                        String coll = "";
-                        int n = 0;
+                            memoryList = new String[4];
+                            createMail = false;
+                            String coll = "";
+                            int n = 0;
 
-                        for (String s0 : trans) {
-                            if (n < 3) {
-                                if (!fold.startsWith("In")) {
-                                    s0 = praefix[n] + " " + s0;
+                            for (String s0 : trans) {
+                                if (n < 3) {
+                                    if (!fold.startsWith("In")) {
+                                        s0 = praefix[n] + " " + s0;
+                                        coll = coll + s0 + "\n";
+                                    }
+                                    memoryList[n] = s0;
+                                    if (n == 2)
+                                        memoryList[n] = s0.replace("'", "");
+                                    if(fold.startsWith("Mail") && n == 1)
+                                        add = s0;
+                                } else {
                                     coll = coll + s0 + "\n";
                                 }
-                                memoryList[n] = s0;
-                                if (n == 2)
-                                    memoryList[n] = s0.replace("'", "");
-                                if(fold.startsWith("Mail") && n == 1)
-                                    add = s0;
-                            } else {
-                                coll = coll + s0 + "\n";
+
+                                n++;
                             }
+                            memoryList[3] = coll;
 
-                            n++;
-                        }
-                        memoryList[3] = coll;
-
-                        if (folderName.startsWith("In")) {
-                            posIcon = "New_closed.png";
-                            createMail = true;
-                            if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                                arrayList = new ArrayList<>();
-                                fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                fileBrowser.changeIcon(icons[0], "mailIcons", "open", "closed");
-                            }
-                        }
-
-                        if (folderName.startsWith("Mail")) {
-                            attachedList = new ArrayList<>();
-                            String folder = folderName.replace(" ", "").trim();
-                            String t = "";
-;                            String[] tmp = new File("/storage/self/primary/tmp/" + folder).list();
-                            if(tag.contains("."))
-                                t = tag.substring(0,tag.lastIndexOf("."));
-                            for (String s : tmp) {
-                                if (s.contains(t + "_AttachedFile")) {
-                                    attachedList.add(new String[]{"/storage/self/primary/tmp/" +
-                                            folder + "/" + s, s.substring(1)});
-                                    mailAttached = true;
+                            if (folderName.startsWith("In")) {
+                                posIcon = "New_closed.png";
+                                createMail = true;
+                                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                                    arrayList = new ArrayList<>();
+                                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                    fileBrowser.changeIcon(icons[0], "mailIcons", "open", "closed");
                                 }
                             }
-                        }
 
-                        saveAddressant(add);
-                        createNewDisplay();
-                        if (!folderName.contains("In"))
-                            createMailBack();
-                        return true;
-                    }
-                });
+                            if (folderName.startsWith("Mail")) {
+                                attachedList = new ArrayList<>();
+                                String folder = folderName.replace(" ", "").trim();
+                                String t = "";
+                                ;                            String[] tmp = new File("/storage/self/primary/tmp/" + folder).list();
+                                if(tag.contains("."))
+                                    t = tag.substring(0,tag.lastIndexOf("."));
+                                for (String s : tmp) {
+                                    if (s.contains(t + "_AttachedFile")) {
+                                        attachedList.add(new String[]{"/storage/self/primary/tmp/" +
+                                                folder + "/" + s, s.substring(1)});
+                                        mailAttached = true;
+                                    }
+                                }
+                            }
+
+                            saveAddressant(add);
+                            createNewDisplay();
+                            if (!folderName.contains("In"))
+                                createMailBack();
+                            return true;
+                        }
+                    });
                 folderNames[folderNames.length - 1].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -1183,7 +1183,8 @@ public class emailDisplayFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length - 3], "Send");
             fileBrowser.blink.start();
-            String host_out = "", used_from = "", to = "", port = "", password = "";
+            String host_out = "", used_from = "", port = "", password = "";
+
             if (nn > 0) {
                 String[] copyData = new String[0];
                 boolean start_stop = false;
@@ -1218,46 +1219,59 @@ public class emailDisplayFragment extends Fragment {
                         }
                     }
                 }
+
+                String[] recipients;
+                if(memoryList[1].contains(","))
+                    recipients = memoryList[1].split(",");
+                else recipients = new String[] {memoryList[1]};
+
                 try {
-                    send(port, used_from, password, host_out, memoryList[1], memoryList[2], memoryList[3]);
-                    fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/mailSent.txt"), 5000);
+                    send("TLS", port, used_from, password, host_out, recipients, memoryList[2], memoryList[3]);
+
+                    String sendTime = new SimpleDateFormat("dd_MM_yyyy_hhmmss").format(new Date());
+                    String subj = memoryList[2],
+                            to = memoryList[1];
+                    if(subj.length() > 60)
+                        subj = subj.substring(0,60);
+                    subj = "' " +subj+ " '";
+
+                    String folder = "SentMails", ges = "Sent at -> "+sendTime+ "\n" +to+ "\n" +subj;
+                    if (language.equals("Deutsch")) {
+                        folder = "GesendeteMails";
+                        ges = "Gesendet am -> " +sendTime+ "\n" +to+ "\n" +subj;
+                    }
+
+                    File arrTimer = new File(fileBrowser.context.getFilesDir() + "/" + folder, sendTime + ".txt");
+                    if (!arrTimer.isFile())
+                        fileBrowser.read_writeFileOnInternalStorage("write", folder, sendTime + ".txt", ges);
 
                 } catch (Exception e) {
-                    String msg = new RuntimeException(e).toString();
-                    String[] ms = msg.split("\n");
-                    fileBrowser.messageStarter("mailSendRequest", ms, 8000);
+                    String[] msg = new String[] {new RuntimeException(e).toString()};
+                        try {
+                            send("SSL", port, used_from, password, host_out, recipients, memoryList[2], memoryList[3]);
+                        } catch (Exception ee) {
+                            msg = new String[] {new RuntimeException(ee).toString()};
+                        }
+                    fileBrowser.messageStarter("mailSendRequest", msg, 8000);
                 }
-
-                String sendTime = new SimpleDateFormat("dd_MM_yyyy_hhmmss").format(new Date());
-                String subj = memoryList[2];
-                if(subj.length() > 60)
-                    subj = subj.substring(0,60);
-                subj = "' " +subj+ " '";
-
-                String folder = "SentMails", ges = "Sended at -> "+sendTime+"\n"+subj;
-                if (language.equals("Deutsch")) {
-                    folder = "GesendeteMails";
-                    ges = "Gesendet am -> " +sendTime+ "\n" +subj;
-                }
-
-                File arrTimer = new File(fileBrowser.context.getFilesDir() + "/" + folder, sendTime + ".txt");
-                if (!arrTimer.isFile())
-                    fileBrowser.read_writeFileOnInternalStorage("write", folder, sendTime + ".txt", ges);
 
             }
             return null;
         }
-        public void send (String d_port, String from, String password, String out, String to, String sub, String msg) throws Exception  {
+        public void send (String protocol, String d_port, String from, String password, String out, String[] to, String sub, String msg) throws Exception  {
             //Get properties object
             Properties props = new Properties();
-            props.put("mail.smtp.starttls.enable","true");
-            props.put("mail.smtp.auth", "true");  // If you need to authenticate
+            if(protocol.equals("TLS")) {
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.auth", "true");  // If you need to authenticate
+            } else if(protocol.equals("SSL")) {
+               props.put("mail.smtp.socketFactory.port", d_port);
+               props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+               props.put("mail.smtp.socketFactory.fallback", "false");
+            }
             props.put("mail.smtp.port", d_port);
             props.put("mail.smtp.host", out);
-            /*case SSL
-            props.put("mail.smtp.socketFactory.port", d_port);
-            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            props.put("mail.smtp.socketFactory.fallback", "false");*/
+
             //get Session
             Session session = Session.getDefaultInstance(props,
                     new javax.mail.Authenticator() {
@@ -1265,38 +1279,44 @@ public class emailDisplayFragment extends Fragment {
                             return new PasswordAuthentication(from, password);
                         }
                     });
+
             //compose message
-                MimeMessage message = new MimeMessage(session);
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-                message.setFrom(new InternetAddress(from));
-                message.setSubject(sub);
-                //message.setText(msg);
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from));
+            message.setSubject(sub);
 
-                BodyPart messageBodyPart1 = new MimeBodyPart();
-                messageBodyPart1.setText(msg);
+            //message.setText(msg);
 
-                Multipart multipart = new MimeMultipart();
-                multipart.addBodyPart(messageBodyPart1);
+            BodyPart messageBodyPart1 = new MimeBodyPart();
+            messageBodyPart1.setText(msg);
 
-                MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(messageBodyPart1);
 
-                for (int i = 0; i < attachedList.size(); i++) {
-                    mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
-                    mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
+            MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
+            if(attachedList != null)
+            for (int i = 0; i < attachedList.size(); i++) {
+                mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
+                mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
 
-                    String filename = attachedList.get(i)[1];
-                    DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
-                    mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
-                    mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
+                String filename = attachedList.get(i)[1];
+                DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
+                mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
+                mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
 
-                    multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
-                }
+                multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
+            }
 
-                message.setContent(multipart);
+            message.setContent(multipart);
+            String[] msg1 = docu_Loader("Language/" + language + "/mailIsSending.txt");
 
-                //send message
+            for(int i=0;i<to.length;i++) {
+                message.setRecipient(Message.RecipientType.TO, new InternetAddress(to[i].trim()));
                 Transport.send(message);
-
+                String[] msg_1 = new String[]{msg1[0], "' "+to[i].trim()+" '", msg1[1]};
+                fileBrowser.messageStarter("mailSendRequest", msg_1, 5000);
+            }
+            fileBrowser.messageStarter("mailSendRequest", docu_Loader("Language/" + language + "/MailSent.txt"), 5000);
         }
 
 
@@ -1341,7 +1361,6 @@ public class emailDisplayFragment extends Fragment {
                     }
                 }
 
-                Folder inbox;
                 Properties properties = new Properties();
 
                 // server setting
@@ -1530,12 +1549,12 @@ public class emailDisplayFragment extends Fragment {
             StringBuffer sb = new StringBuffer();
             BufferedReader br;
 
-                br = new BufferedReader(new InputStreamReader(in));
-                String strRead;
-                while ((strRead = br.readLine()) != null) {
-                    sb.append(strRead + "\n");
-                }
-                br.close();
+            br = new BufferedReader(new InputStreamReader(in));
+            String strRead;
+            while ((strRead = br.readLine()) != null) {
+                sb.append(strRead + "\n");
+            }
+            br.close();
 
             return sb;
         }
