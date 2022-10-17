@@ -447,12 +447,13 @@ public class TextEditorFragment extends Fragment {
                                         else
                                             trans.append(accountAddrData[i] + "\n");
                                     }
+
                                     mainTx = trans.toString();
                                     mainLin.removeView(textRel);
-                                    refreshToFillIn();
-                                    createTextEditorDisplay(mainLin);
+                                    //refreshToFillIn();
+                                    //createTextEditorDisplay(mainLin);
 
-                                    fileBrowser.messageStarter("Instruction_EditorAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"), 8000);
+                                    fileBrowser.messageStarter("Instruction_EditorAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"), 5000);
                                 } else {
                                     String trans = "";
                                     for (int i=0; i< accountAddrData.length; i++) {

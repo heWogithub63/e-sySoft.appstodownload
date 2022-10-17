@@ -608,10 +608,15 @@ public class showMessageFragment extends Fragment {
                 if(yfact >= 0.8) {
                     fact01 = displayHeight/12;
                 }
+
+
                 final int fac = fact01, fa = fact;
                 fileBrowser.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        if(fileBrowser.createTxEditor != null  && fileBrowser.createTxEditor.isVisible() && fileBrowser.createTxEditor.action.equals("info"))
+                            fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+
                         TxEditor.requestFocus();
                         if (TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
                             TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") + 2);
