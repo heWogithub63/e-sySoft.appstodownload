@@ -145,7 +145,7 @@ public class WebBrowserFragment extends Fragment {
             }
         });
 
-        if(actionIdChanged) {
+        /*if(actionIdChanged) {
             Handler handler = new Handler(fileBrowser.getMainLooper());
             handler.postDelayed(new Runnable() {
                 @Override
@@ -155,7 +155,7 @@ public class WebBrowserFragment extends Fragment {
                 }
 
             }, 250);
-        }
+        }*/
         actionIdChanged = false;
     }
 
@@ -480,7 +480,7 @@ public class WebBrowserFragment extends Fragment {
 
         public void initWebSetting(WebView webView) {
             WebSettings setting = this.getSettings();
-            setting.setJavaScriptEnabled(true);
+
             setting.setAllowFileAccess(true);
             setting.setAllowFileAccessFromFileURLs(true);
             setting.setAllowUniversalAccessFromFileURLs(true);
@@ -497,6 +497,8 @@ public class WebBrowserFragment extends Fragment {
             setting.setBuiltInZoomControls(true);
             setting.setSupportZoom(true);
             setting.setDisplayZoomControls(false);
+            setting.setJavaScriptCanOpenWindowsAutomatically(true);
+            setting.setPluginState(WebSettings.PluginState.ON);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 setting.setAllowFileAccessFromFileURLs(true);

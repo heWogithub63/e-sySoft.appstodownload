@@ -1,17 +1,15 @@
 package easysoft.freebrowser;
 
-import android.graphics.Canvas;
-import android.graphics.Rect;
+import android.app.Fragment;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.*;
-import android.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -37,6 +35,7 @@ public class MediaDisplayFragment extends Fragment {
     RelativeLayout.LayoutParams videoRel;
     MediaPlayer mP;
     boolean disrupt = false;
+    float videoViewPosX, videoViewPosY, videoViewWidth, videoViewHeight;
 
     public MediaDisplayFragment() {
     }
@@ -394,8 +393,9 @@ public class MediaDisplayFragment extends Fragment {
                 mP = null;
             } catch (java.lang.IllegalStateException ie) {}
         }
-        if (runningMediaList != null && runningMediaList.size() > 0)
+        if (runningMediaList != null && runningMediaList.size() > 0) {
             runningMediaList = null;
+        }
     }
 
     class rundomTimer extends Thread {

@@ -1,16 +1,16 @@
 package easysoft.freebrowser;
 
+import android.annotation.SuppressLint;
+import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
-import android.annotation.SuppressLint;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-
 
 import static easysoft.freebrowser.FileBrowser.*;
 
@@ -195,7 +195,7 @@ public class fileBrowser_01Fragment extends Fragment {
                     folderTx.setText(paramList.get(ln)[i]);
                     folderTx.setTextSize((float) (textSize));
                     folderTx.setBackgroundColor(getResources().getColor(R.color.white_overlay));
-                    folderTx.setTextColor(getResources().getColor(R.color.black));
+                    folderTx.setTextColor(getResources().getColor(R.color.white));
 
                     if (select) {
                         folderTx.setTextColor(getResources().getColor(R.color.green));

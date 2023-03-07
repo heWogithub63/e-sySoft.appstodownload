@@ -1496,18 +1496,19 @@ public class FileBrowser extends Activity  {
     public void startExtApp(String Url) {
         if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
             fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-
         progrIntent = new Intent(Intent.ACTION_VIEW);
         String form = "";
         if(Url.substring(Url.length() -6).contains(".")) {
             form = Url.substring(Url.lastIndexOf("."));
             if(Url.startsWith("mailto"))
                 form = "mailto";
-        } else if(!(Url.startsWith("http") || Url.startsWith("https"))) {
+        } else if(!Url.startsWith("http")) {
             form = "*";
-        } else if(Url.startsWith("http") || Url.startsWith("https")){
+        } else if(Url.startsWith("http")){
             if(Url.contains("protonmail"))
                 form = "protonmail";
+            else
+                form = "http";
         }
 
         if(form.contains(" "))
@@ -1519,6 +1520,12 @@ public class FileBrowser extends Activity  {
             case (".docx"): case (".odt"): case (".ott"): {
                 progrIntent.setDataAndType(Uri.parse(Url), "application/" +form);
                 break;
+            }
+            case ("http"): {
+                progrIntent = new Intent(Intent.ACTION_VIEW);
+                progrIntent.setData(Uri.parse(Url));
+                fileBrowser.startActivity(progrIntent);
+                return;
             }
             case (".html"): {
 

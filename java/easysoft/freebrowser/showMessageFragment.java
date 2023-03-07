@@ -57,8 +57,8 @@ public class showMessageFragment extends Fragment {
             if(kindOf.equals("httpsRequest"))
                 steerPanel = new String[0];
         }
-        txColor = getResources().getColor(R.color.white);
-        backgrColor = getResources().getColor(R.color.black_overlay);
+        txColor = getResources().getColor(R.color.black);
+        backgrColor = getResources().getColor(R.color.white);
 
         messageLayout = fileBrowser.frameLy.get(0);
     }

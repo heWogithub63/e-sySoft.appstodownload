@@ -4,6 +4,8 @@ package easysoft.freebrowser;
 import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -635,13 +637,13 @@ public class emailDisplayFragment extends Fragment {
         mailTx.setTextSize(textSize + 3);
         mailTxLin.addView(mailTx);
 
-        if (folderName.startsWith("Mail") && memoryList[3].contains("Attached Link")) {
+        if (folderName.startsWith("Mail") && (memoryList[3].contains("Attached Link") || memoryList[3].contains("http"))) {
 
             String MyAtt = "", myMemo = "";
             String[] memo = memoryList[3].split("\n");
 
             for (String s : memo)
-                if (!s.contains("Attached Link")) {
+                if (!s.contains("Attached Link") && !s.contains("http")) {
                     myMemo = myMemo + s + "\n";
                 } else
                     MyAtt = s.replace("null", "");
@@ -649,27 +651,39 @@ public class emailDisplayFragment extends Fragment {
             mailTx.setText(myMemo);
 
             TextView mailTxLink = new TextView(fileBrowser);
-            mailTxLink.setTextColor(getResources().getColor(R.color.blue_overlay));
+            mailTxLink.setTextColor(getResources().getColor(R.color.blue));
             mailTxLink.setTextSize(textSize + 3);
-            mailTxLink.setText(MyAtt);
-            mailTxLink.setTag("storage/self/primary/tmp/" + folderName.replace(" ", "") + " _ " + MyAtt.substring(MyAtt.indexOf("--> ") + 4));
-            mailTxLink.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
 
-                    String folder = view.getTag().toString().substring(0, view.getTag().toString().indexOf(" _ ")).trim(),
-                            file = view.getTag().toString().substring(view.getTag().toString().indexOf(" _ ") + 3).trim();
+            if(MyAtt.contains("http")) {
+                mailTxLink.setTag(MyAtt);
+                SpannableString content = new SpannableString(MyAtt);
+                content.setSpan(new UnderlineSpan(), 0, MyAtt.length(), 0);
+                mailTxLink.setText(content);
+            } else {
+                mailTxLink.setTag("storage/self/primary/tmp/" + folderName.replace(" ", "") + " _ " + MyAtt.substring(MyAtt.indexOf("--> ") + 4));
+                mailTxLink.setText(MyAtt);
+            }
 
-                    if (file.endsWith(".html")) {
-                        if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                            fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                        calledFrom = "email";
-                        fileBrowser.startExtApp("file:///" + folder + "/" + file);
-                    }
+          mailTxLink.setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View view) {
+                  String folder = "",
+                          file = "";
 
-                    return true;
-                }
-            });
+                  if (view.getTag().toString().endsWith(".html")) {
+                      folder = view.getTag().toString().substring(0, view.getTag().toString().indexOf(" _ ")).trim();
+                      file = view.getTag().toString().substring(view.getTag().toString().indexOf(" _ ") + 3).trim();
+                      if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                          fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                      calledFrom = "email";
+                      fileBrowser.startExtApp("file:///" + folder + "/" + file);
+                  } else if(view.getTag().toString().contains("http")) {
+                      file = view.getTag().toString();
+                      fileBrowser.startExtApp(file);
+                  }
+
+              }
+          });
 
             mailTxLin.addView(mailTxLink);
 
