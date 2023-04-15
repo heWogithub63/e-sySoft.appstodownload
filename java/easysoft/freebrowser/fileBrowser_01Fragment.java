@@ -273,8 +273,10 @@ public class fileBrowser_01Fragment extends Fragment {
                     if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
                         fileBrowser.runningMediaList = null;
 
-                    if(fileBrowser.showMediaDisplay.videoView.isPlaying())
+                    if(fileBrowser.showMediaDisplay.videoView.isPlaying()) {
                         fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                        fileBrowser.showMediaDisplay.mP.release();
+                    }
 
                     fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
 

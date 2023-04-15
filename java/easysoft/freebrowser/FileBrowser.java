@@ -121,7 +121,6 @@ public class FileBrowser extends Activity  {
         setContentView(R.layout.file_browser);
         fileBrowser = this;
         context = this;
-
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         try {
             ProviderInstaller.installIfNeeded(context);

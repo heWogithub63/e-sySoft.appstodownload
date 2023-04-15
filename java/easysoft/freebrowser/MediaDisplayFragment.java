@@ -1,5 +1,6 @@
 package easysoft.freebrowser;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -13,19 +14,21 @@ import android.widget.*;
 import java.util.Arrays;
 import java.util.Random;
 
+import static android.view.MotionEvent.ACTION_UP;
 import static easysoft.freebrowser.FileBrowser.*;
 
 
 public class MediaDisplayFragment extends Fragment {
     rundomTimer imgTimer;
+    videoRunTime videoRunTimer;
     static ImageView[] contrButtons;
     static ImageView imgDisplay;
     static TextView titel;
     String kindOfMedia = "";
     String mediaURL = "";
-    float previousX;
+    float previousX, pointer;
     double scaleFact = 1;
-    int arrayPointer = 0;
+    int arrayPointer = 0, hours, minutes, seconds, smseconds;
     String tag = "";
 
     View view;
@@ -33,9 +36,13 @@ public class MediaDisplayFragment extends Fragment {
     VideoView videoView;
     RelativeLayout mainRel;
     RelativeLayout.LayoutParams videoRel;
+    LinearLayout contrLin;
     MediaPlayer mP;
+    ImageView[] runImgs;
+    TextView duration;
+    boolean videoPause = false;
+
     boolean disrupt = false;
-    float videoViewPosX, videoViewPosY, videoViewWidth, videoViewHeight;
 
     public MediaDisplayFragment() {
     }
@@ -73,20 +80,25 @@ public class MediaDisplayFragment extends Fragment {
         videoRel = new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth(),
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         videoRel.addRule(RelativeLayout.CENTER_IN_PARENT);
+
         videoView = (VideoView) view.findViewById(R.id.videoView);
         videoView.setLayoutParams(videoRel);
+
 
         //MediaController
         MediaController mediaController = new MediaController(fileBrowser.context);
         mediaController.setVisibility(View.generateViewId());
-        mediaController.setAnchorView(videoView);
+        mediaController.setAnchorView(view);
+
         // Init Video
         videoView.setMediaController(mediaController);
 
         if(kindOfMedia.equals("PICTURES")) {
+            RelativeLayout.LayoutParams imgRelParam = new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth() -100,mediaDisplayLayout.getHeight()));
+            imgRelParam.addRule(RelativeLayout.CENTER_IN_PARENT);
             imgDisplay = new ImageView(fileBrowser);
-            imgDisplay.setLayoutParams(new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth() -100,mediaDisplayLayout.getHeight()));
-            imgDisplay.setX(40);
+            imgDisplay.setLayoutParams(imgRelParam);
+
             mainRel.addView(imgDisplay);
 
             if (runningMediaList != null && runningMediaList.size() > 0) {
@@ -105,6 +117,50 @@ public class MediaDisplayFragment extends Fragment {
                 videoRel.setLayoutParams(new RelativeLayout.LayoutParams(3 * mediaDisplayLayout.getWidth() / 5, mediaDisplayLayout.getHeight()));
                 videoRel.setX(2*mediaDisplayLayout.getWidth() / 5);
 
+            } else {
+                videoView.setOnTouchListener(new View.OnTouchListener() {
+                    float x, y, preX, preY;
+                    int pC;
+                    @SuppressLint("ClickableViewAccessibility")
+                    @Override
+                    public boolean onTouch(View view, MotionEvent me) {
+                        pC = me.getPointerCount();
+
+                        switch (me.getAction()) {
+                            case (MotionEvent.ACTION_DOWN): {
+
+                                    x = me.getX();
+                                    y = me.getY();
+
+                            }
+                            case (MotionEvent.ACTION_MOVE): {
+
+                                if(pC == 1) {
+                                    //videoView.setY(view.getY() + (me.getY() - y));
+                                    videoView.setX(view.getX() + (me.getX() - x));
+                                    break;
+                                } else if(pC == 2 && ((videoView.getHeight()*scaleFact) <= displayHeight) && scaleFact >= 1)  {
+                                    scaleFact = scaleFact +(-(me.getY() - y) *0.001);
+                                    if((videoView.getHeight()*scaleFact) >= displayHeight && me.getY() < y)
+                                        scaleFact = scaleFact +((me.getY() - y) *0.001);
+                                    if(scaleFact <= 1 && me.getY() > y)
+                                        scaleFact = scaleFact +((me.getY() - y) *0.001);
+                                    videoView.setScaleX((float) scaleFact);
+                                    videoView.setScaleY((float) scaleFact);
+                                    break;
+                                }
+                            }
+                            case (ACTION_UP): {
+                                try {
+                                    Thread.sleep(250);
+                                } catch (InterruptedException ie) {}
+                                break;
+                            }
+                        }
+
+                        return true;
+                    }
+                });
             }
             if (runningMediaList != null && runningMediaList.size() > 0) {
                 mediaURL = runningMediaList.get(0);
@@ -157,15 +213,21 @@ public class MediaDisplayFragment extends Fragment {
     public void createMediaPlay(String url)  {
 
         //Uri url1 = Uri.parse(fileBrowser.uriFromFile(fileBrowser,new File(url)).toString());
+        mediaURL = url;
+
         Uri url1 = Uri.parse(url);
         videoView.setVideoURI(url1);
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                if(kindOfMedia.equals("VIDEO")) {
+                    mainRel.addView(createVideoController(mp.getDuration()/1000));
+                }
+
                 mp.setScreenOnWhilePlaying(true);
                 mP = mp;
-                videoView.start();
+                mP.start();
             }
         });
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -173,8 +235,9 @@ public class MediaDisplayFragment extends Fragment {
             public void onCompletion(MediaPlayer mp) {
                 mp.setScreenOnWhilePlaying(true);
 
-                if(fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
+                if(fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
                     runmediaList();
+                }
             }
         });
 
@@ -343,30 +406,36 @@ public class MediaDisplayFragment extends Fragment {
     public LinearLayout createScaleButtons() {
 
         LinearLayout scaleLin = new LinearLayout(fileBrowser);
-        scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(3*displayHeight/9, displayHeight/26));
+        scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
         scaleLin.setOrientation(LinearLayout.HORIZONTAL);
         scaleLin.setPadding(10,10,10,10);
         scaleLin.setX(displayWidth/2);
+        scaleLin.setY(20);
 
-        String[] scaleTx = new String[]{"minus", "lupe", "plus"};
+        String[] scaleTx = new String[]{"lupe"};
+        if(kindOfMedia.equals("PICTURES")) scaleTx = new String[]{"minus","lupe","plus"};
+
         ImageView[] scaleImg = new ImageView[scaleTx.length];
         for(int i=0;i<scaleTx.length;i++) {
             scaleImg[i] = new ImageView(fileBrowser);
             scaleImg[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+scaleTx[i]+".png"));
             scaleImg[i].setTag(scaleTx[i]);
-
-            if(scaleTx.equals("lupe"))
-                scaleImg[i].setEnabled(false);
+            scaleImg[i].setLayoutParams(new RelativeLayout.LayoutParams((int)(xfact*displayWidth/16),(int)(xfact*displayWidth/16)));
 
             scaleImg[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     String tag = view.getTag().toString();
 
-                    if(tag.equals("minus"))
+                    if(tag.equals("minus") && scaleFact > 1)
                         scaleFact = scaleFact -0.1;
-                    else
+                    else if(tag.equals("plus"))
                         scaleFact = scaleFact +0.1;
+                    else if(tag.equals("lupe")) {
+                        scaleFact = 1;
+                        videoView.setX(10);
+                        videoView.setY(displayHeight/2 - videoView.getHeight()/2);
+                    }
 
                     if(kindOfMedia.equals("VIDEO")) {
                         videoView.setScaleX((float) scaleFact);
@@ -381,6 +450,128 @@ public class MediaDisplayFragment extends Fragment {
             scaleLin.addView(scaleImg[i]);
         }
         return scaleLin;
+    }
+
+    private LinearLayout createVideoController(int videoLength) {
+
+        if(contrLin != null)
+            mainRel.removeView(contrLin);
+
+        hours = videoLength /3600;
+        minutes = (videoLength /60) -(hours *60);
+        seconds = videoLength - (hours *3600) -(minutes *60);
+        String formatted = String.format("%d:%02d:%02d",hours,minutes,seconds);
+
+        RelativeLayout.LayoutParams contrLinParam = new RelativeLayout.LayoutParams(displayWidth, displayHeight/14);
+        contrLinParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        contrLin = new LinearLayout(fileBrowser);
+        contrLin.setLayoutParams(contrLinParam);
+        contrLin.setOrientation(LinearLayout.VERTICAL);
+        contrLin.setY(mediaDisplayLayout.getHeight() -displayHeight/10);
+        //contrLin.setBackgroundColor(getResources().getColor(R.color.white));
+
+        LinearLayout contrLinButtons = new LinearLayout(fileBrowser);
+        contrLinButtons.setOrientation(LinearLayout.HORIZONTAL);
+        contrLinButtons.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth, displayHeight/16));
+        //contrLinButtons.setBackgroundColor(getResources().getColor(R.color.white));
+
+        String[] contrButtons = new String[]{"playBack", "runForeward", "playForeward"};
+        ImageView[] contrImgs = new ImageView[0];
+
+        for(int i=0;i<contrButtons.length;i++) {
+            contrImgs = Arrays.copyOf(contrImgs, contrImgs.length +1);
+            contrImgs[contrImgs.length -1] = new ImageView(fileBrowser);
+            contrImgs[contrImgs.length -1].setPadding(25,5,25,5);
+            contrImgs[contrImgs.length -1].setTag(contrButtons[i]);
+            contrImgs[contrImgs.length -1].setLayoutParams(new RelativeLayout.LayoutParams(displayHeight/20,displayHeight/20));
+            contrImgs[contrImgs.length -1].setImageBitmap(fileBrowser.bitmapLoader("Icons/videoContrIcons/"+contrButtons[i]+".png"));
+            contrImgs[contrImgs.length -1].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String tag = view.getTag().toString();
+                    switch(tag) {
+                        case ("playBack"): {
+
+                            if(videoRunTimer.isAlive()) {
+                                videoView.seekTo(0);
+                                runImgs[1].setX(0);
+                                smseconds = hours * 60 + minutes * 60 + seconds;
+                            } else {
+                                createMediaPlay(mediaURL);
+                            }
+
+                            break;
+                        }
+                        case ("runForeward"): {
+                            view.setTag("playStop");
+                            ((ImageView)view).setImageBitmap(fileBrowser.bitmapLoader("Icons/videoContrIcons/"+view.getTag().toString()+".png"));
+                            videoView.pause();
+                            videoPause = true;
+                            break;
+                        }
+                        case ("playStop"): {
+                            view.setTag("runForeward");
+                            ((ImageView)view).setImageBitmap(fileBrowser.bitmapLoader("Icons/videoContrIcons/"+view.getTag().toString()+".png"));
+                            videoView.start();
+                            videoPause = false;
+                            break;
+                        }
+                        case ("playForeward"): {
+                            if(videoRunTimer.isAlive() && smseconds > 10) {
+                                int sec = hours*60 + minutes*60 +seconds, runtime = 0;
+
+                                runtime = (sec -(smseconds - 10)) *1000;
+                                videoView.seekTo(runtime);
+                                runImgs[1].setX(runImgs[1].getX() + (5*pointer));
+                                smseconds = smseconds - 10;
+
+                            }
+                            break;
+                        }
+                    }
+                }
+            });
+            contrLinButtons.addView(contrImgs[contrImgs.length -1]);
+        }
+
+        RelativeLayout contrRunRel = new RelativeLayout(fileBrowser);
+        contrRunRel.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/2, displayHeight/14));
+
+        runImgs = new ImageView[0];
+        String[] runLine = new String[]{"laufLeiste","playZeiger"};
+
+        for(int i=0;i<runLine.length;i++) {
+            runImgs = Arrays.copyOf(runImgs, runImgs.length + 1);
+            runImgs[runImgs.length - 1] = new ImageView(fileBrowser);
+            runImgs[runImgs.length - 1].setPadding(25, 5, 25, 5);
+            runImgs[runImgs.length - 1].setTag(runLine[i]);
+            if (i == 0) {
+                runImgs[runImgs.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(6*displayWidth/7, displayHeight / 20));
+            } else
+                runImgs[runImgs.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(displayHeight / 20, displayHeight / 20));
+
+            runImgs[runImgs.length - 1].setImageBitmap(fileBrowser.bitmapLoader("Icons/videoContrIcons/" + runLine[i] + ".png"));
+            contrRunRel.addView(runImgs[runImgs.length - 1]);
+        }
+        contrLinButtons.addView(contrRunRel);
+
+        LinearLayout durationTXLin = new LinearLayout(fileBrowser);
+        durationTXLin.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 5, displayHeight / 20));
+        durationTXLin.setOrientation(LinearLayout.HORIZONTAL);
+
+        duration = new TextView(fileBrowser);
+        duration.setText(formatted);
+        duration.setTextColor(getResources().getColor(R.color.white));
+        duration.setTextSize(textSize);
+
+        durationTXLin.addView(duration);
+        contrLinButtons.addView(durationTXLin);
+
+        contrLin.addView(contrLinButtons);
+
+        videoRunTimer = new videoRunTime((2*displayWidth/5));
+        videoRunTimer.start();
+        return contrLin;
     }
 
     @Override
@@ -413,6 +604,54 @@ public class MediaDisplayFragment extends Fragment {
                        runmediaList();
                 }
             });
+        }
+    }
+
+    class videoRunTime extends Thread {
+        int  bar;
+
+        public videoRunTime(int line) {
+            bar = line;
+            smseconds = hours*60 + minutes*60 +seconds;
+        }
+
+        @Override
+        public void run() {
+            double speedFact = 1;
+            if(smseconds < 100) speedFact = 0.75;
+            else if(smseconds < 200) speedFact = 0.80;
+            else if(smseconds < 300) speedFact = 0.90;
+            else if(smseconds < 400) speedFact = 0.95;
+
+            pointer = (float)((bar /smseconds) *speedFact* xfact);
+
+            while (smseconds > 0) {
+                runImgs[1].setX(runImgs[1].getX() + (float) (pointer));
+                int hours = smseconds /3600;
+                int minutes = (smseconds /60) -(hours *60);
+                int seconds = smseconds - (hours *3600) -(minutes *60);
+                String formatted = String.format("%d:%02d:%02d",hours,minutes,seconds);
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        duration.setText(formatted);
+
+                    }
+                });
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                }
+                while(videoPause) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ie) {
+                    }
+                }
+                smseconds = smseconds -1;
+            }
+
         }
     }
 }

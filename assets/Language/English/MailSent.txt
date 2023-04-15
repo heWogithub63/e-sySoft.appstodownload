@@ -1,4 +1,4 @@
 Your mail has been
-sent !!
-You coud find it
-in the folder Sent
+sent successfuly!!
+You could find it
+in the folder Sent Mail

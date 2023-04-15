@@ -57,7 +57,6 @@ public class WebBrowserFragment extends Fragment {
         urlCollection = new ArrayList<>();
         urlCollectionCounter = -1;
         webLayout = fileBrowser.frameLy.get(8);
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)

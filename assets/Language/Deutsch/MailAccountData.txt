@@ -1,10 +1,10 @@
   Die aktuellen Daten Ihrer
   Mail-Accounts sind -->
-   -------------------------------------------   
-  Mail Ausgangs-Server: (!z.B. smtp.gmail.com!)
-  Mail Eingangs-Server: (!z.B. imap.gmail.com!)
-  
-  Benutzer-Id: (!z.B.Mustermann@gmail.com!)
-  e-mail_Addresse: (!z.B.Mustermann@gmail.com!)
-  Kennwort/App Passwort: (!z.B. meinPasswort/zxychtvcxdwibvgf!)
-  Port: (!z.B. 993!)
+   -------------------------------------------
+  Mail outgo-server: (!e.g. smtp.gmail.com!)
+  Mail income-Server: (!e.g. imap.gmail.com!)
+
+  User-Id: (!e.g. miller@gmail.com!)
+  e-mail_Addresse: (!e.g. miller@gmail.com!)
+  App_Password: (!e.g. cdkliginckzhsdek!)
+  Port: (!e.g. 993!)
