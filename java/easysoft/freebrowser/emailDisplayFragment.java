@@ -910,6 +910,7 @@ public class emailDisplayFragment extends Fragment {
                                         arrayList = new ArrayList<>();
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                     }
+                                    calledBy = "Attached";
                                     fileBrowser.startMovePanel(5);
                                     return;
                                 } else if (tag.contains("Send")) {

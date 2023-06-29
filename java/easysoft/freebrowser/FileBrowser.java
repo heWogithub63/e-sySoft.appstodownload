@@ -2243,8 +2243,8 @@ public class FileBrowser extends Activity  {
 
                 } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 5) {
 
-                    /*if(framely == 5) {
-                        if (fileBrowser.createSendEmail.attachedList != null){
+                    if(framely == 5) {
+                        if (fileBrowser.createSendEmail.attachedList != null && calledBy.equals("Attached")){
 
                             fileBrowser.runOnUiThread(new Runnable() {
                                 @Override
@@ -2255,8 +2255,8 @@ public class FileBrowser extends Activity  {
                                 }
                             });
                         }
-
-                    } else */
+                        calledBy = "";
+                    } else
                     if(framely == 7) {
                         fileBrowser.runOnUiThread(new Runnable() {
                             @Override
