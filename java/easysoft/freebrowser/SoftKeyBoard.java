@@ -1,11 +1,12 @@
 package easysoft.freebrowser;
 
+import android.app.Fragment;
 import android.content.ClipData;
-
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.os.VibrationEffect;
 import android.view.*;
 import android.widget.*;
 
@@ -13,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static easysoft.freebrowser.FileBrowser.*;
+
 public class SoftKeyBoard extends Fragment {
     ClipboardManager clipBoard;
+
     View view;
     FrameLayout keyBoardLayout;
     ArrayList<String[]> smallTabsTx;
@@ -41,6 +44,7 @@ public class SoftKeyBoard extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         smallTabsTx = new ArrayList<>(0);
         smallTabsTx.add(new String[]{"@", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "ß", "Back"});
         smallTabsTx.add(new String[]{"Tab", "q", "w", "e", "r", "t", "z", "u", "i", "o", "p", "ü", "+"});
@@ -90,9 +94,9 @@ public class SoftKeyBoard extends Fragment {
             }
         });
         createKeyboard(smallTabsTx);
-        if(!calledBack.equals("WebView")) {
+        if (!calledBack.equals("WebView"))
             keyBoardMainRel.addView(createKeyboardIcon());
-        }
+
 
         keyBoardLayout.bringToFront();
         return view;
@@ -151,7 +155,7 @@ public class SoftKeyBoard extends Fragment {
                     collectionStr = "";
                     startPointer = 0;
                     endPointer = 0;
-                    fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
+                    fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[4], "browserIcons", "open", "closed");
                 }
 
                 fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
@@ -310,6 +314,11 @@ public class SoftKeyBoard extends Fragment {
     }
 
     private void onClickHandling(TextView view) {
+       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+           VibrationEffect vibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
+           fileBrowser.vibrator.cancel();
+           fileBrowser.vibrator.vibrate(vibrationEffect);
+       }
         EditText txEd;
 
             try {

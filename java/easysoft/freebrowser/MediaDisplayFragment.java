@@ -192,10 +192,13 @@ public class MediaDisplayFragment extends Fragment {
                 switch (e.getAction()) {
                     case (MotionEvent.ACTION_DOWN): {
                         previousX = e.getX();
+                        break;
                     }
                     case (MotionEvent.ACTION_UP): {
                         newX = e.getX();
+                        break;
                     }
+
                 }
 
                 if ((previousX - newX) < -100) {
@@ -401,6 +404,21 @@ public class MediaDisplayFragment extends Fragment {
             }
         });
         mainRel.addView(Rotation);
+
+        ImageView Drucker = new ImageView(fileBrowser);
+        Drucker.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams((int)(100 *xfact), (int)(100 *xfact))));
+        Drucker.setX(mediaDisplayLayout.getWidth() -mediaDisplayLayout.getWidth()/2);
+        Drucker.setY(mediaDisplayLayout.getHeight() -mediaDisplayLayout.getHeight()/8);
+        Drucker.setTag("Drucker_closed");
+        Drucker.setImageBitmap(bitmapLoader("Icons/mediaIcons/Drucker.png"));
+        Drucker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fileBrowser.doPrint(imgDisplay);
+            }
+        });
+        mainRel.addView(Drucker);
+
     }
 
     public LinearLayout createScaleButtons() {
@@ -413,7 +431,9 @@ public class MediaDisplayFragment extends Fragment {
         scaleLin.setY(20);
 
         String[] scaleTx = new String[]{"lupe"};
-        if(kindOfMedia.equals("PICTURES")) scaleTx = new String[]{"minus","lupe","plus"};
+        if(kindOfMedia.equals("PICTURES")) {
+            scaleTx = new String[]{"minus","lupe","plus"};
+        }
 
         ImageView[] scaleImg = new ImageView[scaleTx.length];
         for(int i=0;i<scaleTx.length;i++) {

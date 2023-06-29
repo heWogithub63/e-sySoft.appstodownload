@@ -66,7 +66,7 @@ public class TextEditorFragment extends Fragment {
 
     public TextEditorFragment() {
     }
-    
+
     public static TextEditorFragment newInstance() {
         TextEditorFragment fragment = new TextEditorFragment();
         return fragment;
@@ -81,13 +81,13 @@ public class TextEditorFragment extends Fragment {
             readedText = getArguments().getStringArray("TEXT");
 
             if(kindOfFormat.equals(".txt") && !caller.endsWith("New"))
-               for(String s: readedText) {
-                   if(s.startsWith("An: ") || s.startsWith("To: ")) {
-                       headerTx = mainTx;
-                       mainTx = "";
-                   }
-                   mainTx = mainTx + s + "\n";
-               }
+                for(String s: readedText) {
+                    if(s.startsWith("An: ") || s.startsWith("To: ")) {
+                        headerTx = mainTx;
+                        mainTx = "";
+                    }
+                    mainTx = mainTx + s + "\n";
+                }
             else if(kindOfFormat.equals(".pdf")&& !caller.endsWith("New")) {
                 scaleFact = 1.0;
                 selectedTx_01 = 0;
@@ -115,7 +115,7 @@ public class TextEditorFragment extends Fragment {
         mainRel.setBackgroundColor(getResources().getColor(R.color.white));
 
         if(kindOfFormat.equals(".txt") || caller.endsWith("New"))
-           mainRel.addView(createTextEditorDisplay(createHaderIcons()));
+            mainRel.addView(createTextEditorDisplay(createHaderIcons()));
         else if(kindOfFormat.equals(".pdf") && !caller.endsWith("New")) {
             mainRel.addView(createPdfEditorDisplay(createHaderIcons()));
             mainRel.addView(createScaleButtons());
@@ -140,10 +140,13 @@ public class TextEditorFragment extends Fragment {
                 switch (e.getAction()) {
                     case (MotionEvent.ACTION_DOWN): {
                         previousX = e.getX();
+                        break;
                     }
                     case (MotionEvent.ACTION_UP): {
                         newX = e.getX();
+                        break;
                     }
+
                 }
 
                 if ((previousX - newX) < -100) {
@@ -193,20 +196,20 @@ public class TextEditorFragment extends Fragment {
         textRel.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT));
 
-            LinearLayout scaleLin = new LinearLayout(fileBrowser);
-            scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(4*displayHeight/12, displayHeight/12));
-            scaleLin.setOrientation(LinearLayout.HORIZONTAL);
-            scaleLin.setPadding(10,10,10,10);
-            scaleLin.setX(displayWidth -4*displayHeight/8);
-            scaleLin.setY(displayHeight -3*displayHeight/12);
+        LinearLayout scaleLin = new LinearLayout(fileBrowser);
+        scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(4*displayHeight/12, displayHeight/12));
+        scaleLin.setOrientation(LinearLayout.HORIZONTAL);
+        scaleLin.setPadding(10,10,10,10);
+        scaleLin.setX(displayWidth -4*displayHeight/8);
+        scaleLin.setY(displayHeight -3*displayHeight/12);
 
-            String[] scaleTx = new String[]{"minus", "lupe", "plus"};
-            ImageView[] scaleImg = new ImageView[scaleTx.length];
-            for(int i=0;i<scaleTx.length;i++) {
-                scaleImg[i] = new ImageView(fileBrowser);
-                scaleImg[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+scaleTx[i]+".png"));
-                scaleLin.addView(scaleImg[i]);
-            }
+        String[] scaleTx = new String[]{"minus", "lupe", "plus"};
+        ImageView[] scaleImg = new ImageView[scaleTx.length];
+        for(int i=0;i<scaleTx.length;i++) {
+            scaleImg[i] = new ImageView(fileBrowser);
+            scaleImg[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+scaleTx[i]+".png"));
+            scaleLin.addView(scaleImg[i]);
+        }
 
         TextLin = new LinearLayout(fileBrowser);
         TextLin.setLayoutParams(new RelativeLayout.LayoutParams(txEditorLayout.getWidth() - factx,  txEditorLayout.getHeight() - (facty)));
@@ -250,7 +253,7 @@ public class TextEditorFragment extends Fragment {
             noAddr = false;
             calledBy = "textEditor";
             if(mainTx.contains(headerTx))
-               mainTx = mainTx.substring(headerTx.length());
+                mainTx = mainTx.substring(headerTx.length());
 
             if(logoPath.endsWith(".png")&& action.contains("Logo")) {
                 ImageView headIconView = new ImageView(fileBrowser);
@@ -411,7 +414,7 @@ public class TextEditorFragment extends Fragment {
 
                 if((kindOfFormat.equals(".pdf") && s.contains("Info")) || (kindOfFormat.equals(".txt") && s.contains("pdf")) ||
                         ((kindOfFormat.equals(".pdf") && !caller.equals("pdfEditorDisplayNew")) && !(s.contains("pdf") || s.contains("document-new") || s.contains("Drucker")|| s.contains("save"))) ||
-                            (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf"))) {
+                        (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf"))) {
                     icons[icons.length - 1].setEnabled(false);
                 }
 
@@ -793,58 +796,58 @@ public class TextEditorFragment extends Fragment {
         } catch(IOException io) {}
 
 
-                scaleFact = 1;
-                RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() -txEditorLayout.getHeight()/8);
-                imgRelParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        scaleFact = 1;
+        RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() -txEditorLayout.getHeight()/8);
+        imgRelParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 
-                imgView = new ImageView(fileBrowser);
-                imgView.setLayoutParams(imgRelParams);
-                //imgView.setScaleType(ImageView.ScaleType.FIT_XY);
-                imgView.setImageBitmap(bitmap);
-                activImgView = imgView;
+        imgView = new ImageView(fileBrowser);
+        imgView.setLayoutParams(imgRelParams);
+        //imgView.setScaleType(ImageView.ScaleType.FIT_XY);
+        imgView.setImageBitmap(bitmap);
+        activImgView = imgView;
 
-                pdfDisplayRel.addView(imgView);
+        pdfDisplayRel.addView(imgView);
 
         if (importImg) {
-                calledBy = "importImg";
-                caller = "addImg";
+            calledBy = "importImg";
+            caller = "addImg";
 
-                scaleFact = 1;
-                importImgView = Arrays.copyOf(importImgView, importImgView.length + 1);
-                importImgView[importImgView.length - 1] = new ImageView(fileBrowser);
-                importImgView[importImgView.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((txEditorLayout.getWidth() - 20) / 3, RelativeLayout.LayoutParams.WRAP_CONTENT));
-                importImgView[importImgView.length - 1].setTag(importImgView.length - 1 +"--"+ pageNr);
-                importImgView[importImgView.length - 1].setAdjustViewBounds(true);
-                importImgView[importImgView.length - 1].setX(((txEditorLayout.getWidth() - 20) / 3));
-                importImgView[importImgView.length - 1].setY(((txEditorLayout.getHeight() - 20) - (int) (yfact * (txEditorLayout.getHeight() - 20) / 5)) / 2);
+            scaleFact = 1;
+            importImgView = Arrays.copyOf(importImgView, importImgView.length + 1);
+            importImgView[importImgView.length - 1] = new ImageView(fileBrowser);
+            importImgView[importImgView.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((txEditorLayout.getWidth() - 20) / 3, RelativeLayout.LayoutParams.WRAP_CONTENT));
+            importImgView[importImgView.length - 1].setTag(importImgView.length - 1 +"--"+ pageNr);
+            importImgView[importImgView.length - 1].setAdjustViewBounds(true);
+            importImgView[importImgView.length - 1].setX(((txEditorLayout.getWidth() - 20) / 3));
+            importImgView[importImgView.length - 1].setY(((txEditorLayout.getHeight() - 20) - (int) (yfact * (txEditorLayout.getHeight() - 20) / 5)) / 2);
 
-                importImgView[importImgView.length - 1].setOnTouchListener(new View.OnTouchListener() {
-                    float x, y;
-                    @Override
-                    public boolean onTouch(View view, MotionEvent me) {
-                       if(!lockImgMove) {
-                           switch (me.getAction()) {
-                               case (MotionEvent.ACTION_DOWN): {
-                                   x = me.getX();
-                                   y = me.getY();
-                                   break;
-                               }
-                               case (MotionEvent.ACTION_MOVE): {
-                                   view.setY(view.getY() + (me.getY() - y));
-                                   view.setX(view.getX() + (me.getX() - x));
-                                   break;
-                               }
-                           }
-                       }
-                        return true;
+            importImgView[importImgView.length - 1].setOnTouchListener(new View.OnTouchListener() {
+                float x, y;
+                @Override
+                public boolean onTouch(View view, MotionEvent me) {
+                    if(!lockImgMove) {
+                        switch (me.getAction()) {
+                            case (MotionEvent.ACTION_DOWN): {
+                                x = me.getX();
+                                y = me.getY();
+                                break;
+                            }
+                            case (MotionEvent.ACTION_MOVE): {
+                                view.setY(view.getY() + (me.getY() - y));
+                                view.setX(view.getX() + (me.getX() - x));
+                                break;
+                            }
+                        }
                     }
-                });
+                    return true;
+                }
+            });
 
-                importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(imgPath));
-                mainRel.removeView(scaleLin);
-                mainRel.addView(createScaleButtons());
-                mainRel.addView(importImgView[importImgView.length - 1]);
-                activImgView = importImgView[importImgView.length - 1];
+            importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(imgPath));
+            mainRel.removeView(scaleLin);
+            mainRel.addView(createScaleButtons());
+            mainRel.addView(importImgView[importImgView.length - 1]);
+            activImgView = importImgView[importImgView.length - 1];
 
             fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[0],"TextEditorIcons", "closed", "open");
             icons[3].setEnabled(true);
@@ -870,22 +873,22 @@ public class TextEditorFragment extends Fragment {
             return null;
         }
 
-            PdfRenderer mPdfRenderer;
-            PdfRenderer.Page mPdfPage;
+        PdfRenderer mPdfRenderer;
+        PdfRenderer.Page mPdfPage;
 
-            mPdfRenderer = new PdfRenderer(fileDescriptor);
+        mPdfRenderer = new PdfRenderer(fileDescriptor);
 
-            pdfPageCount = mPdfRenderer.getPageCount();
-            pageNr = pageNumber;
-            mPdfPage = mPdfRenderer.openPage(pageNumber);
+        pdfPageCount = mPdfRenderer.getPageCount();
+        pageNr = pageNumber;
+        mPdfPage = mPdfRenderer.openPage(pageNumber);
 
-            bitmap = Bitmap.createBitmap(mPdfPage.getWidth(),
-                    mPdfPage.getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            mPdfPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+        bitmap = Bitmap.createBitmap(mPdfPage.getWidth(),
+                mPdfPage.getHeight(),
+                Bitmap.Config.ARGB_8888);
+        mPdfPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
-            fileDescriptor.close();
-            devicePath = pdfFile.getPath();
+        fileDescriptor.close();
+        devicePath = pdfFile.getPath();
 
         return bitmap;
     }
@@ -895,8 +898,8 @@ public class TextEditorFragment extends Fragment {
         Bitmap bmp = fileBrowser.viewToBitmap(textRel);
         int pageWidth = bmp.getWidth(),
                 pageHeight  = bmp.getHeight(),
-            txn = 2,
-            maxLines = 36;
+                txn = 2,
+                maxLines = 36;
         float spacingMultiplier = 1;
         float spacingAddition = 0;
         boolean includePadding = true;
@@ -1056,50 +1059,50 @@ public class TextEditorFragment extends Fragment {
         String pdf = ".pdf";
         if(file.endsWith(".pdf"))
             pdf="";
-            String Destination = folder +"/"+ file +pdf;
+        String Destination = folder +"/"+ file +pdf;
 
-            try {
-                int f = 0;
-                PdfReader reader = new PdfReader(SourceFiles[f]);
-                int n = reader.getNumberOfPages();
+        try {
+            int f = 0;
+            PdfReader reader = new PdfReader(SourceFiles[f]);
+            int n = reader.getNumberOfPages();
 
-                Document document = new Document(reader.getPageSizeWithRotation(1));
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(Destination));
+            Document document = new Document(reader.getPageSizeWithRotation(1));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(Destination));
 
-                document.open();
-                PdfContentByte cb = writer.getDirectContent();
-                PdfImportedPage page;
-                int rotation;
+            document.open();
+            PdfContentByte cb = writer.getDirectContent();
+            PdfImportedPage page;
+            int rotation;
 
-                while (f < SourceFiles.length) {
-                    int i = 0;
-                    while (i < n) {
-                        i++;
-                        document.setPageSize(reader.getPageSizeWithRotation(i));
-                        document.newPage();
-                        page = writer.getImportedPage(reader, i);
-                        rotation = reader.getPageRotation(i);
-                        if (rotation == 90 || rotation == 270) {
-                            cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
-                        } else {
-                            cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
-                        }
-                    }
-                    f++;
-                    if (f < SourceFiles.length) {
-                        reader = new PdfReader(SourceFiles[f]);
-                        n = reader.getNumberOfPages();
+            while (f < SourceFiles.length) {
+                int i = 0;
+                while (i < n) {
+                    i++;
+                    document.setPageSize(reader.getPageSizeWithRotation(i));
+                    document.newPage();
+                    page = writer.getImportedPage(reader, i);
+                    rotation = reader.getPageRotation(i);
+                    if (rotation == 90 || rotation == 270) {
+                        cb.addTemplate(page, 0, -1f, 1f, 0, 0, reader.getPageSizeWithRotation(i).getHeight());
+                    } else {
+                        cb.addTemplate(page, 1f, 0, 0, 1f, 0, 0);
                     }
                 }
-
-                document.close();
-                devicePath = Destination;
-                fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
-
-                //fileBrowser.reloadFileBrowserDisplay();
-            } catch (Exception e) {
-                fileBrowser.messageStarter("Instruction", docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),  5000);
+                f++;
+                if (f < SourceFiles.length) {
+                    reader = new PdfReader(SourceFiles[f]);
+                    n = reader.getNumberOfPages();
+                }
             }
+
+            document.close();
+            devicePath = Destination;
+            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
+
+            //fileBrowser.reloadFileBrowserDisplay();
+        } catch (Exception e) {
+            fileBrowser.messageStarter("Instruction", docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),  5000);
+        }
         return true;
     }
 

@@ -549,7 +549,9 @@ public class showMessageFragment extends Fragment {
                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.showList,3);
 
-                    String kindOfMedia = "";
+                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "running");
+
+                String kindOfMedia = "";
                     if(kindOf.contains("Mus"))
                         kindOfMedia = "AUDIO";
                     else if(kindOf.contains("Picture") || kindOf.contains("Bilder"))
@@ -561,7 +563,6 @@ public class showMessageFragment extends Fragment {
                     bund.putString("URL", "Array");
                     fileBrowser.fragmentStart(fileBrowser.showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
                             displayWidth, displayHeight);
-
 
                 fileBrowser.intendStarted = true;
 

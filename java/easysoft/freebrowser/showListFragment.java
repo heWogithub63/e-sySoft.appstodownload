@@ -22,6 +22,8 @@ public class showListFragment extends Fragment {
     FrameLayout showListLayout;
     ScrollView gridScr;
     int columnCount = 0, gridCol = 0, height = displayHeight/8;
+    ImageView trash = new ImageView(fileBrowser);
+
     static int selectedTx_01 = 0, scrPosY = 0;
     static String caller = "";
     static TextView[] listTx;
@@ -160,15 +162,49 @@ public class showListFragment extends Fragment {
                                   public boolean onLongClick(View view) {
 
                                       if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
+                                          view.setTag(view.getTag().toString().replace("closed","open"));
+                                          ((TextView)view).setTextColor(getResources().getColor(R.color.green));
+                                          trash.setLayoutParams(new RelativeLayout.LayoutParams(showListLayout.getWidth()/5, showListLayout.getWidth()/5));
+                                          trash.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/Trash.png"));
+                                          trash.setTag(view.getTag().toString().substring(view.getTag().toString().indexOf(" ") +1,
+                                                  view.getTag().toString().lastIndexOf("_")));
+                                          trash.setX((float)(showListLayout.getWidth() -showListLayout.getWidth()/6));
+                                          trash.setY(-showListLayout.getWidth()/28);
 
-                                          fileBrowser.webBrowserDisplay.ishandled = true;
-                                          String tag1 = view.getTag().toString().substring(view.getTag().toString().indexOf(" ") +1,
-                                                  view.getTag().toString().lastIndexOf("_"));
-                                          fileBrowser.webBrowserDisplay.webView.loadUrl(tag1);
-                                          fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
-                                          showListLayout.removeAllViews();
-                                          fileBrowser.fragmentShutdown(fileBrowser.showList,3);
-                                          fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[3], "browserIcons", "open", "closed");
+                                          trash.setOnClickListener(new View.OnClickListener() {
+                                              @Override
+                                              public void onClick(View view) {
+                                                  int c = 0;
+                                                  String tag1 = view.getTag().toString();
+                                                  String[] webSideMem = fileBrowser.read_writeFileOnInternalStorage("read", "WebSideMemory", "WebSideMemory_Saved.txt", ""),
+                                                          ebTrans = new String[0];
+                                                  String trans = "";
+                                                  for (String s : webSideMem)
+                                                      if (!s.equals(tag1)) {
+                                                          ebTrans = Arrays.copyOf(ebTrans,ebTrans.length +1);
+                                                          ebTrans[ebTrans.length -1] = s;
+                                                          trans = trans + s + "\n";
+                                                      }
+                                                  if(!trans.equals(""))
+                                                      trans = trans.substring(0, trans.lastIndexOf("\n"));
+
+                                                  if (fileBrowser.read_writeFileOnInternalStorage("write", "WebSideMemory", "WebSideMemory_Saved.txt", trans).length == 0) {
+                                                      arrayList = new ArrayList<>();
+                                                      for (String s : ebTrans) {
+                                                          arrayList.add(new String[]{s});
+                                                      }
+                                                      gridScr.removeAllViews();
+                                                      gridScr.addView(createList());
+                                                      showListLayout.removeView(trash);
+                                                  }
+                                                  if(trans.equals("")) {
+                                                      showListLayout.removeAllViews();
+                                                      fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[5],"browserIcons","open","closed");
+                                                      fileBrowser.fragmentShutdown(fileBrowser.showList,3);
+                                                  }
+                                              }
+                                          });
+                                          showListLayout.addView(trash);
                                       }
 
                                       return true;
@@ -576,47 +612,17 @@ public class showListFragment extends Fragment {
                                       fileBrowser.changeIcon(headMenueIcon[7],"headMenueIcons","open","closed");
                                       fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                   } else if(caller.equals("webSideMemoryList")) {
-                                      ImageView trash = new ImageView(fileBrowser);
-                                      trash.setLayoutParams(new RelativeLayout.LayoutParams(showListLayout.getWidth()/5, showListLayout.getWidth()/5));
-                                      trash.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/Trash.png"));
-                                      trash.setTag(v.getTag().toString().substring(v.getTag().toString().indexOf(" ") +1,
-                                              v.getTag().toString().lastIndexOf("_")));
-                                      trash.setX((float)(showListLayout.getWidth() -showListLayout.getWidth()/6));
-                                      trash.setY(-showListLayout.getWidth()/28);
+                                      if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
 
-                                      trash.setOnClickListener(new View.OnClickListener() {
-                                          @Override
-                                          public void onClick(View view) {
-                                              int c = 0;
-                                              String tag1 = view.getTag().toString();
-                                              String[] webSideMem = fileBrowser.read_writeFileOnInternalStorage("read", "WebSideMemory", "WebSideMemory_Saved.txt", ""),
-                                                        ebTrans = new String[0];
-                                              String trans = "";
-                                              for (String s : webSideMem)
-                                                  if (!s.equals(tag1)) {
-                                                      ebTrans = Arrays.copyOf(ebTrans,ebTrans.length +1);
-                                                      ebTrans[ebTrans.length -1] = s;
-                                                      trans = trans + s + "\n";
-                                                  }
-                                              if(!trans.equals(""))
-                                                  trans = trans.substring(0, trans.lastIndexOf("\n"));
-
-                                              if (fileBrowser.read_writeFileOnInternalStorage("write", "WebSideMemory", "WebSideMemory_Saved.txt", trans).length == 0) {
-                                                  arrayList = new ArrayList<>();
-                                                  for (String s : ebTrans) {
-                                                      arrayList.add(new String[]{s});
-                                                  }
-                                                  gridScr.removeAllViews();
-                                                  gridScr.addView(createList());
-                                              }
-                                              if(trans.equals("")) {
-                                                  showListLayout.removeAllViews();
-                                                  fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[3],"browserIcons","open","closed");
-                                                  fileBrowser.fragmentShutdown(fileBrowser.showList,3);
-                                              }
-                                          }
-                                      });
-                                      showListLayout.addView(trash);
+                                          fileBrowser.webBrowserDisplay.ishandled = true;
+                                          String tag1 = v.getTag().toString().substring(v.getTag().toString().indexOf(" ") +1,
+                                                  v.getTag().toString().lastIndexOf("_"));
+                                          fileBrowser.webBrowserDisplay.webView.loadUrl(tag1);
+                                          fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[4], "browserIcons", "open", "closed");
+                                          showListLayout.removeAllViews();
+                                          fileBrowser.fragmentShutdown(fileBrowser.showList,3);
+                                          fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[5], "browserIcons", "open", "closed");
+                                      }
                                   }
                               }
                           });

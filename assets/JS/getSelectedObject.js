@@ -37,7 +37,7 @@ elements.each(function (el) {
 
             /* Finally, deal with the previously selected item*/
             showHighlighted(lastSelectedItem, true);
-            appHost.onClick(el.tagName,el.id);
+            appHost.onClick(el.tagName,el.id,el.type);
         }, false);
     }
 });

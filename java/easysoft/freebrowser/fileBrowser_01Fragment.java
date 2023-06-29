@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static easysoft.freebrowser.FileBrowser.*;
@@ -275,6 +276,10 @@ public class fileBrowser_01Fragment extends Fragment {
 
                     if(fileBrowser.showMediaDisplay.videoView.isPlaying()) {
                         fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "closed");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+
+                        runningMediaList = new ArrayList<>(0);
                         fileBrowser.showMediaDisplay.mP.release();
                     }
 

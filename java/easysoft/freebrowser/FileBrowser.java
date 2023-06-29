@@ -13,10 +13,7 @@ import android.graphics.Canvas;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Looper;
+import android.os.*;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,6 +29,7 @@ import androidx.print.PrintHelper;
 import com.google.android.gms.security.ProviderInstaller;
 
 import java.io.*;
+import java.lang.Process;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,8 +42,9 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 public class FileBrowser extends Activity  {
     final int ASK_PERMISSION_EXTStorage = 8080,
             ASK_PERMISSION_PKGInstall = 8081;
-
+    Vibrator vibrator = null;
     Context context;
+
 
     ActivityManager aM;
     FragmentManager fragManager;
@@ -112,7 +111,7 @@ public class FileBrowser extends Activity  {
     static int[] firstRun = new int[0];
     static boolean canWrite = false, insertaction = false, intendStarted = false, threadStop = false, isPdf = false;
 
-
+    int fragId = -1;
 
 
     @Override
@@ -121,6 +120,7 @@ public class FileBrowser extends Activity  {
         setContentView(R.layout.file_browser);
         fileBrowser = this;
         context = this;
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         try {
             ProviderInstaller.installIfNeeded(context);
@@ -211,7 +211,7 @@ public class FileBrowser extends Activity  {
             case ASK_PERMISSION_EXTStorage: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     fileBrowser.messageStarter("Instruction_Manuel", docu_Loader("Language/" + language + "/Instruction_Manuel.txt"),
-                             0);
+                            0);
                 } else {
                     fileBrowser.messageStarter("PermissionDenied", docu_Loader("Language/" + language + "/Canceled_Permission.txt"),
                             5000);
@@ -234,7 +234,7 @@ public class FileBrowser extends Activity  {
             case (ASK_PERMISSION_PKGInstall): {
 
                 fileBrowser.messageStarter("Instruction_Manuel", docu_Loader("Language/" + language + "/Instruction_Manuel.txt"),
-                         0);
+                        0);
 
                 break;
             }
@@ -495,33 +495,33 @@ public class FileBrowser extends Activity  {
 
     public void createList(String kind, int column, String fUrl, int maxsize, int x, int y, int width, String direction) {
         float mS = 0;
-            String[][] listString = new String[0][0];
-            String[] servedList = new String[0];
-            if(fUrl.contains("/")) {
-                servedList = docu_Loader(fUrl);
-            } else if(fUrl.contains(" ")){
-                String folder = fUrl.substring(0,fUrl.indexOf(" ")),
-                        file = fUrl.substring(fUrl.indexOf(" ")+1);
-                servedList = fileBrowser.read_writeFileOnInternalStorage("read", folder, file, "");
+        String[][] listString = new String[0][0];
+        String[] servedList = new String[0];
+        if(fUrl.contains("/")) {
+            servedList = docu_Loader(fUrl);
+        } else if(fUrl.contains(" ")){
+            String folder = fUrl.substring(0,fUrl.indexOf(" ")),
+                    file = fUrl.substring(fUrl.indexOf(" ")+1);
+            servedList = fileBrowser.read_writeFileOnInternalStorage("read", folder, file, "");
+        }
+        if(!fUrl.equals("")) {
+            arrayList = new ArrayList<>(0);
+
+            if (kind.equals("mailSaveList"))
+                servedList = Arrays.copyOfRange(servedList, 2, servedList.length);
+
+            for (int i = 0; i < servedList.length; i++) {
+                listString = Arrays.copyOf(listString, listString.length + 1);
+                listString[listString.length - 1] = new String[1];
+                listString[listString.length - 1][0] = servedList[i];
             }
-            if(!fUrl.equals("")) {
-                arrayList = new ArrayList<>(0);
+            for (int i = 0; i < listString.length; i++)
+                arrayList.add(listString[i]);
+        }
 
-                if (kind.equals("mailSaveList"))
-                    servedList = Arrays.copyOfRange(servedList, 2, servedList.length);
-
-                for (int i = 0; i < servedList.length; i++) {
-                    listString = Arrays.copyOf(listString, listString.length + 1);
-                    listString[listString.length - 1] = new String[1];
-                    listString[listString.length - 1][0] = servedList[i];
-                }
-                for (int i = 0; i < listString.length; i++)
-                    arrayList.add(listString[i]);
-            }
-
-            mS = calculateListLength(arrayList.size(), 6);
-            if(mS > maxsize*6*textSize)
-                mS = maxsize*6*textSize;
+        mS = calculateListLength(arrayList.size(), 6);
+        if(mS > maxsize*6*textSize)
+            mS = maxsize*6*textSize;
 
         Bundle bund = new Bundle();
         bund.putInt("COLUMN_COUNT", column);
@@ -793,15 +793,30 @@ public class FileBrowser extends Activity  {
                     @Override
                     public void onClick(View view) {
                         String tag = view.getTag().toString().substring(view.getTag().toString().indexOf(" ") + 1);
-
-                        if (view.getTag().toString().contains("closed")) {
-                            tag = tag.replace("closed", "open");
-                            view.setTag(view.getTag().toString().replace("closed", "open"));
-                            ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
-                        } else if (view.getTag().toString().contains("open")) {
-                            tag = tag.replace("open", "closed");
-                            view.setTag(view.getTag().toString().replace("open", "closed"));
-                            ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                        if(!(tag.contains("mail")||tag.contains("online"))) {
+                            if (view.getTag().toString().contains("closed")) {
+                                tag = tag.replace("closed", "open");
+                                view.setTag(view.getTag().toString().replace("closed", "open"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                            } else if (view.getTag().toString().contains("open")) {
+                                tag = tag.replace("open", "closed");
+                                view.setTag(view.getTag().toString().replace("open", "closed"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                            }
+                        } else {
+                            if (view.getTag().toString().contains("closed")) {
+                                tag = tag.replace("closed", "open");
+                                view.setTag(view.getTag().toString().replace("closed", "open"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                            } else if (view.getTag().toString().contains("open")) {
+                                tag = tag.replace("open", "running");
+                                view.setTag(view.getTag().toString().replace("open", "running"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                            } else if (view.getTag().toString().contains("running")) {
+                                tag = tag.replace("running", "closed");
+                                view.setTag(view.getTag().toString().replace("running", "closed"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/headMenueIcons/" + tag));
+                            }
                         }
                         if (tag.contains("Edit_open")) {
                             if (showList != null && showList.isVisible()) {
@@ -844,6 +859,9 @@ public class FileBrowser extends Activity  {
                             if (createSendEmail != null && createSendEmail.isVisible())
                                 fragmentShutdown(createSendEmail, 5);
 
+                        } else if(tag.contains("mail_running")) {
+                            fragId = 5;
+                            fileBrowser.startMovePanel(fragId);
                         } else if (tag.contains("online")) {
                             if(tag.endsWith("_open.png")) {
                                 if (showList != null && showList.isVisible()) {
@@ -858,8 +876,9 @@ public class FileBrowser extends Activity  {
                                             displayWidth, displayHeight);
                                 } else {
                                     fileBrowser.messageStarter("mailNoInternet", docu_Loader("Language/" + language + "/NoInternet_avaliable.txt"),
-                                             6000);
+                                            6000);
                                     changeIcon(view,"headMenueIcons","open","closed");
+                                    changeIcon(view,"headMenueIcons","running","closed");
                                 }
                             } else if(tag.endsWith("_closed.png")) {
                                 if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible())
@@ -867,7 +886,11 @@ public class FileBrowser extends Activity  {
                                 closeListlinkedIcons(new ImageView[]{headMenueIcon02[2],headMenueIcon[6]}, new String[] {"sideRightMenueIcons",
                                         "headMenueIcons"});
                                 headMenueIcon02[2].setEnabled(false);
+                            } else if(tag.endsWith("_running.png")) {
+                                fragId = 8;
+                                fileBrowser.startMovePanel(fragId);
                             }
+
                         } else if (tag.contains("searchMashine")) {
 
                             if (tag.contains("open")) {
@@ -887,14 +910,15 @@ public class FileBrowser extends Activity  {
                                         iconpos[0],iconpos[1] +headMenueIcon[7].getHeight()/2,displayWidth/wf,"lu");
 
 
-                            }
-                            else if(tag.contains("closed")) {
+                            } else if(tag.contains("closed")) {
                                 threadStop = true;
                                 if(showList != null && showList.isVisible())
                                     fragmentShutdown(showList, 3);
                             }
                         }
+                        System.err.println (".."+fragId+"..");
                     }
+
                 });
         }
 
@@ -1022,9 +1046,9 @@ public class FileBrowser extends Activity  {
                                     listpos[1] = listpos[1] - frameLy.get(3).getHeight();
 
                                     closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1], headMenueIcon02[3],
-                                                     headMenueIcon02[5]},
-                                                     new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons",
-                                                     "sideRightMenueIcons"});
+                                                    headMenueIcon02[5]},
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons",
+                                                    "sideRightMenueIcons"});
                                     fragmentShutdown(showList, 3);
                                 }
                                 if(listpos[0] == 0  || (listpos[0] != iconpos[0] + (int) (headMenueIcon01[7].getWidth() + 10) &&
@@ -1114,7 +1138,7 @@ public class FileBrowser extends Activity  {
                             if (tag.contains("mediaList")) {
                                 if (devicePath == null || devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".")) {
                                     fileBrowser.messageStarter("NoFileSelected", docu_Loader("Language/" + language + "/Instruction_MediaList.txt"),
-                                             8500);
+                                            8500);
                                     return;
                                 } else {
                                     if (showList != null && showList.isVisible()) {
@@ -1139,7 +1163,7 @@ public class FileBrowser extends Activity  {
                                 if (showList != null && showList.isVisible()) {
                                     closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1],
                                                     headMenueIcon02[3],
-                                                    },
+                                            },
                                             new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons",
                                                     "sideRightMenueIcons"});
                                     fragmentShutdown(showList, 3);
@@ -1162,9 +1186,23 @@ public class FileBrowser extends Activity  {
                                         8000);
 
                             }
-                            tag = tag.replace("closed", "open");
-                            view.setTag(view.getTag().toString().replace("closed", "open"));
-                            ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                            if(!(tag.contains("vLogo") || tag.contains("mediaList") || tag.contains("mediaList"))) {
+                                tag = tag.replace("closed", "open");
+                                view.setTag(view.getTag().toString().replace("closed", "open"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+
+                            } else {
+                                if (view.getTag().toString().contains("closed")) {
+                                    tag = tag.replace("closed", "open");
+                                    view.setTag(view.getTag().toString().replace("closed", "open"));
+                                    ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                                } else if (view.getTag().toString().contains("running")) {
+                                    tag = tag.replace("running", "closed");
+                                    view.setTag(view.getTag().toString().replace("running", "closed"));
+                                    ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                                }
+                            }
+
                             if (tag.startsWith("Hided")) {
                                 hide = 0;
                                 String url = devicePath,
@@ -1182,11 +1220,12 @@ public class FileBrowser extends Activity  {
                                     fileBrowser.createFolder(fileBrowser.urldevice);
                             }
                         } else if (view.getTag().toString().contains("open")) {
-                            tag = tag.replace("open", "closed");
-
-                            view.setTag(view.getTag().toString().replace("open", "closed"));
-                            ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
                             if (tag.startsWith("Hided")) {
+                                tag = tag.replace("open", "closed");
+
+                                view.setTag(view.getTag().toString().replace("open", "closed"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+
                                 if (devicePath.contains("/."))
                                     devicePath = devicePath.substring(0, devicePath.indexOf("/."));
                                 hide = 1;
@@ -1207,50 +1246,98 @@ public class FileBrowser extends Activity  {
 
                             } else if (tag.startsWith("mediaBack")) {
                                 view.setEnabled(false);
-                                if ((fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()))
-                                    fileBrowser.startMovePanel(4);
-                                else if ((fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible())) {
+
+                                if ((fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible())) {
                                     if (fileBrowser.createSendEmail.attachedList != null && fileBrowser.createSendEmail.attachment &&
                                             devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".")) {
                                         fileBrowser.createSendEmail.attachedList.add(new String[]{devicePath.substring(0, devicePath.lastIndexOf("/")), devicePath.substring(devicePath.lastIndexOf("/") + 1)});
                                     }
-                                    fileBrowser.startMovePanel(5);
-                                } else if ((fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())) {
-                                    arrayList = new ArrayList<>();
-                                    fileBrowser.startMovePanel(7);
-                                } else if ((fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible())) {
-                                    fileBrowser.startMovePanel(8);
+
                                 }
-                                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                    fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1]}, new String[]{"headMenueIcons", "sideLeftMenueIcons"});
-                                }
+                                fileBrowser.startMovePanel(fragId);
+
                             } else if (tag.startsWith("mediaList")) {
-                                if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2]}, new String[]{"sideRightMenueIcons"});
-                                headMenueIcon02[2].setEnabled(false);
-                                if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
-                                    fileBrowser.showMediaDisplay.videoView.stopPlayback();
-                                    fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay, 4);
+
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+
+                                if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.videoView.isPlaying() &&
+                                        fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
+                                    if(fileBrowser.showMediaDisplay.kindOfMedia.equals("AUDIO")) {
+                                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                                        fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                                        fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+
+                                        fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                                        tag = tag.replace("open", "closed");
+                                        view.setTag(view.getTag().toString().replace("open", "closed"));
+                                        ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                                        runningMediaList = new ArrayList<>(0);
+                                        fileBrowser.showMediaDisplay.mP.release();
+                                        fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay, 4);
+                                    } else if(fileBrowser.showMediaDisplay.kindOfMedia.equals("VIDEO")) {
+                                        tag = tag.replace("open", "running");
+                                        view.setTag(view.getTag().toString().replace("open", "running"));
+                                        ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+
+                                        fragId = 4;
+                                        fileBrowser.startMovePanel(fragId);
+                                    }
+
+                                } else {
+                                    tag = tag.replace("open", "closed");
+                                    view.setTag(view.getTag().toString().replace("open", "closed"));
+                                    ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                                        fileBrowser.fragmentShutdown(showList,3);
                                 }
 
                             } else if (tag.contains("vLogo")) {
                                 fileBrowser.isPdf = false;
-                                fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2]}, new String[]{"sideRightMenueIcons"});
-                                headMenueIcon02[2].setEnabled(false);
+                                tag = tag.replace("open", "running");
+
+                                view.setTag(view.getTag().toString().replace("open", "running"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                                fragId = 7;
+                                fileBrowser.startMovePanel(fragId);
+
                                 if (showList != null && showList.isVisible()) {
-                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1],
-                                                    headMenueIcon02[3],
+                                    closeListlinkedIcons(new ImageView[]{headMenueIcon[2],headMenueIcon[5], headMenueIcon[6], headMenueIcon[7],headMenueIcon01[1]
                                             },
-                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons",
-                                                    "sideRightMenueIcons"});
+                                            new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons"});
                                     fragmentShutdown(showList, 3);
                                 }
-                                if (fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
-                                    fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
+
+                            }
+                        } else if (view.getTag().toString().contains("running")) {
+
+                            if (tag.contains("vLogo")) {
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "closed");
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+
+
+                                fragId = -1;
+                            } else if (tag.startsWith("mediaList")) {
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+
+                                if (fileBrowser.showMediaDisplay.videoView.isPlaying() && fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
+                                    fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                                    tag = tag.replace("running", "closed");
+                                    view.setTag(view.getTag().toString().replace("running", "closed"));
+                                    ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
+                                    runningMediaList = new ArrayList<>(0);
+                                    fileBrowser.showMediaDisplay.mP.release();
+                                    fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
+                                }
+                                fragId = 4;
                             }
                         }
+
                     }
                 });
         }
@@ -1290,10 +1377,10 @@ public class FileBrowser extends Activity  {
                 public void run() {
                     try {
                         ((ImageView) v).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + v.getTag().toString().substring(v.getTag().toString().indexOf(" ") + 1)));
-                    if(calledBy.equals("toTrash"))
-                        fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(true);
-                    else if(calledBy.equals("fromTrash"))
-                        fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(false);
+                        if(calledBy.equals("toTrash"))
+                            fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(true);
+                        else if(calledBy.equals("fromTrash"))
+                            fileBrowser.headMenueIcon01[fileBrowser.headMenueIcon01.length - 1].setEnabled(false);
 
                     } catch (ClassCastException cE) {
                         if (to.equals("open"))
@@ -1402,29 +1489,29 @@ public class FileBrowser extends Activity  {
 
             //TxSplitting
 
-                String st = folderArrayString[i], st1 = "", st2 = "";
-                String[] sc = new String[]{" ", "_", "-", "#", "*", "§", "$", "%", "&"};
+            String st = folderArrayString[i], st1 = "", st2 = "";
+            String[] sc = new String[]{" ", "_", "-", "#", "*", "§", "$", "%", "&"};
 
-                while (((float) (st.length() / 12)) >= 1.0) {
-                    int n = 0, n1 = 0;
-                    st1 = st.substring(0, 12);
-                    for (String c : sc) {
-                        if (st1.substring(6).contains(c)) {
-                            n1++;
-                            break;
-                        }
-                        n++;
+            while (((float) (st.length() / 12)) >= 1.0) {
+                int n = 0, n1 = 0;
+                st1 = st.substring(0, 12);
+                for (String c : sc) {
+                    if (st1.substring(6).contains(c)) {
+                        n1++;
+                        break;
                     }
-                    if (n1 > 0) {
-                        st1 = st1.substring(0, 6 + st1.substring(6).indexOf(sc[n]) +1);
-                        st2 = st2 + st1 + "\n";
-                    } else
-                        st2 = st2 + st1 + "\n";
-                    st = st.substring(st1.length());
+                    n++;
                 }
-                st2 = st2 + st;
+                if (n1 > 0) {
+                    st1 = st1.substring(0, 6 + st1.substring(6).indexOf(sc[n]) +1);
+                    st2 = st2 + st1 + "\n";
+                } else
+                    st2 = st2 + st1 + "\n";
+                st = st.substring(st1.length());
+            }
+            st2 = st2 + st;
 
-                folderTx.setText(st2);
+            folderTx.setText(st2);
 
             //
             folderMenueLy.addView(folderTx);
@@ -1449,8 +1536,12 @@ public class FileBrowser extends Activity  {
                 if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
                     fileBrowser.runningMediaList = null;
 
-                if(fileBrowser.showMediaDisplay.videoView.isPlaying())
+                if(fileBrowser.showMediaDisplay.videoView.isPlaying()) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "closed");
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+
                     fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                }
 
 
                 fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
@@ -1574,6 +1665,9 @@ public class FileBrowser extends Activity  {
             case (".wav"):
             case (".mp3"): {
 
+                if (runningMediaList != null && runningMediaList.size() > 0)
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "running");
+
                 Bundle bund = new Bundle();
                 bund.putString("KIND_OF_MEDIA", "AUDIO");
                 bund.putString("URL", Url);
@@ -1592,6 +1686,9 @@ public class FileBrowser extends Activity  {
             case (".webm"):
             case (".avi"):
             case (".flc"): {
+                 if (runningMediaList != null && runningMediaList.size() > 0)
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "running");
+
                 Bundle bund = new Bundle();
                 bund.putString("KIND_OF_MEDIA", "VIDEO");
                 bund.putString("URL", Uri.parse(Url).toString());
@@ -1679,54 +1776,6 @@ public class FileBrowser extends Activity  {
         if (kind_of_fragment != null && kind_of_fragment.isVisible()) {
             fragmentShutdown(kind_of_fragment, a);
         }
-        if(kind_of.equals("mediaDisplay")) {
-            if(createSendEmail != null && createSendEmail.isVisible()) {
-                changeIcon(headMenueIcon[5],"headMenueIcons","open","closed");
-                fragmentShutdown(createSendEmail, 5);
-            }
-            if(createTxEditor != null && createTxEditor.isVisible()) {
-                changeIcon(headMenueIcon02[5],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(createTxEditor, 7);
-            }
-            if(webBrowserDisplay != null && webBrowserDisplay.isVisible()) {
-                changeIcon(headMenueIcon[6],"headMenueIcons","open","closed");
-                fragmentShutdown(webBrowserDisplay, 8);
-            }
-        }
-        if(kind_of.equals("emailDisplay")) {
-            if(showMediaDisplay != null && showMediaDisplay.isVisible()) {
-                changeIcon(headMenueIcon02[3],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(showMediaDisplay, 4);
-            }
-            if(createTxEditor != null && createTxEditor.isVisible()) {
-                changeIcon(headMenueIcon02[5],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(createTxEditor, 7);
-            }
-            /*if(webBrowserDisplay != null && webBrowserDisplay.isVisible()) {
-                changeIcon(headMenueIcon[6],"headMenueIcons","open","closed");
-                fragmentShutdown(webBrowserDisplay, 8);
-            }*/
-        }
-        if(kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
-            if(showMediaDisplay != null && showMediaDisplay.isVisible()) {
-                changeIcon(headMenueIcon02[3],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(showMediaDisplay, 4);
-            }
-            if(webBrowserDisplay != null && webBrowserDisplay.isVisible()) {
-                changeIcon(headMenueIcon[6],"headMenueIcons","open","closed");
-                fragmentShutdown(webBrowserDisplay, 8);
-            }
-        }
-        if(kind_of.equals("webBrowserDisplay")) {
-            if(showMediaDisplay != null && showMediaDisplay.isVisible()) {
-                changeIcon(headMenueIcon02[3],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(showMediaDisplay, 4);
-            }
-            if(createTxEditor != null && createTxEditor.isVisible()) {
-                changeIcon(headMenueIcon02[5],"sideRightMenueIcons","open","closed");
-                fragmentShutdown(createTxEditor, 7);
-            }
-        }
 
         fragTrans = fragManager.beginTransaction();
 
@@ -1753,28 +1802,32 @@ public class FileBrowser extends Activity  {
             fragTrans.replace(R.id.listFrame, showList);
 
         } else if (kind_of.equals("mediaDisplay")) {
+            fragId = 4;
             showMediaDisplay = MediaDisplayFragment.newInstance();
             if (transParam != null)
                 showMediaDisplay.setArguments(transParam);
-            frameContainerMove(4, findViewById(R.id.mediaDisplay), xpos, ypos, width, height);
+            frameContainerMove(fragId, findViewById(R.id.mediaDisplay), xpos, ypos, width, height);
             fragTrans.replace(R.id.mediaDisplay, showMediaDisplay);
         } else if (kind_of.equals("emailDisplay")) {
+            fragId = 5;
             createSendEmail = emailDisplayFragment.newInstance();
             if (transParam != null)
                 createSendEmail.setArguments(transParam);
-            frameContainerMove(5, findViewById(R.id.createSendEmail), xpos, ypos, width, height);
+            frameContainerMove(fragId, findViewById(R.id.createSendEmail), xpos, ypos, width, height);
             fragTrans.replace(R.id.createSendEmail, createSendEmail);
         } else if (kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
+            fragId = 7;
             createTxEditor = TextEditorFragment.newInstance();
             if (transParam != null)
                 createTxEditor.setArguments(transParam);
-            frameContainerMove(7, findViewById(R.id.createTextDisplay), xpos, ypos, width, height);
+            frameContainerMove(fragId, findViewById(R.id.createTextDisplay), xpos, ypos, width, height);
             fragTrans.replace(R.id.createTextDisplay, createTxEditor);
         } else if (kind_of.equals("webBrowserDisplay")) {
+            fragId = 8;
             webBrowserDisplay = WebBrowserFragment.newInstance();
             if (transParam != null)
                 webBrowserDisplay.setArguments(transParam);
-            frameContainerMove(8, findViewById(R.id.createWebbrowsertDisplay), xpos, ypos, width, height);
+            frameContainerMove(fragId, findViewById(R.id.createWebbrowsertDisplay), xpos, ypos, width, height);
             fragTrans.replace(R.id.createWebbrowsertDisplay, webBrowserDisplay);
         } else if (kind_of.equals("softKeyBoard")) {
             softKeyBoard = SoftKeyBoard.newInstance();
@@ -1784,7 +1837,7 @@ public class FileBrowser extends Activity  {
             fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
         }
 
-        fragTrans.commit();
+        fragTrans.addToBackStack(""+fragId).commitAllowingStateLoss();
     }
 
     public void fragmentShutdown (Fragment kind_of, int n) {
@@ -1840,16 +1893,16 @@ public class FileBrowser extends Activity  {
                 height = 5*displayHeight / 7;
             }
             else if(timer == 0)
-               height = displayHeight / 3;
-           else
+                height = displayHeight / 3;
+            else
                 height = displayHeight /5;
         }
         if(kind_of_message.equals("httpsRequest")) {
 
-                width = 7*displayWidth/9;
-                height = displayHeight/14;
-                posx = displayWidth/9;
-                posy = displayHeight/14;
+            width = 7*displayWidth/9;
+            height = displayHeight/14;
+            posx = displayWidth/9;
+            posy = displayHeight/14;
 
         }
         if(kind_of_message.equals("pdfCombinedDocument_Save")) {
@@ -2007,7 +2060,8 @@ public class FileBrowser extends Activity  {
                         break;
                     }
                     case ("ls"): {
-                        transList = new ArrayList<>();
+                        transList = new ArrayList<>();fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+
                         String[] goout = new String[0];
                         for (int o = 0; o < outputTx.length; o++)
                             if (!outputTx[o].endsWith(":")) {
@@ -2073,33 +2127,33 @@ public class FileBrowser extends Activity  {
                 }
 
                 fileBrowser.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    @Override
+                    public void run() {
 
-                            if (iView.getTag().toString().contains("open"))
-                                iView.setTag(iView.getTag().toString().replace("open", "closed"));
-                            else if (iView.getTag().toString().contains("closed"))
-                                iView.setTag(iView.getTag().toString().replace("closed", "open"));
+                        if (iView.getTag().toString().contains("open"))
+                            iView.setTag(iView.getTag().toString().replace("open", "closed"));
+                        else if (iView.getTag().toString().contains("closed"))
+                            iView.setTag(iView.getTag().toString().replace("closed", "open"));
 
-                            try {
-                                ((ImageView) iView).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + iView.getTag().toString().substring(
-                                        iView.getTag().toString().indexOf(" ") + 1)));
-                            } catch (ClassCastException ce) {
-                                if (iView.getTag().toString().contains("open")) {
-                                    ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.green));
-                                } else {
-                                    ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
-                                }
-                            }
-                            if (threadStop && n1 > 15) {
-                                run = false;
-                            }
-                            if (kind.contains("copy") && n1 >= 19) {
-                                run = false;
+                        try {
+                            ((ImageView) iView).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + folder + "/" + iView.getTag().toString().substring(
+                                    iView.getTag().toString().indexOf(" ") + 1)));
+                        } catch (ClassCastException ce) {
+                            if (iView.getTag().toString().contains("open")) {
+                                ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.green));
+                            } else {
+                                ((TextView) iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
                             }
                         }
-                    });
-                    n++;
+                        if (threadStop && n1 > 15) {
+                            run = false;
+                        }
+                        if (kind.contains("copy") && n1 >= 19) {
+                            run = false;
+                        }
+                    }
+                });
+                n++;
 
             }
             if (threadStop) {
@@ -2132,34 +2186,65 @@ public class FileBrowser extends Activity  {
 
                 fileBrowser.frameLy.get(framely).setX(fileBrowser.frameLy.get(framely).getX() + (n * panel_direction));
                 try {
-                    Thread.sleep(40);
+                    Thread.sleep(20);
                 } catch (InterruptedException ie) {
                 }
                 if (panel_direction == 1 && fileBrowser.frameLy.get(framely).getX() > fileBrowser.displayWidth) {
                     go = false;
                     panel_direction = -1;
 
+
                     fileBrowser.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
                             fileBrowser.headMenueIcon02[2].setTag(
                                     fileBrowser.headMenueIcon02[2].getTag().toString().replace("closed", "open"));
                             fileBrowser.headMenueIcon02[2].setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" +
                                     fileBrowser.headMenueIcon02[2].getTag().toString().substring(
                                             fileBrowser.headMenueIcon02[2].getTag().toString().indexOf(" ") + 1)));
                             fileBrowser.headMenueIcon02[2].setEnabled(true);
+                            switch (framely) {
+                                case (4) : {
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "running");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                                    break;
+                                }
+                                case (5) : {
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "open", "running");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                                    break;
+                                }
+                                case (7) : {
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "open", "running");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
+
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                                    break;
+                                }
+                                case (8) : {
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "open", "running");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
+                                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                                    break;
+                                }
+                            }
                         }
                     });
-                    if(framely == 5 && fileBrowser.webBrowserDisplay !=null && fileBrowser.webBrowserDisplay.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.createSendEmail,5);
-                    }
-                    if(framely == 8 && fileBrowser.createSendEmail !=null && fileBrowser.createSendEmail.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.webBrowserDisplay,8);
-                    }
+
                 } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 5) {
 
-                    if(framely == 5) {
-                         if (fileBrowser.createSendEmail.attachedList != null){
+                    /*if(framely == 5) {
+                        if (fileBrowser.createSendEmail.attachedList != null){
 
                             fileBrowser.runOnUiThread(new Runnable() {
                                 @Override
@@ -2171,7 +2256,8 @@ public class FileBrowser extends Activity  {
                             });
                         }
 
-                    } else if(framely == 7) {
+                    } else */
+                    if(framely == 7) {
                         fileBrowser.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

@@ -123,10 +123,13 @@ public class emailDisplayFragment extends Fragment {
                 switch (e.getAction()) {
                     case (MotionEvent.ACTION_DOWN): {
                         previousX = e.getX();
+                        break;
                     }
                     case (MotionEvent.ACTION_UP): {
                         newX = e.getX();
+                        break;
                     }
+
                 }
 
                 if ((previousX - newX) < -100) {
