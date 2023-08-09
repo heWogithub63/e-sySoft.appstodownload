@@ -104,6 +104,7 @@ public class MediaDisplayFragment extends Fragment {
             if (runningMediaList != null && runningMediaList.size() > 0) {
                 mediaURL = runningMediaList.get(0);
             }
+
             createRotateImg();
             mainRel.addView(createPlayChoosePanel());
             createImageShow(mediaURL);
@@ -240,7 +241,24 @@ public class MediaDisplayFragment extends Fragment {
 
                 if(fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0) {
                     runmediaList();
+                } else {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "runningOne", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                            fileBrowser.headMenueIcon02[2].setEnabled(false);
+
+                            fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay, 4);
+                            fileBrowser.intendStarted = false;
+                            selectedFile.remove(selectedFile.size() -1);
+                            devicePath = devicePath.substring(0,devicePath.lastIndexOf("/"));
+                            fileBrowser.reloadFileBrowserDisplay();
+                        }
+                    });
+
                 }
+
             }
         });
 
@@ -600,8 +618,10 @@ public class MediaDisplayFragment extends Fragment {
         if(mP!=null) {
             try {
                 mP.stop();
+                mP.reset();
                 mP.release();
                 mP = null;
+                fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
             } catch (java.lang.IllegalStateException ie) {}
         }
         if (runningMediaList != null && runningMediaList.size() > 0) {

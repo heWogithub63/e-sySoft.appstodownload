@@ -269,30 +269,49 @@ public class fileBrowser_01Fragment extends Fragment {
             // stop running Mediaplayer
             if (fileBrowser.intendStarted) {
                 if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
-                    fileBrowser.showMediaDisplay.disrupt = true;
+                    //fileBrowser.showMediaDisplay.disrupt = true;
 
                     if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
                         fileBrowser.runningMediaList = null;
 
                     if(fileBrowser.showMediaDisplay.videoView.isPlaying()) {
-                        fileBrowser.showMediaDisplay.videoView.stopPlayback();
-                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "closed");
-                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+                        //fileBrowser.showMediaDisplay.videoView.stopPlayback();
+                        if(!fileBrowser.headMenueIcon02[3].getTag().toString().contains("One")) {
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "open", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                        } else {
+
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "openOne", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "runningOne", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "openOne", "closed");
+                        }
 
                         runningMediaList = new ArrayList<>(0);
+                        fileBrowser.showMediaDisplay.mP.stop();
+                        fileBrowser.showMediaDisplay.mP.reset();
                         fileBrowser.showMediaDisplay.mP.release();
                     }
 
+
+                    if(openFrags.equals("")) {
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon02[2], fileBrowser.headMenueIcon02[3]},
+                                new String[]{"sideRightMenueIcons", "sideRightMenueIcons"});
+                        fileBrowser.headMenueIcon02[2].setEnabled(false);
+                    } else
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon02[3]},
+                            new String[]{"sideRightMenueIcons"});
+
+
                     fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay,4);
-
-                    fileBrowser.closeListlinkedIcons(new ImageView[]{fileBrowser.headMenueIcon02[2], fileBrowser.headMenueIcon02[3]},
-                            new String[]{"sideRightMenueIcons", "sideRightMenueIcons"});
-                    fileBrowser.headMenueIcon02[2].setEnabled(false);
-
                 }
                 if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
-                    fileBrowser.closeListlinkedIcons(new ImageView[] {headMenueIcon[5],headMenueIcon02[2]}, new String[]{"headMenueIcons", "sideRightMenueIcons"});
-                    headMenueIcon02[2].setEnabled(false);
+                    if(openFrags.equals("")) {
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[5], headMenueIcon02[2]}, new String[]{"headMenueIcons", "sideRightMenueIcons"});
+                        headMenueIcon02[2].setEnabled(false);
+                    } else
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[5]}, new String[]{"headMenueIcons"});
+
                     fileBrowser.fragmentShutdown(fileBrowser.webBrowserDisplay, 8);
                 }
 

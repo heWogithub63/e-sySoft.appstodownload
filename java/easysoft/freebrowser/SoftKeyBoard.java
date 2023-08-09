@@ -314,13 +314,12 @@ public class SoftKeyBoard extends Fragment {
     }
 
     private void onClickHandling(TextView view) {
-       if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-           VibrationEffect vibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
-           fileBrowser.vibrator.cancel();
-           fileBrowser.vibrator.vibrate(vibrationEffect);
-       }
-        EditText txEd;
 
+        EditText txEd;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            VibrationEffect vibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
+            fileBrowser.vibrator.vibrate(vibrationEffect);
+        }
             try {
                 txEd = (EditText) fileBrowser.getCurrentFocus(); //fileBrowser.keyboardTrans;
             } catch (Exception e) {

@@ -411,7 +411,7 @@ public class showListFragment extends Fragment {
                                           headMenueIcon01[7].getLocationOnScreen(iconpos);
 
                                           fileBrowser.createList("TrashRecoverList",1, "",6,
-                                                  iconpos[0] +(int)(headMenueIcon01[7].getWidth() +10),iconpos[1] -(int)(headMenueIcon01[7].getHeight() +10),
+                                                  iconpos[0] +(int)(headMenueIcon01[7].getWidth() +10),iconpos[1] -(int)(headMenueIcon01[7].getHeight() +25),
                                                   (int)(displayWidth/f),"ru");
 
                                           showListLayout.bringToFront();

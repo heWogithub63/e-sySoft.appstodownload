@@ -332,9 +332,19 @@ public class showMessageFragment extends Fragment {
                 to = " -> find " + newName;
             } else if (kindOf.endsWith("Delete")) {
                 //new FileBrowser.dataHandler(todo, from, to,null).start();
+
                 if(kindOf.contains("Trash")) {
                     if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                    if (kindOf.equals("_askTrashDelete")) {
+                        while(new File(fileBrowser.context.getFilesDir() + "/TrashIndex/").listFiles().length > 0)
+                              fileBrowser.deleteDir_Files(fileBrowser.context.getFilesDir() + "/TrashIndex/");
+                        fileBrowser.read_writeFileOnInternalStorage("write","pathCollection", "PathList.txt", "");
+                        fileBrowser.changeIcon(headMenueIcon01[7], "sideLeftMenueIcons", "open", "closed");
+                        headMenueIcon01[headMenueIcon01.length - 1].setEnabled(false);
+
+                        return;
+                    }
                 }
             } else if (kindOf.endsWith("Create")) {
 
@@ -679,7 +689,12 @@ public class showMessageFragment extends Fragment {
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                     if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                    fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2],headMenueIcon02[5]},new String[]{"sideRightMenueIcons","sideRightMenueIcons"});
+                    if(openFrags.equals("")) {
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2], headMenueIcon02[5]}, new String[]{"sideRightMenueIcons", "sideRightMenueIcons"});
+                        fileBrowser.headMenueIcon02[2].setEnabled(false);
+                    } else
+                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[5]}, new String[]{"sideRightMenueIcons"});
+
                 }
             } else if(kindOf.equals("Successfull_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);

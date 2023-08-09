@@ -219,6 +219,7 @@ public class WebBrowserFragment extends Fragment {
                 }
                 fileBrowser.changeIcon(steerImgs[2], "browserIcons", "open", "closed");
                 steerImgs[2].setEnabled(false);
+
                 fileBrowser.changeIcon(steerImgs[6], "browserIcons", "open", "closed");
                 steerImgs[6].setEnabled(false);
 
