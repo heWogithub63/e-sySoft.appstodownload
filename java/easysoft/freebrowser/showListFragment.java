@@ -603,8 +603,8 @@ public class showListFragment extends Fragment {
                                       bund.putString("FORMAT",format);
                                       bund.putStringArray("TEXT", new String[0]);
 
-                                      fileBrowser.fragmentStart(fileBrowser.createTxEditor, 7,kind, bund, 0, 0,
-                                              displayWidth, displayHeight);
+                                      fileBrowser.fragmentStart(fileBrowser.createTxEditor, 7,kind, bund, 1, 1,
+                                              displayWidth -2, displayHeight -2);
                                       fileBrowser.fragmentShutdown(fileBrowser.showList,3);
                                   } else if(caller.equals("searchMachineList")) {
                                       int nr = Integer.parseInt(tag.substring(0,tag.indexOf(" ")));

@@ -853,8 +853,8 @@ public class FileBrowser extends Activity  {
                                         new String[] { "headMenueIcons", "headMenueIcons", "headMenueIcons", "sideLeftMenueIcons", "sideRightMenueIcons"});
                                 fragmentShutdown(showList, 3);
                             }
-                            fragmentStart(createSendEmail, 5,"emailDisplay", null, 0, 0,
-                                    displayWidth, displayHeight);
+                            fragmentStart(createSendEmail, 5,"emailDisplay", null, 1, 1,
+                                    displayWidth -2, displayHeight -2);
 
                         } else if (tag.contains("mail_closed")) {
                             if(openFrags.equals("")) {
@@ -879,8 +879,8 @@ public class FileBrowser extends Activity  {
                                 if(haveNetwork()) {
                                     Bundle bund = new Bundle();
                                     bund.putString("URL", searchMashineUrl);
-                                    fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 0, 0,
-                                            displayWidth, displayHeight);
+                                    fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 1, 1,
+                                            displayWidth -2, displayHeight -2);
                                 } else {
                                     fileBrowser.messageStarter("mailNoInternet", docu_Loader("Language/" + language + "/NoInternet_avaliable.txt"),
                                             6000);
@@ -1743,8 +1743,8 @@ public class FileBrowser extends Activity  {
                 Bundle bund = new Bundle();
                 bund.putString("URL", Url);
                 changeIcon(headMenueIcon[6],"headMenueIcons", "closed", "open");
-                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
                 return;
             }
             case (".txt"): case (".pdf"): {
@@ -1764,8 +1764,8 @@ public class FileBrowser extends Activity  {
                 fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon[2], headMenueIcon01[1]}, new String[]{"headMenueIcons","sideLeftMenueIcons"});
 
                 fileBrowser.changeIcon(headMenueIcon02[5], "sideRightMenueIcons", "closed","open" );
-                fileBrowser.fragmentStart(createTxEditor, 7,"textEditorDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fileBrowser.fragmentStart(createTxEditor, 7,"textEditorDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
                 return;
             }
             case (".ppt"): {
@@ -1793,8 +1793,8 @@ public class FileBrowser extends Activity  {
                 Bundle bund = new Bundle();
                 bund.putString("KIND_OF_MEDIA", "AUDIO");
                 bund.putString("URL", Url);
-                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
                 fileBrowser.intendStarted = true;
 
                 return;
@@ -1816,8 +1816,8 @@ public class FileBrowser extends Activity  {
                 Bundle bund = new Bundle();
                 bund.putString("KIND_OF_MEDIA", "VIDEO");
                 bund.putString("URL", Uri.parse(Url).toString());
-                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
 
                 fileBrowser.intendStarted = true;
                 return;
@@ -1826,8 +1826,8 @@ public class FileBrowser extends Activity  {
                 Bundle bund = new Bundle();
                 bund.putString("KIND_OF_MEDIA", "PICTURES");
                 bund.putString("URL", Uri.parse(Url).toString());
-                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fragmentStart(showMediaDisplay, 4,"mediaDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
 
                 fileBrowser.intendStarted = true;
                 return;
@@ -1845,16 +1845,16 @@ public class FileBrowser extends Activity  {
                 if(fileBrowser.createSendEmail == null || !fileBrowser.createSendEmail.isVisible()) {
                     Bundle bund = new Bundle();
                     bund.putString("EMAILADD", Url.substring(Url.indexOf(":")+1).trim());
-                    fragmentStart(createSendEmail, 5, "emailDisplay", bund, 0, 0,
-                            displayWidth, displayHeight);
+                    fragmentStart(createSendEmail, 5, "emailDisplay", bund, 1, 1,
+                            displayWidth -2, displayHeight -2);
                 }
                 return;
             }
             case ("protonmail"): {
                 Bundle bund = new Bundle();
                 bund.putString("URL", Url);
-                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 0, 0,
-                        displayWidth, displayHeight);
+                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 1, 1,
+                        displayWidth -2, displayHeight -2);
                 return;
             }
             case ("*"): {
@@ -2429,7 +2429,7 @@ public class FileBrowser extends Activity  {
                         }
                     });
 
-                } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 5) {
+                } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 1) {
 
                     if(framely == 5) {
                         if (fileBrowser.createSendEmail.attachedList != null && calledBy.equals("Attached")){

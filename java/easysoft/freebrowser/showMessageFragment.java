@@ -571,8 +571,8 @@ public class showMessageFragment extends Fragment {
                     Bundle bund = new Bundle();
                     bund.putString("KIND_OF_MEDIA", kindOfMedia);
                     bund.putString("URL", "Array");
-                    fileBrowser.fragmentStart(fileBrowser.showMediaDisplay, 4,"mediaDisplay", bund, 0, 0,
-                            displayWidth, displayHeight);
+                    fileBrowser.fragmentStart(fileBrowser.showMediaDisplay, 4,"mediaDisplay", bund, 1, 1,
+                            displayWidth -2, displayHeight -2);
 
                 fileBrowser.intendStarted = true;
 

@@ -94,8 +94,7 @@ public class SoftKeyBoard extends Fragment {
             }
         });
         createKeyboard(smallTabsTx);
-        if (!calledBack.equals("WebView"))
-            keyBoardMainRel.addView(createKeyboardIcon());
+        keyBoardMainRel.addView(createKeyboardIcon());
 
 
         keyBoardLayout.bringToFront();
@@ -118,7 +117,7 @@ public class SoftKeyBoard extends Fragment {
         kbIcPa.addRule(RelativeLayout.CENTER_VERTICAL);
         RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/14,displayWidth/14);
         kbIcPa1.addRule(RelativeLayout.CENTER_VERTICAL);
-        if(!calledBack.equals("InfoView")) {
+        if(fileBrowser.fragId != 8) {
             ImageView Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
             Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
