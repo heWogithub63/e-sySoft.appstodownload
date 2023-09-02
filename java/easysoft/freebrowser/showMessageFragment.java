@@ -172,7 +172,7 @@ public class showMessageFragment extends Fragment {
             requestedText = new EditText(fileBrowser);
             requestedText.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/3, displayHeight/18));
             requestedText.setTextSize(textSize);
-            requestedText.setTextColor(getResources().getColor(R.color.white));
+            requestedText.setTextColor(getResources().getColor(R.color.black));
             requestedText.setText(tx);
             if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
                 if(kindOf.endsWith("Document_Save") && kindOf.startsWith("Pdf") && fileBrowser.createTxEditor.loadedFile.endsWith(".pdf")) {
@@ -389,7 +389,8 @@ public class showMessageFragment extends Fragment {
 
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.endsWith("Document_Save")) {
-            String tx = requestedText.getText().toString();
+            String tx = requestedText.getText().toString().replace(" ","");
+
             if (tx.contains(".") && !tx.contains(","))
                 tx = tx.substring(0, tx.lastIndexOf("."));
             if (kindOf.startsWith("Tx")) {
@@ -488,7 +489,7 @@ public class showMessageFragment extends Fragment {
         copyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fileBrowser.blink = new FileBrowser.blinkIcon(v, "copyall");
+                fileBrowser.blink = new blinkIcon(v, "copyall");
                 fileBrowser.blink.start();
 
                     String ms = "";
@@ -699,6 +700,7 @@ public class showMessageFragment extends Fragment {
             } else if(kindOf.equals("Successfull_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);
             }
+
             fileBrowser.threadStop = true;
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
 

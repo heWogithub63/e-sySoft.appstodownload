@@ -112,8 +112,9 @@ public class emailDisplayFragment extends Fragment {
     private RelativeLayout createSwitcher() {
         calledFrom = "";
         RelativeLayout header = new RelativeLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth, displayHeight / 12));
-        header.setY(displayHeight - displayHeight / 8);
+        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/5, displayHeight/16));
+        header.setX(displayWidth -displayWidth/5);
+        header.setY(20);
 
         header.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -132,7 +133,7 @@ public class emailDisplayFragment extends Fragment {
 
                 }
 
-                if ((previousX - newX) < -100) {
+                if ((previousX - newX) < -60) {
                     if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                         icons[0].setTag(icons[0].getTag().toString().replace("open", "closed"));
                         icons[0].setImageBitmap(fileBrowser.bitmapLoader("Icons/mailIcons/" + icons[0].getTag().toString().substring(
@@ -769,7 +770,7 @@ public class emailDisplayFragment extends Fragment {
 
         headEMScroll = new HorizontalScrollView(fileBrowser);
         headEMScroll.setHorizontalScrollBarEnabled(false);
-        headEMScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        headEMScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/5, RelativeLayout.LayoutParams.WRAP_CONTENT));
         headEMScroll.setBackgroundColor(getResources().getColor(R.color.white_overlay));
         headEMScroll.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
@@ -976,7 +977,7 @@ public class emailDisplayFragment extends Fragment {
                                     return;
                                 } else if (tag.contains("Trash")) {
 
-                                    fileBrowser.blink = new FileBrowser.blinkIcon(v, "Trash");
+                                    fileBrowser.blink = new blinkIcon(v, "Trash");
                                     fileBrowser.blink.start();
 
                                     if (!deleteIndividium.equals("")) {
@@ -1199,7 +1200,7 @@ public class emailDisplayFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length - 3], "Send");
+            fileBrowser.blink = new blinkIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length - 3], "Send");
             fileBrowser.blink.start();
             String host_out = "", used_from = "", port = "", password = "";
 

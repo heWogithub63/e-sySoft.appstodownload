@@ -48,15 +48,15 @@ public class SoftKeyBoard extends Fragment {
         smallTabsTx = new ArrayList<>(0);
         smallTabsTx.add(new String[]{"@", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "ß", "Back"});
         smallTabsTx.add(new String[]{"Tab", "q", "w", "e", "r", "t", "z", "u", "i", "o", "p", "ü", "+"});
-        smallTabsTx.add(new String[]{"VVVV", "a", "s", "d", "f", "g", "h", "j", "k", "l", "ö", "ä", "* '"});
-        smallTabsTx.add(new String[]{"Clear", "y", "x", "c", "v", "b", "n", "m", ", ;", ". :", "- _", "Enter"});
+        smallTabsTx.add(new String[]{"VVVV", "a", "s", "d", "f", "g", "h", "j", "k", "l", "ö", "ä", "*"});
+        smallTabsTx.add(new String[]{"Clear", "y", "x", "c", "v", "b", "n", "m", ",", ".", "-", "Enter"});
         smallTabsTx.add(new String[]{"Paste", "< ", " >", "  TAB  ",  ">>", "<<", "#", "Copy", "Shift"});
 
         largeTabsTx = new ArrayList<>(0);
         largeTabsTx.add(new String[]{"!", "'", "§", "$", "%", "&", "/", "(", ")", "=", "?", "[", "Back",});
         largeTabsTx.add(new String[]{"{ }", "Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P", "Ü", "]"});
-        largeTabsTx.add(new String[]{"vvvv", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Ö", "Ä", "' *"});
-        largeTabsTx.add(new String[]{"Clear", "Y", "X", "C", "V", "B", "N", "M", "; ,", ": .", "_ -", "Enter"});
+        largeTabsTx.add(new String[]{"vvvv", "A", "S", "D", "F", "G", "H", "J", "K", "L", "Ö", "Ä", "'"});
+        largeTabsTx.add(new String[]{"Clear", "Y", "X", "C", "V", "B", "N", "M", ";", ":", "_", "Enter"});
         largeTabsTx.add(new String[]{"Paste", "°", "< ", " >", "  TAB  ",  "vv", "^^", "Copy", "Shift"});
 
         clipBoard = (ClipboardManager) fileBrowser.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -115,9 +115,9 @@ public class SoftKeyBoard extends Fragment {
 
         RelativeLayout.LayoutParams kbIcPa = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
         kbIcPa.addRule(RelativeLayout.CENTER_VERTICAL);
-        RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/14,displayWidth/14);
+        RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/12,displayWidth/14);
         kbIcPa1.addRule(RelativeLayout.CENTER_VERTICAL);
-        if(fileBrowser.fragId != 8) {
+        if(fileBrowser.fragId != 8 || (fileBrowser.fragId == 8 && fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())) {
             ImageView Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
             Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
@@ -171,22 +171,21 @@ public class SoftKeyBoard extends Fragment {
     public void createKeyboard(ArrayList<String[]> arrayList) {
 
         GridLayout keyboardGrid = new GridLayout(fileBrowser);
-        keyboardGrid.setLayoutParams(new RelativeLayout.LayoutParams(keyBoardLayout.getWidth(),keyBoardLayout.getHeight()));
+        keyboardGrid.setLayoutParams(new RelativeLayout.LayoutParams(fileBrowser.displayWidth -10,fileBrowser.displayHeight/3 + fileBrowser.displayHeight/22));
         keyboardGrid.setRowCount(arrayList.size());
         keyboardGrid.setColumnCount(3);
         keyboardGrid.setUseDefaultMargins(true);
-        keyboardGrid.setBackgroundColor(getResources().getColor(R.color.black_overlay));
+        //keyboardGrid.setBackgroundColor(getResources().getColor(R.color.black_overlay));
         keyboardGrid.setY(displayHeight/22);
-
 
         RelativeLayout.LayoutParams[] tabsLinParams = new RelativeLayout.LayoutParams[] {
                 new RelativeLayout.LayoutParams((int)(displayWidth/14), (int)(displayWidth/14)),
-                        new RelativeLayout.LayoutParams((int)(displayWidth/14), (int)(displayWidth/14)),
-                                new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/14)),
-                                      new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/12)),
-                                             new RelativeLayout.LayoutParams((int)(displayWidth/3) -20, (int)(displayWidth/14)),
-                                                  new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/12)),
-                                                      new RelativeLayout.LayoutParams((int)(displayWidth/14), (int)(2*displayWidth/14))};
+                new RelativeLayout.LayoutParams((int)(displayWidth/14), (int)(displayWidth/14)),
+                new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/14)),
+                new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/12)),
+                new RelativeLayout.LayoutParams((int)(displayWidth/3) -20, (int)(displayWidth/14)),
+                new RelativeLayout.LayoutParams((int)(displayWidth/12), (int)(displayWidth/12)),
+                new RelativeLayout.LayoutParams((int)(displayWidth/14), (int)(2*displayWidth/14))};
         for(int i=0;i<tabsLinParams.length;i++)
             tabsLinParams[i].addRule(RelativeLayout.CENTER_IN_PARENT);
 
@@ -194,7 +193,6 @@ public class SoftKeyBoard extends Fragment {
         RelativeLayout[] tabsRel = new RelativeLayout[0];
         ImageView[] tabsButtons = new ImageView[0];
         TextView[] tabsTx = new TextView[0];
-
 
         for(int i=0;i<arrayList.size(); i++) {
             for(int n=0;n<3;n++) {
@@ -225,9 +223,10 @@ public class SoftKeyBoard extends Fragment {
                 tabsTx = Arrays.copyOf(tabsTx, tabsTx.length +1);
                 tabsTx[tabsTx.length -1] = new TextView(fileBrowser);
                 tabsTx[tabsTx.length -1].setTextSize(textSize -1);
-                tabsTx[tabsTx.length -1].setTextColor(getResources().getColor(R.color.white));
+                tabsTx[tabsTx.length -1].setTextColor(getResources().getColor(R.color.black));
                 tabsTx[tabsTx.length -1].setText(arrayList.get(i)[i1]);
                 tabsTx[tabsTx.length -1].setGravity(Gravity.CENTER);
+
 
                 switch(arrayList.get(i)[i1].length()) {
                      case(1): {
@@ -268,7 +267,8 @@ public class SoftKeyBoard extends Fragment {
                             tabsButtons[tabsButtons.length - 1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter2.png"));
                             tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
                             tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
-                            tabsTx[tabsTx.length -1].setY(-keyBoardLayout.getHeight()/32);
+                            tabsTx[tabsTx.length -1].setY(-keyBoardLayout.getHeight()/32 +15);
+
                         }
                         if(arrayList.get(i)[i1].contains("Shift")) {
                             l=5;
@@ -613,7 +613,7 @@ public class SoftKeyBoard extends Fragment {
                 n++;
             }
             if(!kindOf.equals("OK"))
-                ((TextView)iView).setTextColor(fileBrowser.getResources().getColor(R.color.white));
+                ((TextView)iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
             else {
                 fileBrowser.runOnUiThread(new Runnable() {
                     final String finalUrl = "KeyBoard/letterOK";

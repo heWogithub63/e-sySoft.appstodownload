@@ -42,6 +42,7 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 public class FileBrowser extends Activity  {
     final int ASK_PERMISSION_EXTStorage = 8080,
             ASK_PERMISSION_PKGInstall = 8081;
+
     Vibrator vibrator = null;
     Context context;
 
@@ -61,7 +62,7 @@ public class FileBrowser extends Activity  {
     WebBrowserFragment webBrowserDisplay;
     RelativeLayout mainRelDisplay;
     Intent progrIntent;
-    blinkIcon blink;
+    blinkIcon blink = new blinkIcon();
     GridLayout mainDisplayGrid;
     HorizontalScrollView headMScroll;
     RelativeLayout folderPanelFrame;
@@ -112,7 +113,6 @@ public class FileBrowser extends Activity  {
     static boolean canWrite = false, insertaction = false, intendStarted = false, threadStop = false, isPdf = false;
 
     int fragId = -1;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +177,7 @@ public class FileBrowser extends Activity  {
         }
         hide = 1;
         device = "/storage";
-        searchMashineUrl = "https://de.search.yahoo.com";
+        searchMashineUrl = "https://duckduckgo.com/";
 
         createSurface();
         if(!Api30and()) {
@@ -245,6 +245,7 @@ public class FileBrowser extends Activity  {
             }
         }
     }
+
 
     void serveAPK(String url, String mimeType){
 
@@ -329,6 +330,8 @@ public class FileBrowser extends Activity  {
         }
         return have_WIFI||have_MobileData;
     }
+
+
     /* returns external storage paths */
     public String[] getExternalStorageDirectories() {
 
@@ -1633,8 +1636,24 @@ public class FileBrowser extends Activity  {
     }
 
     public void OnClick(View view) {
+        String tag01 =  view.getTag().toString();
         // stop running Mediaplayer
-        if (fileBrowser.intendStarted) {
+        if (tag01.contains("open") && fileBrowser.intendStarted) {
+            if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+                if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("running") &&
+                        (devicePath.endsWith(".pdf") || devicePath.endsWith(".txt"))) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "closed");
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
+                    fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
+                } else if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("open") &&
+                        (devicePath.endsWith(".pdf") || devicePath.endsWith(".txt"))) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "open", "closed");
+                    fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
+                }
+            }
             if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                 //fileBrowser.showMediaDisplay.disrupt = true;
 
@@ -1979,7 +1998,7 @@ public class FileBrowser extends Activity  {
             if (transParam != null)
                 softKeyBoard.setArguments(transParam);
             frameContainerMove(6, findViewById(R.id.softKeyBoard), xpos, ypos, width, height);
-            fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
+            fragTrans.replace(R.id.softKeyBoard, softKeyBoard);fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
         }
 
         fragTrans.addToBackStack(""+fragId).commitAllowingStateLoss();
@@ -2006,8 +2025,8 @@ public class FileBrowser extends Activity  {
             });
 
         } else {
-            frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
-            frameLy.get(n).setClickable(false);
+                frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
+                frameLy.get(n).setClickable(false);
         }
 
         frameLy.get(n).setX(0);
@@ -2157,28 +2176,12 @@ public class FileBrowser extends Activity  {
 
         String f = from, t = to;
 
-        while (from.contains("/") && f.contains(" ")) {
-            String tab = f.substring(0,f.indexOf(" ")), nx = f.substring(f.indexOf(" "));
-            int lst = 0, nex = f.length();
-            if(tab.contains("/"))
-                lst = f.indexOf(" ") -(f.indexOf(" ") -(tab.lastIndexOf("/") + 1));
-            if(nx.contains("/"))
-                nex = f.indexOf(" ")  + nx.indexOf("/");
-            f= f.substring(0,lst)+f.substring(nex);
-
-            from = from.substring(0,lst) +"'"+ from.substring(lst,nex).replace(" ","\\ ") +"'" + from.substring(nex);
+        if (from.contains("/") && f.contains(" ")) {
+            from = uriFromFile(context,new File(from)).toString();
         }
 
-        while (to.contains("/") && t.contains(" ")) {
-            String tab = t.substring(0,t.indexOf(" ")), nx = t.substring(t.indexOf(" "));
-            int lst = 0, nex = t.length();
-            if(tab.contains("/"))
-                lst = t.indexOf(" ") -(t.indexOf(" ") -(t.lastIndexOf("/") + 1));
-            if(nx.contains("/"))
-                nex = t.indexOf(" ")  + nx.indexOf("/");
-            t= t.substring(0,lst)+t.substring(nex);
-
-            to = to.substring(0,lst) +"'"+ to.substring(lst,nex).replace(" ","\\ ") +"'" + to.substring(nex);
+        if (to.contains("/") && t.contains(" ")) {
+            to = uriFromFile(context,new File(to)).toString();
         }
 
         if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
@@ -2186,7 +2189,7 @@ public class FileBrowser extends Activity  {
         String exe = "";
         String[] outputTx = new String[0];
         String searchWhat = "";
-        Process process;
+        Process process = null;
         try {
             if (todo.startsWith("ls")) {
                 outputTx = docu_Loader("Language/" + language + "/Search_Result.txt");
@@ -2205,6 +2208,7 @@ public class FileBrowser extends Activity  {
             exe = (todo + " " + from + " " + to).trim();
             Log.e("mainExtProgram", exe);
             process = Runtime.getRuntime().exec(exe);
+
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream()));
             String strFolder = "", strRead;
@@ -2271,11 +2275,12 @@ public class FileBrowser extends Activity  {
         new movePanel(frame).start();
     }
 
+
     static public class blinkIcon extends Thread {
         View iView;
         String kind="";
         boolean run = true;
-
+        public blinkIcon() {}
         public blinkIcon(View v, String kindOf) {
             kind = kindOf;
             iView = v;
@@ -2430,6 +2435,8 @@ public class FileBrowser extends Activity  {
                     });
 
                 } else if (panel_direction == -1 && fileBrowser.frameLy.get(framely).getX() <= 1) {
+                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.showList,3);
 
                     if(framely == 5) {
                         if (fileBrowser.createSendEmail.attachedList != null && calledBy.equals("Attached")){

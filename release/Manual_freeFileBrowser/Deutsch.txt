@@ -17,12 +17,11 @@ Zur Bedienung:
                      Links.
 
     zurück zum File-Browser --> vom 
-                     MultiMediaPanel
-                     durch Wischen nach rechts am 
+                     MultiMediaPanel, TextEditor oder E-mail client
+                     durch Wischen nach rechts am rechten
                      oberen Bildrand.
-                     --> vom Editor, EmailPanel, 
-                     InternetBrowser
-                     durch Wischen nach rechts am 
+                     --> vom InternetBrowser
+                     durch Wischen nach rechts am rechten
                      unteren Bildrand.
 
     Mediadateien --> Erstellung einer
@@ -41,13 +40,15 @@ Zur Bedienung:
                      
 
     SoftKeyBoard --> Das Bildschirm-Keyboard ist
-                     nach oben oder unten verschiebbar.
+                     nach oben oder unten verschiebbar, durch
+                     langes Tippen an einer tastenfreien
+                     Stelle mit anschliesenden Verschieben.
 
     Pdf Editor: ermöglicht die Erstellung einseitiger,
-                mehrseitiger PDFs (Aufruf der Seiten -> PDF), 
-                das Einfügen von
+                mehrseitiger PDFs (Aufruf der einzelnen Seiten -> PDF). 
+                Das Einfügen von
                 Bildern (u.a.Unterschriften), sowie die Verknüpfung
-                mehrerer Pdfs durch Klick auf Neu --> PDF.
+                mehrerer Pdfs durch Klick auf --> Neu --> PDF.
 
     Text Editor: ermöglicht das Einfügen von Überschriften,
                  Logos (Vorbesetzung -> Info, 
@@ -56,11 +57,14 @@ Zur Bedienung:
                  mit anschl. Sicherungsmöglichkeit als PDF oder Text.
 
     Internet Zugang: ermöglicht das Speichern von offenen Seiten,
-                     History Klicks, Springen zur Suchmaschiene,
-                     die im FileBrowser voreingestellt werden kann.
-                     (äusserster rechter Button in der obersten Zeile).
+                     History LongClick. 
+                     Springen zur Suchmaschiene,
+                     die im FileBrowser voreingestellt werden kann,
+                     (zweiter linker Button in der untersten Zeile).
                      Die Steuerbutton auf der Webseite sind versenkbar,
-                     durch Wischen nach unten.
+                     durch klick auf den rechten Button der untersten Zeile.
+                     Springen in den bereits geladenen Webseiten durch Klick 
+                     auf die vorwärts, rückwärts Button.
 
     E-mail: alle Funktionen eines e-mail Programms, sind erst
             nach Eingabe der Account Daten unter -> Info benutzbar.

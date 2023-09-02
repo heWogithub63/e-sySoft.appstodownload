@@ -26,6 +26,8 @@ public class MediaDisplayFragment extends Fragment {
     static TextView titel;
     String kindOfMedia = "";
     String mediaURL = "";
+    String formatted;
+    TextView duration;
     float previousX, pointer;
     double scaleFact = 1;
     int arrayPointer = 0, hours, minutes, seconds, smseconds;
@@ -39,7 +41,6 @@ public class MediaDisplayFragment extends Fragment {
     LinearLayout contrLin;
     MediaPlayer mP;
     ImageView[] runImgs;
-    TextView duration;
     boolean videoPause = false;
 
     boolean disrupt = false;
@@ -183,7 +184,9 @@ public class MediaDisplayFragment extends Fragment {
     }
     private RelativeLayout createSwitcher() {
         RelativeLayout header = new RelativeLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth, displayHeight/18));
+        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/5, displayHeight/16));
+        header.setX(displayWidth -displayWidth/5);
+        header.setY(20);
 
         header.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -202,7 +205,7 @@ public class MediaDisplayFragment extends Fragment {
 
                 }
 
-                if ((previousX - newX) < -100) {
+                if ((previousX - newX) < -60) {
                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                     }
@@ -498,7 +501,6 @@ public class MediaDisplayFragment extends Fragment {
         hours = videoLength /3600;
         minutes = (videoLength /60) -(hours *60);
         seconds = videoLength - (hours *3600) -(minutes *60);
-        String formatted = String.format("%d:%02d:%02d",hours,minutes,seconds);
 
         RelativeLayout.LayoutParams contrLinParam = new RelativeLayout.LayoutParams(displayWidth, displayHeight/14);
         contrLinParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -592,7 +594,6 @@ public class MediaDisplayFragment extends Fragment {
             contrRunRel.addView(runImgs[runImgs.length - 1]);
         }
         contrLinButtons.addView(contrRunRel);
-
         LinearLayout durationTXLin = new LinearLayout(fileBrowser);
         durationTXLin.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 5, displayHeight / 20));
         durationTXLin.setOrientation(LinearLayout.HORIZONTAL);
@@ -604,11 +605,10 @@ public class MediaDisplayFragment extends Fragment {
 
         durationTXLin.addView(duration);
         contrLinButtons.addView(durationTXLin);
-
         contrLin.addView(contrLinButtons);
-
-        videoRunTimer = new videoRunTime((2*displayWidth/5));
+        videoRunTimer = new videoRunTime((2 * displayWidth / 5));
         videoRunTimer.start();
+
         return contrLin;
     }
 
@@ -657,41 +657,41 @@ public class MediaDisplayFragment extends Fragment {
 
         @Override
         public void run() {
-            double speedFact = 1;
-            if(smseconds < 100) speedFact = 0.75;
-            else if(smseconds < 200) speedFact = 0.80;
-            else if(smseconds < 300) speedFact = 0.90;
-            else if(smseconds < 400) speedFact = 0.95;
 
-            pointer = (float)((bar /smseconds) *speedFact* xfact);
+                    double speedFact = 1;
+                    if (smseconds < 100) speedFact = 0.75;
+                    else if (smseconds < 200) speedFact = 0.80;
+                    else if (smseconds < 300) speedFact = 0.90;
+                    else if (smseconds < 400) speedFact = 0.95;
 
-            while (smseconds > 0) {
-                runImgs[1].setX(runImgs[1].getX() + (float) (pointer));
-                int hours = smseconds /3600;
-                int minutes = (smseconds /60) -(hours *60);
-                int seconds = smseconds - (hours *3600) -(minutes *60);
-                String formatted = String.format("%d:%02d:%02d",hours,minutes,seconds);
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        duration.setText(formatted);
+                    pointer = (float) ((bar / smseconds) * speedFact * xfact);
 
+                    while (smseconds > 0) {
+                        runImgs[1].setX(runImgs[1].getX() + (float) (pointer));
+                        int hours = smseconds / 3600;
+                        int minutes = (smseconds / 60) - (hours * 60);
+                        int seconds = smseconds - (hours * 3600) - (minutes * 60);
+                        formatted = String.format("%d:%02d:%02d", hours, minutes, seconds);
+                        fileBrowser.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                duration.setText(formatted);
+                            }
+                        });
+
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException ie) {
+                            }
+
+                        while (videoPause) {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException ie) {
+                            }
+                        }
+                        smseconds = smseconds - 1;
                     }
-                });
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                }
-                while(videoPause) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException ie) {
-                    }
-                }
-                smseconds = smseconds -1;
-            }
-
         }
     }
 }

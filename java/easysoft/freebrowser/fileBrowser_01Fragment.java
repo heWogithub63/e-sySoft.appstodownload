@@ -260,14 +260,28 @@ public class fileBrowser_01Fragment extends Fragment {
         return scRel;
     }
     public void OnClick(View view) {
-
-        String sPath = view.getTag().toString().substring(view.getTag().toString().lastIndexOf("  ") + 2);
-        int lp = Integer.parseInt(view.getTag().toString().substring(0, view.getTag().toString().indexOf("_")));
+        String tag = view.getTag().toString();
+        String sPath = tag.substring(tag.lastIndexOf("  ") + 2);
+        int lp = Integer.parseInt(tag.substring(0, tag.indexOf("_")));
         devicePath = sPath;
-
-        if (view.getTag().toString().contains("open")) {
             // stop running Mediaplayer
-            if (fileBrowser.intendStarted) {
+            if (tag.contains("open") && fileBrowser.intendStarted) {
+
+                if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+                    if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("running") &&
+                            (tag.contains(".pdf") || tag.contains(".txt"))) {
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "closed");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
+                        fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
+                    } else if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("open") &&
+                            (tag.contains(".pdf") || tag.contains(".txt"))) {
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "open", "closed");
+                        fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
+                    }
+                }
                 if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                     //fileBrowser.showMediaDisplay.disrupt = true;
 
@@ -317,6 +331,7 @@ public class fileBrowser_01Fragment extends Fragment {
 
                 fileBrowser.intendStarted = false;
             }
+        if (tag.contains("open") || tag.contains("running")) {
             devicePath = devicePath.substring(0, devicePath.lastIndexOf("/"));
         }
 

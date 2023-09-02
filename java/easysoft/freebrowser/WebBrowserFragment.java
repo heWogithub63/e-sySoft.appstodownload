@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -17,6 +18,13 @@ import android.webkit.*;
 import android.widget.*;
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -168,7 +176,7 @@ public class WebBrowserFragment extends Fragment {
                     popupSoftkeyboard();
                 }
 
-            }, 350);
+            }, 20);
         }
         actionIdChanged = false;
     }
@@ -185,11 +193,10 @@ public class WebBrowserFragment extends Fragment {
                 new Object() {
                     @JavascriptInterface
                     public void onClick(String tag,String id, String type) {
-                        System.err.println (id+"----"+tag+"----"+type);
                         actionId = id;
                         actionIdChanged = true;
-
-                        if(orientation.equals("Portrait") && id.equals("p") && type.equals("search"))
+                        System.err.println("..."+type+"..."+id+"..."+tag);
+                        if(tag.equals("INPUT")||tag.contains("TEXT"))
                             handleJavascriptInput("", 0, 0);
                         else
                             hideKeyboard();
@@ -204,6 +211,30 @@ public class WebBrowserFragment extends Fragment {
                 }
                 if (progress <= 100) {
                     progressDialog.dismiss();
+                }
+            }
+        });
+
+        webView.setDownloadListener(new DownloadListener() {
+
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition
+                    , String mimetype, long contentLength) {
+
+                String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
+
+                try {
+                    String address = Environment.getExternalStorageDirectory().getAbsolutePath() + "/"
+                            + Environment.DIRECTORY_DOWNLOADS + "/" +
+                            fileName.replace(" ", "");
+                   File file = new File(address);
+                    boolean a = file.createNewFile();
+                    URL link = new URL(url);
+
+                    downloadFile(link, address);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -280,6 +311,17 @@ public class WebBrowserFragment extends Fragment {
         return webView;
     }
 
+    public void downloadFile(URL url, String outputFileName) throws IOException {
+
+        try (InputStream in = url.openStream();
+             ReadableByteChannel rbc = Channels.newChannel(in);
+             FileOutputStream fos = new FileOutputStream(outputFileName)) {
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        }
+        // do your work here
+
+    }
+
     private LinearLayout createSwitcher() {
 
         header = new LinearLayout(fileBrowser);
@@ -306,7 +348,7 @@ public class WebBrowserFragment extends Fragment {
 
                 }
 
-                if ((previousX - newX) < -200) {
+                if ((previousX - newX) < -60) {
                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                         fileBrowser.fragmentShutdown(fileBrowser.showList,3);
                     }
