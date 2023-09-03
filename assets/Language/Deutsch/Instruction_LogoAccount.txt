@@ -1,10 +1,11 @@
-Sollten Sie ein
-Logo wünschen, können Sie 
+Wünschen Sie ein
+Logo, dann können Sie
 Dieses in Form eines .png
 Bildes im FileBrowser
-selectieren. Danach
-zurück zum Dokument !!
+selektieren. Danach
+zurück zum Dokument
+via Return Pfeil!!
 
-Zurück zum FileBrowser
+Zum FileBrowser
 wischen nach rechts
-am unteren Bildschirmrand !!
+am oberen rechten Bildschirmrand !!

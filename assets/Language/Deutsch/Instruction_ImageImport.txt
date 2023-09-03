@@ -5,6 +5,6 @@ FileBrowser Dieses
 einzufügende Bild
 selektiert haben !!
 
-Zurück zum FileBrowser
+Zum FileBrowser
 wischen nach rechts
-am unteren Bildschirmrand !!
+am oberen rechten Bildschirmrand !!

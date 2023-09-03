@@ -1,10 +1,11 @@
-In Additon if you like
+If you like
 to use a Logo. You have
 to select a .png picture
 in the fileBrowser before 
 you start or go back to
-a new Document !!
+a new Document via
+the return arrow!!
 
-Back to the FileBrowser via
+To the FileBrowser via
 wipe to the right at the
-top line !!
+right top line !!

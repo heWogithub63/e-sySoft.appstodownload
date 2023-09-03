@@ -16,13 +16,12 @@ About the using:
                      Links.
 
     back to the File-Browser --> from 
-                     MultiMediaPanel
+                     MultiMediaPanel, Editor, EmailPanel
                      via Wipe to the Right at
-                     the top line of the display.
-                     --> from Editor, EmailPanel, 
-                     InternetBrowser
+                     the right top line of the display.
+                     -->  InternetBrowser
                      via Wipe to the Right at
-                     the bottom line of the display.
+                     the right bottom line of the display.
 
     Mediadateien --> Create a 
                      Medialiste via Selection
@@ -40,20 +39,22 @@ About the using:
                     
 
     SoftKeyboard --> the Display Keyboard is moveable to the
-                     Top or Button of the Display.
+                     Top or Button of the Display
+                     via long click on a button free space of
+                     the keybord.
 
     
-    Pdf Editor: realise the creation of one page
-                multypage PDFs (display the Pages -> PDF), 
-                the input of
+    Pdf Editor: realise the creation of one page or
+                multypage PDFs (display the Pages -> PDF).
+                The input of
                 Pictures (e.g. signes), 
                 as well as the connection
-                from more Pdfs to one. -> 
-                Pdfs have to be in one folder wich is selected,
+                from more Pdfs to one or BackgroundPicture ->
+                Pdfs have to be in one folder wich is selected.
                 Klick on New --> PDF.
 
     Text Editor: realises the input of head lines,
-                 logos (Preselection -> Info, 
+                 logos (Preselection -> Info is necessary,
                  !! Use the Preselection Arrow !!), 
                  background pictures (e.g. forms),
                  with the possibility to save as PDF.
@@ -61,8 +62,9 @@ About the using:
     Internet Entrace: realises the save of webpage links,
                       history klicks, jump to search programm,
                       wich you could preselect in the FileBrowser 
-                      -> last right Button on the TopLine.
-                      Search Buttons could be hided via wipe to Bottom.
+                      -> last right Button on the BottomLine.
+                      Search Buttons could be hidded via last right
+                      Button at the BottomLine.
 
     E-mail: all funktions of a email programm,
             useable after the input of 'account Data'

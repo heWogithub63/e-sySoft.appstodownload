@@ -36,8 +36,8 @@ import static easysoft.freebrowser.showListFragment.selectedTx_01;
 
 public class TextEditorFragment extends Fragment {
     View view;
-    FrameLayout txEditorLayout;
-    ImageView selector;
+    FrameLayout txEditorLayout, timerGifLay;
+    ImageView selector, timer;
     RelativeLayout mainRel, textRel;
     LinearLayout headIconLin, mainLin, iconLin;
     LinearLayout pdfDisplayLin;
@@ -114,6 +114,13 @@ public class TextEditorFragment extends Fragment {
         mainRel = (RelativeLayout) view.findViewById(R.id.textEditorMainRel);
         mainRel.setBackgroundColor(getResources().getColor(R.color.white));
 
+        timerGifLay = new FrameLayout(fileBrowser);
+        timerGifLay.setLayoutParams(new FrameLayout.LayoutParams(displayWidth / 8, displayWidth / 8));
+        timerGifLay.setX(displayWidth -displayWidth/4);
+        timerGifLay.setY(displayHeight/8);
+        timerGifLay.setVisibility(View.INVISIBLE);
+        timerGifLay.addView(new FileBrowser.GifTimer(fileBrowser.context));
+
         if(kindOfFormat.equals(".txt"))
             mainRel.addView(createTextEditorDisplay(createHaderIcons()));
         else if(kindOfFormat.equals(".pdf")) {
@@ -121,6 +128,7 @@ public class TextEditorFragment extends Fragment {
             iconLin.addView(createScaleButtons());
         }
         mainRel.addView(createSwitcher());
+        mainRel.addView(timerGifLay);
 
         txEditorLayout.bringToFront();
         return view;
@@ -499,7 +507,6 @@ public class TextEditorFragment extends Fragment {
                                     kind = "PdfCombineList";
 
 
-                                if(!fileBrowser.isPdf )
                                     arrayList = new ArrayList<>();
 
                                 if (!caller.endsWith("New") && fileBrowser.pdfPageCount > 0) {
@@ -545,7 +552,8 @@ public class TextEditorFragment extends Fragment {
                                         fileBrowser.isPdf = true;
                                         if (calledBy.equals("importImg"))
                                             calledBy = "";
-                                    }
+                                    } else
+                                        fileBrowser.isPdf = false;
 
                                     float f = 4;
                                     if (yfact <= 0.625)
@@ -808,6 +816,7 @@ public class TextEditorFragment extends Fragment {
             pdfScroll.removeAllViews();
             pdfDisplayLin.removeAllViews();
             mainLin.removeView(pdfDisplayLin);
+            mainRel.removeView(timer);
         } else {
             pdfScroll = new ScrollView(fileBrowser);
             pdfScroll.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
@@ -821,6 +830,7 @@ public class TextEditorFragment extends Fragment {
             //pdfDisplayLin.setX(txEditorLayout.getWidth()/22);
 
         }
+
         if (importImg)
             imgPath = devicePath;
         try {
@@ -971,7 +981,7 @@ public class TextEditorFragment extends Fragment {
             kindOfFormat = ".pdf";
             if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
                 fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
-            fileBrowser.messageStarter("Successfull_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
+            fileBrowser.messageStarter("Successful_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
 
         } catch (IOException e) {
             String[] noSuccessful = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),
@@ -1051,7 +1061,7 @@ public class TextEditorFragment extends Fragment {
 
             pdfDocument.close();
             devicePath = FILE;
-            fileBrowser.messageStarter("Successfull_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
+            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
 
         } catch (IOException e) {
             String[] noSuccessful = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),
@@ -1109,7 +1119,7 @@ public class TextEditorFragment extends Fragment {
 
             document.close();
             devicePath = Destination;
-            fileBrowser.messageStarter("Successfull_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
+            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
 
             //fileBrowser.reloadFileBrowserDisplay();
         } catch (Exception e) {

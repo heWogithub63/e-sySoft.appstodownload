@@ -6,4 +6,4 @@ in the FileBrowser previously !!
 
 Back to the FileBrowser
 wipe to the right
-at the bottom of the display.
+at the right TopLine of the display.

@@ -305,7 +305,8 @@ public class showMessageFragment extends Fragment {
         }
     }
     public void clickOk () {
-
+        if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.fragId == 7)
+            fileBrowser.createTxEditor.timerGifLay.setVisibility(View.VISIBLE);
         if (kindOf.contains("ask") ) {
             String todo = commandString.substring(0, commandString.indexOf("  ")),
                     from = commandString.substring(commandString.indexOf("  ") + 2),
@@ -546,6 +547,7 @@ public class showMessageFragment extends Fragment {
 
         }
         public void run() {
+
             try {
                 Thread.sleep(messageTimer);
                 if(kindOf.equals("PermissionDenied"))
@@ -579,6 +581,8 @@ public class showMessageFragment extends Fragment {
 
             } else if(kindOf.startsWith("mailNoInternet")) {
                 fileBrowser.threadStop = true;
+                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
+
             } else if(kindOf.equals("Instruction_LogoAccount"))
                 fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[1],"TextEditorIcons","open","closed");
             else if(kindOf.equals("InfoContact")) {
@@ -680,26 +684,22 @@ public class showMessageFragment extends Fragment {
 
 
 
-            } else if(kindOf.equals("Successfull_TxDocumentSave")) {
-                if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.createTxEditor, 7);
-                if(devicePath.endsWith(".pdf"))
-                   fileBrowser.startExtApp(devicePath);
-                else {
+            } else if(kindOf.equals("Successful_TxDocumentSave")) {
+
+                fileBrowser.createTxEditor.timerGifLay.setVisibility(View.INVISIBLE);
+                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[3],"TextEditorIcons", "open", "closed");
+
                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                     if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                    if(openFrags.equals("")) {
-                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[2], headMenueIcon02[5]}, new String[]{"sideRightMenueIcons", "sideRightMenueIcons"});
-                        fileBrowser.headMenueIcon02[2].setEnabled(false);
-                    } else
-                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon02[5]}, new String[]{"sideRightMenueIcons"});
 
-                }
-            } else if(kindOf.equals("Successfull_PdfDocumentSave")) {
+            } else if(kindOf.equals("Successful_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);
             }
+
+            if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible() && fileBrowser.fragId == 5)
+                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
 
             fileBrowser.threadStop = true;
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);

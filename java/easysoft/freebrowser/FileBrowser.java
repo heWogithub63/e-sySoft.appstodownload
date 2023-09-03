@@ -7,9 +7,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
+import android.graphics.*;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -245,7 +243,6 @@ public class FileBrowser extends Activity  {
             }
         }
     }
-
 
     void serveAPK(String url, String mimeType){
 
@@ -1772,8 +1769,9 @@ public class FileBrowser extends Activity  {
                 Bundle bund = new Bundle();
                 bund.putString("CALLER", "");
                 bund.putString("FORMAT", form);
-                if(form.equals(".txt"))
+                if(form.equals(".txt")) {
                     bund.putStringArray("TEXT", docu_Loader(Url));
+                }
                 else {
                     if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
@@ -2021,16 +2019,19 @@ public class FileBrowser extends Activity  {
                 public void run() {
                     frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
                     frameLy.get(n).setClickable(false);
+                    frameLy.get(n).setX(0);
+                    frameLy.get(n).setY(0);
                 }
             });
 
         } else {
-                frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
-                frameLy.get(n).setClickable(false);
+            frameLy.get(n).setLayoutParams(new FrameLayout.LayoutParams(0, 0));
+            frameLy.get(n).setClickable(false);
+            frameLy.get(n).setX(0);
+            frameLy.get(n).setY(0);
         }
 
-        frameLy.get(n).setX(0);
-        frameLy.get(n).setY(0);
+
         if(n == 8)
             calledBack = "";
     }
@@ -2472,6 +2473,36 @@ public class FileBrowser extends Activity  {
                 n++;
             }
 
+        }
+    }
+    public static class GifTimer extends View {
+        Movie movie;
+        InputStream is;
+        long startTime;
+
+        public GifTimer(Context context) {
+            super(context);
+            try {
+                is = getResources().getAssets().open("Animation/timer_black.gif");
+                movie = Movie.decodeStream(is);
+            }catch (IOException ie) {
+                Log.e("Error load Gif", ie.getMessage());
+            }
+        }
+        @Override
+        protected void onDraw(Canvas canvas) {
+            canvas.drawColor(getResources().getColor(R.color.white_overlay));
+            super.onDraw(canvas);
+            long now = System.currentTimeMillis();
+            if(startTime == 0)
+                startTime = now;
+            int relTime = (int) ((now - startTime) % movie.duration());
+            movie.setTime(relTime);
+            float scalefactorx = (float) this.getWidth() / (float) movie.width();
+            float scalefactory = (float) this.getHeight() / (float)  movie.height();
+            canvas.scale(scalefactorx,1);
+            movie.draw(canvas, scalefactorx, scalefactory);
+            this.invalidate();
         }
     }
 }

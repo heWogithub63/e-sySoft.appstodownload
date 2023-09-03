@@ -33,7 +33,7 @@ import static easysoft.freebrowser.FileBrowser.*;
 public class emailDisplayFragment extends Fragment {
 
     View view;
-    FrameLayout emailLayout;
+    FrameLayout emailLayout, timerGifLay;
     ImageView selector;
     float previousX;
     RelativeLayout mainRel;
@@ -102,8 +102,17 @@ public class emailDisplayFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_email_display, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.mainRel);
 
+        timerGifLay = new FrameLayout(fileBrowser);
+        timerGifLay.setLayoutParams(new FrameLayout.LayoutParams(displayWidth / 8, displayWidth / 8));
+        timerGifLay.setX(displayWidth -displayWidth/4);
+        timerGifLay.setY(displayHeight/8);
+        timerGifLay.setVisibility(View.INVISIBLE);
+        timerGifLay.addView(new FileBrowser.GifTimer(fileBrowser.context));
+
+
         mainRel.addView(createSendEmailDisplay(createHaederMail()));
         mainRel.addView((createSwitcher()));
+        mainRel.addView(timerGifLay);
 
         emailLayout.bringToFront();
         return view;
@@ -160,6 +169,7 @@ public class emailDisplayFragment extends Fragment {
         mainRel.removeAllViews();
         mainRel.addView(createSendEmailDisplay(createHaederMail()));
         mainRel.addView(createSwitcher());
+        mainRel.addView(timerGifLay);
         fileBrowser.threadStop = true;
     }
 
@@ -759,6 +769,7 @@ public class emailDisplayFragment extends Fragment {
         mainLin.addView(AttachLin);
 
         return mainLin;
+
     }
 
     public LinearLayout createHaederMail() {
@@ -1192,7 +1203,7 @@ public class emailDisplayFragment extends Fragment {
     }
 
     public void handleSendThread(String kind_of) {
-        new emailDisplayFragment.sendThread(kind_of).start();
+         new emailDisplayFragment.sendThread(kind_of).start();
     }
 
     public class HandleMailWithAttachmen extends AsyncTask<Void, Void, Void> {

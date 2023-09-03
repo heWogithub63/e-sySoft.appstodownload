@@ -3,10 +3,10 @@ combine PDF's you
 have to select in the 
 Filebrowser that folder
 in which the PDF's
-to combine are and
-the new PDF has to 
-be written !!!
+to combine are included,
+New PDF has to
+be saved again !!!
 
 Back to the FileBrowser via
 wipe to the right at the
-bottom of the display !!
+right top line of the display !!

@@ -7,4 +7,5 @@ selektiert sein !!
 
 Zurück zum FileBrowser
 wischen nach rechts
-am unteren Bildschirmrand !!
+am oberen rechten
+Bildschirmrand !!

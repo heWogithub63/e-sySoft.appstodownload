@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static easysoft.freebrowser.FileBrowser.*;
-import static easysoft.freebrowser.TextEditorFragment.logoPath;
+import static easysoft.freebrowser.TextEditorFragment.*;
 import static easysoft.freebrowser.emailDisplayFragment.nn;
 
 
@@ -122,8 +122,6 @@ public class showListFragment extends Fragment {
                         (isPdf && (arrayList.get(i)[i1].equals("Text Datei") || arrayList.get(i)[i1].contains("import")))) {
                     listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.grey));
                     listTx[listTx.length - 1].setEnabled(false);
-                    if(isPdf)
-                        isPdf = false;
                 }
                 listTx[listTx.length - 1].setText("\t" +arrayList.get(i)[i1]);
 
@@ -458,6 +456,7 @@ public class showListFragment extends Fragment {
 
                                 fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[o], "Call");
                                 fileBrowser.blink.start();
+                                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.VISIBLE);
 
                                 fileBrowser.createSendEmail.handleSendThread(kind);
                                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
@@ -581,6 +580,8 @@ public class showListFragment extends Fragment {
                                         return;
                                     }
                                     isPdf = false;
+                                    isBackground = false;
+                                    isLogo = false;
                                     String kind = "TxDocument_Save";
                                     if (tag.contains("PDF ")) {
                                         kind = "PDFDocument_Save";
