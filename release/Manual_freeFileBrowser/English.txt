@@ -9,11 +9,11 @@ Languages: German, English
 
 About the using:
     short Click -->  Selection of Files,
-                     Links, Documents, or Folders
+         on the Icon Links, Documents, or Folders
                      to use the manipulating 
                      Possibilities.
     long  Click -->  To open Files or
-                     Links.
+         on the Icon Links.
 
     back to the File-Browser --> from 
                      MultiMediaPanel, Editor, EmailPanel
@@ -45,16 +45,16 @@ About the using:
 
     
     Pdf Editor: realise the creation of one page or
-                multypage PDFs (display the Pages -> PDF). 
+                multypage PDFs (display the Pages -> PDF).
                 The input of
                 Pictures (e.g. signes), 
                 as well as the connection
-                from more Pdfs to one or BackgroundPicture -> 
+                from more Pdfs to one or BackgroundPicture ->
                 Pdfs have to be in one folder wich is selected.
                 Klick on New --> PDF.
 
     Text Editor: realises the input of head lines,
-                 logos (Preselection -> Info is necessary, 
+                 logos (Preselection -> Info is necessary,
                  !! Use the Preselection Arrow !!), 
                  background pictures (e.g. forms),
                  with the possibility to save as PDF.

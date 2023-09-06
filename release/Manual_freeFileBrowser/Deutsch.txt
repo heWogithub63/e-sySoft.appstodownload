@@ -10,11 +10,11 @@ Sprachen: Deutsch, Englisch
 
 Zur Bedienung:
     kurzer Click --> Selektion eines Files,
-                     Links, Namen oder Ordner
+       auf das Icon  Links, Namen oder Ordner
                      mit anschliesender Mani-
                      pulations-Möglichkeit.
     langer Click --> Öffnen eines Files oder
-                     Links.
+       auf das Icon  Links.
 
     zurück zum File-Browser --> vom 
                      MultiMediaPanel, TextEditor oder E-mail client
@@ -45,7 +45,7 @@ Zur Bedienung:
                      Stelle mit anschliesenden Verschieben.
 
     Pdf Editor: ermöglicht die Erstellung einseitiger,
-                mehrseitiger PDFs (Aufruf der einzelnen Seiten -> PDF). 
+                mehrseitiger PDFs (Aufruf der einzelnen Seiten -> PDF).
                 Das Einfügen von
                 Bildern (u.a.Unterschriften), sowie die Verknüpfung
                 mehrerer Pdfs durch Klick auf --> Neu --> PDF.
@@ -57,13 +57,13 @@ Zur Bedienung:
                  mit anschl. Sicherungsmöglichkeit als PDF oder Text.
 
     Internet Zugang: ermöglicht das Speichern von offenen Seiten,
-                     History LongClick. 
+                     History LongClick.
                      Springen zur Suchmaschiene,
                      die im FileBrowser voreingestellt werden kann,
                      (zweiter linker Button in der untersten Zeile).
                      Die Steuerbutton auf der Webseite sind versenkbar,
                      durch klick auf den rechten Button der untersten Zeile.
-                     Springen in den bereits geladenen Webseiten durch Klick 
+                     Springen in den bereits geladenen Webseiten durch Klick
                      auf die vorwärts, rückwärts Button.
 
     E-mail: alle Funktionen eines e-mail Programms, sind erst
