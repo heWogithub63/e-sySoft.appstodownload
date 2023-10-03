@@ -7,7 +7,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -21,10 +24,10 @@ import android.view.WindowManager;
 import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.os.EnvironmentCompat;
 import androidx.print.PrintHelper;
-import com.google.android.gms.security.ProviderInstaller;
 
 import java.io.*;
 import java.lang.Process;
@@ -33,8 +36,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import static android.Manifest.permission.*;
 import static android.os.Build.VERSION.SDK_INT;
-import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
 public class FileBrowser extends Activity  {
@@ -44,7 +47,7 @@ public class FileBrowser extends Activity  {
     Vibrator vibrator = null;
     Context context;
 
-
+    FrameLayout protector;
     ActivityManager aM;
     FragmentManager fragManager;
     FragmentTransaction fragTrans;
@@ -79,9 +82,8 @@ public class FileBrowser extends Activity  {
     static ImageView[] headMenueIcon03;
     static ImageView HidedView;
     static EditText keyboardTrans;
-    static View transView;
-    static Uri treeUri;
-    static int permNr = -1, displayHeight, displayWidth, hide, fv;
+
+    static int  displayHeight, displayWidth, hide;
     static int panel_direction = 1, pdfPageCount = 0;
     static double xfact, yfact;
     static String device, devicePath="", devicePath_trans;
@@ -120,9 +122,6 @@ public class FileBrowser extends Activity  {
         context = this;
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        try {
-            ProviderInstaller.installIfNeeded(context);
-        } catch(Exception e) {}
 
         mainRelDisplay = findViewById(R.id.mainRel);
         mainRelDisplay.setBackgroundColor(getResources().getColor(R.color.grey));
@@ -175,54 +174,72 @@ public class FileBrowser extends Activity  {
         }
         hide = 1;
         device = "/storage";
-        searchMashineUrl = "https://duckduckgo.com/";
+        searchMashineUrl = "https://de.search.yahoo.com/";
 
         createSurface();
         if(!Api30and()) {
-            askPermissions();
+            if (checkPermission()) {
+                // if permission is already granted display a toast message
+                Log.e("Permission Granted..", "jetzt");
+            } else {
+                if (protector == null) {
+                    protector = new FrameLayout(this);
+                    protector.setEnabled(false);
+                    protector.setLayoutParams(new FrameLayout.LayoutParams(displayWidth, displayHeight));
+                    protector.setBackgroundColor(getResources().getColor(R.color.blue_overlay));
+                    protector.setClickable(true);
+                    mainRelDisplay.addView(protector);
+                }
+                requestPermission();
+            }
         }
 
     }
 
 
-    protected void askPermissions() {
+    public boolean checkPermission() {
+        int vibrate_permission = ContextCompat.checkSelfPermission(getApplicationContext(), VIBRATE);
+        int read_permission = ContextCompat.checkSelfPermission(getApplicationContext(), READ_EXTERNAL_STORAGE);
+        int write_permission = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_EXTERNAL_STORAGE);
+        int installpackage_permission = ContextCompat.checkSelfPermission(getApplicationContext(), INSTALL_PACKAGES);
 
-        String[] permissions = new String[]{
-                "android.permission.READ_EXTERNAL_STORAGE",
-                "android.permission.WRITE_EXTERNAL_STORAGE"
-        };
-
-        // Check if we have  permission
-
-        int permission = ActivityCompat.checkSelfPermission(this, permissions[1]);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                    this, permissions, ASK_PERMISSION_EXTStorage);
-        }
+        return vibrate_permission == PackageManager.PERMISSION_GRANTED
+                && read_permission == PackageManager.PERMISSION_GRANTED && write_permission == PackageManager.PERMISSION_GRANTED;
     }
 
+
+    private void requestPermission() {
+        int PERMISSION_REQUEST_CODE = 200;
+        ActivityCompat.requestPermissions(this, new String[]{VIBRATE, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case ASK_PERMISSION_EXTStorage: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    fileBrowser.messageStarter("Instruction_Manuel", docu_Loader("Language/" + language + "/Instruction_Manuel.txt"),
-                            0);
-                } else {
-                    fileBrowser.messageStarter("PermissionDenied", docu_Loader("Language/" + language + "/Canceled_Permission.txt"),
-                            5000);
-                }
-                break;
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0) {
+            boolean vibrateaccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            boolean readaccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+            boolean writeaccepted = grantResults[2] == PackageManager.PERMISSION_GRANTED;
+            //boolean installpackageaccepted = grantResults[3] == PackageManager.PERMISSION_GRANTED;
+            if (vibrateaccepted && readaccepted && writeaccepted) {
+                mainRelDisplay.removeView(protector);
+
+                fileBrowser.messageStarter("Instruction_Manuel", docu_Loader("Language/" + language + "/Instruction_Manuel.txt"),
+                        0);
+            } else {
+                fileBrowser.messageStarter("PermissionDenied", docu_Loader("Language/" + language + "/Canceled_Permission.txt"),
+                        5000);
             }
         }
     }
+
     @Override
     protected void onResume() {
         super.onResume();
         this.getWindow().setSoftInputMode(WindowManager.
                 LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[7], "sideRightMenueIcons", "open", "closed");
     }
 
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -300,12 +317,12 @@ public class FileBrowser extends Activity  {
         boolean isDirectory = file.isDirectory();
         long usableSpace = file.getUsableSpace();
 
-        Log.d(TAG, "externalStorageWritable: " + externalStorageWritable);
-        Log.d(TAG, "filePath: " + filePath);
-        Log.d(TAG, "canWrite: " + canWrite);
-        Log.d(TAG, "isFile: " + isFile);
-        Log.d(TAG, "isDirectory: " + isDirectory);
-        Log.d(TAG, "usableSpace: " + usableSpace);
+        Log.d("externalStorageWritable: ",  "" + externalStorageWritable);
+        Log.d("filePath: ", "" + filePath);
+        Log.d("canWrite: ", "" + canWrite);
+        Log.d("isFile: ", "" + isFile);
+        Log.d("isDirectory: ", "" + isDirectory);
+        Log.d("usableSpace: ", "" + usableSpace);
     }
     /* Checks if external storage is available for read and write */
     private boolean isExternalStorageWritable() {
@@ -1197,7 +1214,18 @@ public class FileBrowser extends Activity  {
                                 fileBrowser.messageStarter("InfoContact", docu_Loader("Language/" + language + "/InfoContact.txt"),
                                         8000);
 
+                            } else if ((tag.contains("xQR_BarCode"))) {
+                                try{
+                                    Intent qrBarCode = new Intent(getPackageManager().getLaunchIntentForPackage("easysoft.cooperation.qrbarcode"));
+                                    qrBarCode.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                                                       Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(qrBarCode);
+                                } catch (Exception e) {
+                                    startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/hewogithub63/e-sySoft.freeFileBrowser/tree/main/release/")));
+                                }
+
                             }
+
                             if(!(tag.contains("vLogo") || tag.contains("mediaList") || tag.contains("mediaList"))) {
                                 tag = tag.replace("closed", "open");
                                 view.setTag(view.getTag().toString().replace("closed", "open"));
@@ -1380,6 +1408,11 @@ public class FileBrowser extends Activity  {
                                     if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                         fileBrowser.fragmentShutdown(showList,3);
                                 }
+
+                            } else if ((tag.contains("xQR_BarCode"))) {
+                                tag = tag.replace("open", "closed");
+                                view.setTag(view.getTag().toString().replace("open", "closed"));
+                                ((ImageView) view).setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + tag));
 
                             }
                         } else if (view.getTag().toString().contains("running")) {
@@ -2393,6 +2426,8 @@ public class FileBrowser extends Activity  {
 
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                                    fileBrowser.showMediaDisplay.switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
+
                                     fileBrowser.fragId = 4;
                                     break;
                                 }
@@ -2404,6 +2439,7 @@ public class FileBrowser extends Activity  {
                                             fileBrowser.showMediaDisplay.kindOfMedia.equals("VIDEO")) )
                                         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                                    fileBrowser.createSendEmail.switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
 
                                     fileBrowser.fragId = 5;
                                     break;
@@ -2415,6 +2451,7 @@ public class FileBrowser extends Activity  {
 
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "running", "open");
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                                    fileBrowser.createTxEditor.switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
 
                                     fileBrowser.fragId = 7;
                                     break;
@@ -2427,6 +2464,7 @@ public class FileBrowser extends Activity  {
                                             fileBrowser.showMediaDisplay.kindOfMedia.equals("VIDEO")))
                                         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "running", "open");
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                                    fileBrowser.webBrowserDisplay.switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
 
                                     fileBrowser.fragId = 8;
                                     break;

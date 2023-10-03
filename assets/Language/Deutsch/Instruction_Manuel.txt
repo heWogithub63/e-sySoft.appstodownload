@@ -10,11 +10,11 @@ Sprachen: Deutsch, Englisch
 
 Zur Bedienung:
     kurzer Click --> Selektion eines Files,
-                     Links, Namen oder Ordner
+       auf das Icon  Links, Namen oder Ordner
                      mit anschliesender Mani-
                      pulations-Möglichkeit.
     langer Click --> Öffnen eines Files oder
-                     Links.
+       auf das Icon  Links.
 
     zurück zum File-Browser --> vom 
                      MultiMediaPanel, TextEditor oder E-mail client

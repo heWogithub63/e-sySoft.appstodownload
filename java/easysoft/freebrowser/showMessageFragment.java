@@ -262,7 +262,7 @@ public class showMessageFragment extends Fragment {
             }
 
             TextView[] steerButton = new TextView[0];
-            LinearLayout.LayoutParams steerParam = new LinearLayout.LayoutParams((displayWidth/2), displayHeight/12);
+            LinearLayout.LayoutParams steerParam = new LinearLayout.LayoutParams((3*displayWidth/5), displayHeight/12);
             LinearLayout RelLy = new LinearLayout(fileBrowser);
             RelLy.setLayoutParams(new LinearLayout.LayoutParams(steerParam));
             RelLy.setPadding((int)(ux*xfact),(int)(uy*xfact),0,0);
@@ -376,7 +376,7 @@ public class showMessageFragment extends Fragment {
             fileBrowser.createList_systemUrl(2,4);
             fileBrowser.changeIcon(headMenueIcon01[1],"sideLeftMenueIcons","closed","open");
         } else if (kindOf.equals("PermissionDenied")) {
-            fileBrowser.askPermissions();
+            fileBrowser.checkPermission();
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if (kindOf.equals("Extern_Device_Permission")) {
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);

@@ -37,7 +37,7 @@ import static easysoft.freebrowser.showListFragment.selectedTx_01;
 public class TextEditorFragment extends Fragment {
     View view;
     FrameLayout txEditorLayout, timerGifLay;
-    ImageView selector, timer;
+    ImageView selector, timer, switcher;
     RelativeLayout mainRel, textRel;
     LinearLayout headIconLin, mainLin, iconLin;
     LinearLayout pdfDisplayLin;
@@ -56,7 +56,6 @@ public class TextEditorFragment extends Fragment {
     ImageView  imgView, activImgView;
     ImageView[] importImgView = new ImageView[0];
     LinearLayout TextLin;
-    float previousX, previousY;
     String caller = "", mainTx = "", headerTx = "", kindOfFormat = "", action = "", memoryAction = "", pdfFileUrl = "";
     String[] readedText, accountAddrData;
     static double scaleFact = 1;
@@ -134,50 +133,43 @@ public class TextEditorFragment extends Fragment {
         return view;
     }
 
-    private RelativeLayout createSwitcher() {
-
-        RelativeLayout header = new RelativeLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/5, displayHeight/16));
-        header.setX(displayWidth -displayWidth/5);
-        header.setY(20);
-
-        header.setOnTouchListener(new View.OnTouchListener() {
+    private ImageView createSwitcher() {
+        switcher = new ImageView(fileBrowser);
+        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
+        switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
+        switcher.setX(displayWidth - displayWidth / 9);
+        switcher.setY(displayHeight / 22);
+        switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent e) {
-                float newX = 0;
+            public boolean onLongClick(View view) {
+                ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
-                switch (e.getAction()) {
-                    case (MotionEvent.ACTION_DOWN): {
-                        previousX = e.getX();
-                        break;
-                    }
-                    case (MotionEvent.ACTION_UP): {
-                        newX = e.getX();
-                        break;
-                    }
-
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {
                 }
 
-                if ((previousX - newX) < -60) {
-                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                        calledBy = "textEditorBack";
-                        if(kindOfFormat.equals(".txt"))
-                            refreshToFillIn();
-                        fileBrowser.fragmentShutdown(fileBrowser.showList,3);
-                        fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon01[1], fileBrowser.createTxEditor.icons[1], fileBrowser.createTxEditor.icons[2], fileBrowser.createTxEditor.icons[3]},
-                                new String[] {"sideLeftMenueIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
-                    }
-                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                    }
-                    if(devicePath != null && devicePath.length() > 0)
-                        fileBrowser.reloadFileBrowserDisplay();
-                    fileBrowser.startMovePanel(7);
+                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                    calledBy = "textEditorBack";
+                    if (kindOfFormat.equals(".txt"))
+                        refreshToFillIn();
+                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                    fileBrowser.closeListlinkedIcons(new ImageView[]{headMenueIcon01[1], fileBrowser.createTxEditor.icons[1], fileBrowser.createTxEditor.icons[2], fileBrowser.createTxEditor.icons[3]},
+                            new String[]{"sideLeftMenueIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
                 }
+                if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                }
+                if (devicePath != null && devicePath.length() > 0)
+                    fileBrowser.reloadFileBrowserDisplay();
+                fileBrowser.startMovePanel(7);
+
+
                 return true;
             }
         });
-        return header;
+
+        return switcher;
     }
 
     public void refreshToFillIn() {

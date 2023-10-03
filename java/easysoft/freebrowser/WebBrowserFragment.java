@@ -38,7 +38,8 @@ public class WebBrowserFragment extends Fragment {
     RelativeLayout mainRel, review;
     LinearLayout steerLin, header;
     ImageView[] steerImgs;
-    EditText https;
+    ImageView switcher;
+
     int webViewWidth, webViewHeight;
 
     String uri = "", runningUrl = "", actionId = "";
@@ -46,7 +47,7 @@ public class WebBrowserFragment extends Fragment {
     int urlCollectionCounter;
 
     String orientation = "Portrait";
-    float previousX, previousY;
+
     boolean ishandled = false, actionIdChanged = false;
 
     public WebBrowserFragment() {
@@ -176,7 +177,7 @@ public class WebBrowserFragment extends Fragment {
                     popupSoftkeyboard();
                 }
 
-            }, 20);
+            }, 50);
         }
         actionIdChanged = false;
     }
@@ -196,7 +197,7 @@ public class WebBrowserFragment extends Fragment {
                         actionId = id;
                         actionIdChanged = true;
                         System.err.println("..."+type+"..."+id+"..."+tag);
-                        if(tag.equals("INPUT")||tag.contains("TEXT"))
+                        if(tag.equals("INPUT")||tag.contains("TEXT")||tag.contains("text")||id.equals("q"))
                             handleJavascriptInput("", 0, 0);
                         else
                             hideKeyboard();
@@ -322,45 +323,35 @@ public class WebBrowserFragment extends Fragment {
 
     }
 
-    private LinearLayout createSwitcher() {
+    private ImageView createSwitcher() {
 
-        header = new LinearLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(webViewWidth/3, webViewHeight / 14));
-        header.setY(webViewHeight - webViewHeight / 10);
-        header.setX(webViewWidth - webViewWidth/3);
-
-        header.setOnTouchListener(new View.OnTouchListener() {
+        switcher = new ImageView(fileBrowser);
+        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
+        switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
+        switcher.setX(displayWidth - displayWidth / 9);
+        switcher.setY(displayHeight / 22);
+        switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent e) {
-                float newX = 0, newY = 0;
+            public boolean onLongClick(View view) {
+                ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
-                switch (e.getAction()) {
-                    case (MotionEvent.ACTION_DOWN): {
-                        previousX = e.getX();
-                        previousY = e.getY();
-                        break;
-                    }
-                    case (MotionEvent.ACTION_UP): {
-                        newX = e.getX();
-                        newY = e.getY();
-                        break;
-                    }
-
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {
                 }
 
-                if ((previousX - newX) < -60) {
-                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.showList,3);
-                    }
-                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                    }
-                    fileBrowser.startMovePanel(8);
+                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                 }
+                if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                }
+                fileBrowser.startMovePanel(8);
+
                 return true;
             }
         });
-        return header;
+        return switcher;
     }
 
     private LinearLayout createSteerIcons() {

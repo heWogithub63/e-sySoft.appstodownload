@@ -22,7 +22,7 @@ public class MediaDisplayFragment extends Fragment {
     rundomTimer imgTimer;
     videoRunTime videoRunTimer;
     static ImageView[] contrButtons;
-    static ImageView imgDisplay;
+    static ImageView imgDisplay, switcher;
     static TextView titel;
     String kindOfMedia = "";
     String mediaURL = "";
@@ -182,39 +182,32 @@ public class MediaDisplayFragment extends Fragment {
         mediaDisplayLayout.bringToFront();
         return view;
     }
-    private RelativeLayout createSwitcher() {
-        RelativeLayout header = new RelativeLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/5, displayHeight/16));
-        header.setX(displayWidth -displayWidth/5);
-        header.setY(20);
+    private ImageView createSwitcher() {
 
-        header.setOnTouchListener(new View.OnTouchListener() {
+        switcher = new ImageView(fileBrowser);
+        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
+        switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
+        switcher.setX(displayWidth - displayWidth / 9);
+        switcher.setY(displayHeight / 22);
+        switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent e) {
-                float newX = 0;
+            public boolean onLongClick(View view) {
+                ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
-                switch (e.getAction()) {
-                    case (MotionEvent.ACTION_DOWN): {
-                        previousX = e.getX();
-                        break;
-                    }
-                    case (MotionEvent.ACTION_UP): {
-                        newX = e.getX();
-                        break;
-                    }
-
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {
                 }
 
-                if ((previousX - newX) < -60) {
-                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                    }
-                    fileBrowser.startMovePanel(4);
+                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                 }
+                fileBrowser.startMovePanel(4);
+
                 return true;
             }
         });
-        return header;
+        return switcher;
     }
 
     public void createMediaPlay(String url)  {

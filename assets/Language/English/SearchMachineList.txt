@@ -1,9 +1,13 @@
-DucDucGo https://duckduckgo.com
-Yahoo https://de.search.yahoo.com
+searX https://searx.thegpm.org/
+Dogpile https://www.dogpile.com/
+DuckDuckGo https://duckduckgo.com/
+Yahoo https://de.search.yahoo.com/
+YahooSearch https://de.yahoo.com/?p=us&guccounter=1&guce_referrer=aHR0cHM6Ly93d3cubGlmZXdpcmUuY29tL2Jlc3Qtc2VhcmNoLWVuZ2luZXMtMjQ4MzM1Mg&guce_referrer_sig=AQAAAA3dcYrOQ2wwmxZVN_cV8Iu-IVad6Zd8FLuvwSx37a9ALIeQryf03G7HAzqrd8gNFDUkzLdN45iC1j6tTIsXclikbfIcDSWG8j5lCpvAWcgSLP11NTQmOPohUlBd-TmwsDK36X5dMdwQzzkh_gZpBoTeSRXYwEr0kixJukrh5I97
 WebArchives https://www.loc.gov/web-archives/?all=true&sp=5
-SimpleSearch http://www.supersimplesearch.com/
+Webopedia https://www.webopedia.com/
 Bing https://www.bing.com/
 Google https://search.google.com
+GoogleScholar https://scholar.google.com/
 Wikipedia https://de.wikipedia.org
 Ebay https://www.ebay.com
 Amazone https://www.amazon.com/search/s?k=search

@@ -9,11 +9,11 @@ Languages: German, English
 
 About the using:
     short Click -->  Selection of Files,
-                     Links, Documents, or Folders
+         on the Icon Links, Documents, or Folders
                      to use the manipulating 
                      Possibilities.
     long  Click -->  To open Files or
-                     Links.
+         on the Icon Links.
 
     back to the File-Browser --> from 
                      MultiMediaPanel, Editor, EmailPanel

@@ -8,7 +8,6 @@ import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
@@ -34,8 +33,7 @@ public class emailDisplayFragment extends Fragment {
 
     View view;
     FrameLayout emailLayout, timerGifLay;
-    ImageView selector;
-    float previousX;
+    ImageView selector, switcher;
     RelativeLayout mainRel;
     LinearLayout mainLin;
     LinearLayout TextLin;
@@ -118,47 +116,40 @@ public class emailDisplayFragment extends Fragment {
         return view;
     }
 
-    private RelativeLayout createSwitcher() {
+    private ImageView createSwitcher() {
         calledFrom = "";
-        RelativeLayout header = new RelativeLayout(fileBrowser);
-        header.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/5, displayHeight/16));
-        header.setX(displayWidth -displayWidth/5);
-        header.setY(20);
-
-        header.setOnTouchListener(new View.OnTouchListener() {
+        switcher = new ImageView(fileBrowser);
+        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
+        switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
+        switcher.setX(displayWidth - displayWidth / 9);
+        switcher.setY(displayHeight / 22);
+        switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent e) {
-                float newX = 0;
+            public boolean onLongClick(View view) {
+                ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
-                switch (e.getAction()) {
-                    case (MotionEvent.ACTION_DOWN): {
-                        previousX = e.getX();
-                        break;
-                    }
-                    case (MotionEvent.ACTION_UP): {
-                        newX = e.getX();
-                        break;
-                    }
-
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ie) {
                 }
 
-                if ((previousX - newX) < -60) {
-                    if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
-                        icons[0].setTag(icons[0].getTag().toString().replace("open", "closed"));
-                        icons[0].setImageBitmap(fileBrowser.bitmapLoader("Icons/mailIcons/" + icons[0].getTag().toString().substring(
-                                icons[0].getTag().toString().indexOf(" ") + 1)));
-                        arrayList = new ArrayList<>();
-                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                    }
-                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
-                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                    }
-                    fileBrowser.startMovePanel(5);
+                if (fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                    icons[0].setTag(icons[0].getTag().toString().replace("open", "closed"));
+                    icons[0].setImageBitmap(fileBrowser.bitmapLoader("Icons/mailIcons/" + icons[0].getTag().toString().substring(
+                            icons[0].getTag().toString().indexOf(" ") + 1)));
+                    arrayList = new ArrayList<>();
+                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                 }
+                if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                }
+                fileBrowser.startMovePanel(5);
+
                 return true;
             }
         });
-        return header;
+
+        return switcher;
     }
 
     public void startMailSend() {
