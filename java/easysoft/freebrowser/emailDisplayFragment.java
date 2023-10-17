@@ -74,10 +74,15 @@ public class emailDisplayFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             emailAddress = getArguments().getString("EMAILADD");
-            fileBrowser.webBrowserDisplay.webView.loadUrl(fileBrowser.webBrowserDisplay.urlCollection.get(fileBrowser.webBrowserDisplay.urlCollectionCounter));
-        }
+            if(emailAddress.contains("@"))
+                createMail = true;
+            if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.webView != null)
+               fileBrowser.webBrowserDisplay.webView.loadUrl(fileBrowser.webBrowserDisplay.urlCollection.get(fileBrowser.webBrowserDisplay.urlCollectionCounter));
+        } else
+            createMail = false;
         memoryList = new String[]{"", "", "", ""};
         mailAccountData = fileBrowser.read_writeFileOnInternalStorage("read", "AccountData", "MailAccountData.txt", "");
         if (mailAccountData != null && mailAccountData.length > 0) {
@@ -92,6 +97,11 @@ public class emailDisplayFragment extends Fragment {
                 n1 = 1;
         }
         emailLayout = fileBrowser.frameLy.get(5);
+        
+        fileBrowser.changeIcon(headMenueIcon[5],"headMenueIcons","closed", "running");
+        fileBrowser.changeIcon(headMenueIcon[5],"headMenueIcons","open", "running");
+
+
     }
 
     @Override
@@ -170,8 +180,8 @@ public class emailDisplayFragment extends Fragment {
         folderNames = new TextView[0];
         sd = fileBrowser.read_writeFileOnInternalStorage("read", tag, "", "");
         folderInxScr = new ScrollView(fileBrowser);
-        folderInxScr.setLayoutParams(new RelativeLayout.LayoutParams((int) (5 * fileBrowser.displayWidth / 7), (int) (2 * displayHeight / 5)));
-        folderInxScr.setX(fileBrowser.displayWidth / 7);
+        folderInxScr.setLayoutParams(new RelativeLayout.LayoutParams((int) (5 * (fileBrowser.displayWidth -2) / 7), (int) (2 * displayHeight / 5)));
+        folderInxScr.setX((fileBrowser.displayWidth -2) / 7);
         folderInxScr.setY(2 * displayHeight / 5);
         LinearLayout folderInx = new LinearLayout(fileBrowser);
         folderInx.setOrientation(LinearLayout.VERTICAL);
@@ -459,17 +469,17 @@ public class emailDisplayFragment extends Fragment {
         headerEdit = new EditText[0];
 
         TextLin = new LinearLayout(fileBrowser);
-        TextLin.setLayoutParams(new RelativeLayout.LayoutParams(emailLayout.getWidth() - 30, emailLayout.getHeight() / 2));
+        TextLin.setLayoutParams(new RelativeLayout.LayoutParams((fileBrowser.displayWidth -2) - 30, (fileBrowser.displayHeight -2) / 2));
         TextLin.setOrientation(LinearLayout.HORIZONTAL);
 
         if (!createMail && !mailAttached) {
-            TextLin.setLayoutParams(new RelativeLayout.LayoutParams(emailLayout.getWidth() - 30, (int) (emailLayout.getHeight() / 2) +
-                    emailLayout.getHeight() / 4));
-            TextLin.setPadding(10, (int) (emailLayout.getHeight() / 4 + 20), 10, 10);
+            TextLin.setLayoutParams(new RelativeLayout.LayoutParams((fileBrowser.displayWidth -2) - 30, (int) ((fileBrowser.displayHeight -2) / 2) +
+                    (fileBrowser.displayHeight -2) / 4));
+            TextLin.setPadding(10, (int) ((fileBrowser.displayHeight -2) / 4 + 20), 10, 10);
         }
         if (mailAttached) {
-            TextLin.setLayoutParams(new RelativeLayout.LayoutParams(emailLayout.getWidth() - 30, 2 * emailLayout.getHeight() / 3));
-            TextLin.setPadding(10, (int) (emailLayout.getHeight() / 4 + 20), 10, 10);
+            TextLin.setLayoutParams(new RelativeLayout.LayoutParams((fileBrowser.displayWidth -2) - 30, 2 * (fileBrowser.displayHeight -2) / 3));
+            TextLin.setPadding(10, (int) ((fileBrowser.displayHeight -2) / 4 + 20), 10, 10);
         }
 
         AttachLin = new LinearLayout(fileBrowser);
@@ -481,16 +491,17 @@ public class emailDisplayFragment extends Fragment {
             praefix = fileBrowser.docu_Loader("Language/" + language + "/MailHeadLines.txt");
         else
             praefix = new String[0];
+
         if (mailAccountData != null && mailAccountData.length > 0 && (createMail || emailAddress.length() > 0)) {
             for (int i = 0; i < headerTx.length; i++) {
 
                 headerLin = Arrays.copyOf(headerLin, headerLin.length + 1);
                 headerLin[headerLin.length - 1] = new LinearLayout(fileBrowser);
-                headerLin[headerLin.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(emailLayout.getWidth() - 30, emailLayout.getHeight() / 18));
+                headerLin[headerLin.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((fileBrowser.displayWidth -2) - 30, (fileBrowser.displayHeight -2) / 18));
                 headerLin[headerLin.length - 1].setOrientation(LinearLayout.HORIZONTAL);
 
                 TextView praeTx = new TextView(fileBrowser);
-                praeTx.setLayoutParams(new RelativeLayout.LayoutParams((emailLayout.getWidth() / 4), emailLayout.getHeight() / 18));
+                praeTx.setLayoutParams(new RelativeLayout.LayoutParams(((fileBrowser.displayWidth -2) / 4), (fileBrowser.displayHeight -2) / 18));
                 praeTx.setTextColor(getResources().getColor(R.color.black));
                 praeTx.setTextSize(textSize);
                 praeTx.setText("");
@@ -499,7 +510,7 @@ public class emailDisplayFragment extends Fragment {
 
                 headerEdit = Arrays.copyOf(headerEdit, headerEdit.length + 1);
                 headerEdit[headerEdit.length - 1] = new EditText(fileBrowser);
-                headerEdit[headerEdit.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((3 * emailLayout.getWidth() / 5), emailLayout.getHeight() / 22));
+                headerEdit[headerEdit.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((3 * (fileBrowser.displayWidth -2) / 5), (fileBrowser.displayHeight -2) / 22));
                 headerEdit[headerEdit.length - 1].setTextColor(getResources().getColor(R.color.white));
                 headerEdit[headerEdit.length - 1].setTextSize(textSize);
                 headerEdit[headerEdit.length - 1].setTag(headerTx[i]);
@@ -545,7 +556,7 @@ public class emailDisplayFragment extends Fragment {
 
                 if (i == 1) {
                     toChoose = new ImageView(fileBrowser);
-                    toChoose.setLayoutParams(new RelativeLayout.LayoutParams((emailLayout.getHeight() / 18), emailLayout.getHeight() / 22));
+                    toChoose.setLayoutParams(new RelativeLayout.LayoutParams(((fileBrowser.displayHeight -2) / 18), (fileBrowser.displayHeight -2) / 22));
                     toChoose.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/toChooser_closed.png"));
                     toChoose.setTag("_ toChooser_closed.png");
                     toChoose.setOnClickListener(new View.OnClickListener() {
@@ -782,8 +793,9 @@ public class emailDisplayFragment extends Fragment {
             }
         });
         LinearLayout iconLin = new LinearLayout(fileBrowser);
+
         iconLin.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                (int) (emailLayout.getHeight() / 9))));
+                (int) ((fileBrowser.displayHeight -2) / 9))));
         iconLin.setOrientation(LinearLayout.HORIZONTAL);
         iconLin.setPadding(10, 10, 10, 10);
 
@@ -795,6 +807,7 @@ public class emailDisplayFragment extends Fragment {
                 icons[icons.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth / 16 * xfact), (int) (displayWidth / 16 * xfact)));
                 icons[icons.length - 1].setTag("false " + s);
                 icons[icons.length - 1].setEnabled(false);
+
 
                 if (s.equals(posIcon)) {
                     if (((s.contains("Send") && icons[icons.length - 3].getTag().toString().contains("open")) || (s.contains("Save") &&
@@ -818,7 +831,7 @@ public class emailDisplayFragment extends Fragment {
 
                 icons[icons.length - 1].setImageBitmap(fileBrowser.bitmapLoader("Icons/mailIcons/" + s));
 
-                if (s.contains("New") && posIcon.contains("Trash") && folderName.startsWith("In")) {
+                if ((s.contains("New") && posIcon.contains("Trash") && folderName.startsWith("In")) || (s.contains("New") && createMail)) {
                     fileBrowser.changeIcon(icons[4], "mailIcons", "closed", "open");
                 }
                 if (!s.contains("Empty"))
@@ -1059,46 +1072,7 @@ public class emailDisplayFragment extends Fragment {
 
                             } else if (tag.contains("open")) {
                                 if (tag.contains("Info_open")) {
-                                    calledBack = "";
-                                    String[] nextAccount = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/MailAccountData.txt");
-                                    nextAccount = Arrays.copyOfRange(nextAccount, 2, nextAccount.length);
-                                    if (!mailTx.getText().toString().contains("(!")) {
-                                        mailTx.getText().toString().trim();
-                                        for (int i = 0; i < 3; i++)
-                                            if (mailTx.getText().toString().endsWith("\n"))
-                                                mailTx.setText(mailTx.getText().toString().substring(0, mailTx.getText().toString().lastIndexOf("\n")));
-                                        for (int i = 0; i < nextAccount.length; i++)
-                                            mailTx.setText(mailTx.getText().toString() + "\n" + nextAccount[i]);
-                                        mailAccountData = mailTx.getText().toString().split("\n");
-                                        fileBrowser.read_writeFileOnInternalStorage("write", "AccountData", "MailAccountData.txt", mailTx.getText().toString());
-                                        n1++;
-                                    } else {
-                                        String[] accCheck = fileBrowser.read_writeFileOnInternalStorage("read", "AccountData", "MailAccountData.txt", "");
-                                        String[] mailTxCheck = mailTx.getText().toString().split("\n");
-                                        int i = 0;
-                                        boolean b = false;
-                                        for (String s : accCheck) {
-                                            if (!s.equals(mailTxCheck[i])) {
-                                                accCheck[i] = mailTxCheck[i];
-                                                b = true;
-                                            }
-                                            i++;
-                                        }
-
-                                        if (b) {
-                                            String acc = "";
-                                            for (String s : accCheck)
-                                                acc = acc + s + "\n";
-
-                                            if (!acc.equals("")) {
-                                                mailTx.setText(acc.substring(0, acc.lastIndexOf("\n")));
-                                                mailAccountData = mailTx.getText().toString().split("\n");
-                                                fileBrowser.read_writeFileOnInternalStorage("write", "AccountData", "MailAccountData.txt", mailTx.getText().toString());
-                                            }
-                                        }
-
-                                    }
-                                    memoryList[3] = "";
+                                    saveInfo();
                                 } else if (tag.contains("file")) {
                                     fileBrowser.selectedTx02 = -1;
                                     memoryList[3] = "";
@@ -1158,6 +1132,49 @@ public class emailDisplayFragment extends Fragment {
         return mainLin;
     }
 
+    public void saveInfo () {
+        calledBack = "";
+        String[] nextAccount = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/MailAccountData.txt");
+        nextAccount = Arrays.copyOfRange(nextAccount, 2, nextAccount.length);
+        if (!mailTx.getText().toString().contains("(!")) {
+            mailTx.getText().toString().trim();
+            for (int i = 0; i < 3; i++)
+                if (mailTx.getText().toString().endsWith("\n"))
+                    mailTx.setText(mailTx.getText().toString().substring(0, mailTx.getText().toString().lastIndexOf("\n")));
+            for (int i = 0; i < nextAccount.length; i++)
+                mailTx.setText(mailTx.getText().toString() + "\n" + nextAccount[i]);
+            mailAccountData = mailTx.getText().toString().split("\n");
+            fileBrowser.read_writeFileOnInternalStorage("write", "AccountData", "MailAccountData.txt", mailTx.getText().toString());
+            n1++;
+        } else {
+            String[] accCheck = fileBrowser.read_writeFileOnInternalStorage("read", "AccountData", "MailAccountData.txt", "");
+            String[] mailTxCheck = mailTx.getText().toString().split("\n");
+            int i = 0;
+            boolean b = false;
+            for (String s : accCheck) {
+                if (!s.equals(mailTxCheck[i])) {
+                    accCheck[i] = mailTxCheck[i];
+                    b = true;
+                }
+                i++;
+            }
+
+            if (b) {
+                String acc = "";
+                for (String s : accCheck)
+                    acc = acc + s + "\n";
+
+                if (!acc.equals("")) {
+                    mailTx.setText(acc.substring(0, acc.lastIndexOf("\n")));
+                    mailAccountData = mailTx.getText().toString().split("\n");
+                    fileBrowser.read_writeFileOnInternalStorage("write", "AccountData", "MailAccountData.txt", mailTx.getText().toString());
+                }
+            }
+
+        }
+        memoryList[3] = "";
+    }
+
     public void createMailBack() {
         ImageView mailBackImg = new ImageView(fileBrowser);
         mailBackImg.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 10, displayWidth / 10));
@@ -1177,7 +1194,7 @@ public class emailDisplayFragment extends Fragment {
 
                 fileBrowser.createList("mailList", 1, "Language/" + fileBrowser.language + "/MailFolderList.txt", 5,
                         (int) (fileBrowser.createSendEmail.icons[0].getX() + fileBrowser.createSendEmail.icons[0].getWidth()),
-                        ((int) fileBrowser.createSendEmail.icons[0].getY() + fileBrowser.createSendEmail.icons[0].getHeight() + 35), fileBrowser.displayWidth / f,
+                        ((int) fileBrowser.createSendEmail.icons[0].getY() + fileBrowser.createSendEmail.icons[0].getHeight() + 35), (fileBrowser.displayWidth -2) / f,
                         "ru");
                 fileBrowser.frameLy.get(3).bringToFront();
 

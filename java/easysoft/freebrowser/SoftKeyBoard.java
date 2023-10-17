@@ -23,6 +23,7 @@ public class SoftKeyBoard extends Fragment {
     ArrayList<String[]> smallTabsTx;
     ArrayList<String[]> largeTabsTx;
     RelativeLayout keyBoardMainRel;
+    EditText txEd;
 
     boolean shift = false, shiftFixed = false;
     String kindOf_keys = "";
@@ -117,7 +118,7 @@ public class SoftKeyBoard extends Fragment {
         kbIcPa.addRule(RelativeLayout.CENTER_VERTICAL);
         RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/12,displayWidth/14);
         kbIcPa1.addRule(RelativeLayout.CENTER_VERTICAL);
-        if(fileBrowser.fragId != 8 || (fileBrowser.fragId == 8 && fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())) {
+        //if(fileBrowser.fragId != 8 || (fileBrowser.fragId == 8 && fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())) {
             ImageView Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
             Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
@@ -131,12 +132,40 @@ public class SoftKeyBoard extends Fragment {
                     if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
                         new keyblinkIcon(view, "OK").start();
                         fileBrowser.showMessage.clickOk();
+                    } else if(fileBrowser.fragId == 8) {
+                        new keyblinkIcon(view, "OK").start();
+                        String tx = txEd.getText().toString();
+                        if(!tx.equals((""))) {
+                            tx = tx.replace(" ","+");
+                            tx = fileBrowser.searchMashineUrl+"search?q="+tx;
+                            fileBrowser.webBrowserDisplay.webView.loadUrl(fileBrowser.searchMashineUrl+"search?q="+tx);
+                            if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
+                                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                            }
+                        }
+                    } else if((fileBrowser.fragId == 5 || fileBrowser.fragId == 7) && calledBack.equals("InfoView")) {
+                        switch (fileBrowser.fragId) {
+                            case (5) : {
+                                fileBrowser.createSendEmail.saveInfo();
+                                fileBrowser.createSendEmail.createNewDisplay();
+                                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length -1],
+                                        "mailIcons", "open", "closed");
+                                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard,6);
+                                break;
+                            }
+                            case (7) : {
+                                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[fileBrowser.createTxEditor.icons.length -1],
+                                        "TextEditorIcons","open","closed");
+                                fileBrowser.createTxEditor.saveInfo();
+                                break;
+                            }
+                        }
                     }
                 }
             });
 
             KeyboardIconLin.addView(Okicon);
-        }
+        //}
 
         ImageView keyboardicon = new ImageView(fileBrowser);
         keyboardicon.setLayoutParams(kbIcPa);
@@ -314,7 +343,6 @@ public class SoftKeyBoard extends Fragment {
 
     private void onClickHandling(TextView view) {
 
-        EditText txEd;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             VibrationEffect vibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
             fileBrowser.vibrator.vibrate(vibrationEffect);
@@ -453,16 +481,13 @@ public class SoftKeyBoard extends Fragment {
                         keyBoardMainRel.removeAllViews();
                         kindOf_keys = "small";
                         createKeyboard(smallTabsTx);
-                        if(!calledBack.equals("WebView"))
-                           keyBoardMainRel.addView(createKeyboardIcon());
-                        }
-                    else {
+                        keyBoardMainRel.addView(createKeyboardIcon());
+                    } else {
                         shift = true;
                         keyBoardMainRel.removeAllViews();
                         kindOf_keys = "large";
                         createKeyboard(largeTabsTx);
-                        if(!calledBack.equals("WebView"))
-                           keyBoardMainRel.addView(createKeyboardIcon());
+                        keyBoardMainRel.addView(createKeyboardIcon());
                     }
 
                     break;
@@ -540,15 +565,13 @@ public class SoftKeyBoard extends Fragment {
                keyBoardMainRel.removeAllViews();
                kindOf_keys = "small";
                createKeyboard(smallTabsTx);
-                if(!calledBack.equals("WebView"))
-                    keyBoardMainRel.addView(createKeyboardIcon());
+               keyBoardMainRel.addView(createKeyboardIcon());
             } else if(!tab.equals("Shift") && !shift && shiftFixed) {
                 shift = true;
                 keyBoardMainRel.removeAllViews();
                 kindOf_keys = "large";
                 createKeyboard(largeTabsTx);
-                if(!calledBack.equals("WebView"))
-                    keyBoardMainRel.addView(createKeyboardIcon());
+                keyBoardMainRel.addView(createKeyboardIcon());
             }
             if(calledBack.equals("WebView") && fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
                 collectionStr = txEd.getText().toString();

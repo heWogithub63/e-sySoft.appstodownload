@@ -5,17 +5,17 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
+import android.os.*;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
-import android.widget.*;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import androidx.annotation.RequiresApi;
 
 import java.io.File;
@@ -71,13 +71,25 @@ public class WebBrowserFragment extends Fragment {
         webLayout = fileBrowser.frameLy.get(8);
         webViewWidth = displayWidth;
         webViewHeight = displayHeight;
+
+        fileBrowser.changeIcon(headMenueIcon[6],"headMenueIcons","closed", "running");
+        fileBrowser.changeIcon(headMenueIcon[6],"headMenueIcons","open", "running");
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        int SDK_INT = android.os.Build.VERSION.SDK_INT;
+        if (SDK_INT > 8)
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                    .permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+            //your codes here
 
+        }
         view = inflater.inflate(R.layout.fragment_web_browser, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.webBrowserMainRel);
 
@@ -177,7 +189,7 @@ public class WebBrowserFragment extends Fragment {
                     popupSoftkeyboard();
                 }
 
-            }, 50);
+            }, 15);
         }
         actionIdChanged = false;
     }
@@ -196,7 +208,6 @@ public class WebBrowserFragment extends Fragment {
                     public void onClick(String tag,String id, String type) {
                         actionId = id;
                         actionIdChanged = true;
-                        System.err.println("..."+type+"..."+id+"..."+tag);
                         if(tag.equals("INPUT")||tag.contains("TEXT")||tag.contains("text")||id.equals("q"))
                             handleJavascriptInput("", 0, 0);
                         else
@@ -221,16 +232,16 @@ public class WebBrowserFragment extends Fragment {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition
                     , String mimetype, long contentLength) {
-
                 String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
 
                 try {
                     String address = Environment.getExternalStorageDirectory().getAbsolutePath() + "/"
                             + Environment.DIRECTORY_DOWNLOADS + "/" +
                             fileName.replace(" ", "");
+
                    File file = new File(address);
                     boolean a = file.createNewFile();
-                    URL link = new URL(url);
+                    URL link = new URL(url.substring(url.indexOf(":")+1));
 
                     downloadFile(link, address);
 
@@ -311,6 +322,7 @@ public class WebBrowserFragment extends Fragment {
 
         return webView;
     }
+
 
     public void downloadFile(URL url, String outputFileName) throws IOException {
 

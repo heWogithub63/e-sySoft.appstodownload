@@ -2,7 +2,7 @@
   your Editor-Account are -->
   
   Logo: 
-  Address presetting: From:
+  Address presetting: Abs.:
   Lastname/Firstname: (!Miller Detlev!)
   e-mail_Addresse: (!e.g.Miller@gmail.com!)
   Telephon Nr: (!e.g. +49 1765 12345!)

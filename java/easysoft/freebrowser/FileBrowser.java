@@ -193,7 +193,12 @@ public class FileBrowser extends Activity  {
                 requestPermission();
             }
         }
+        String from = getIntent().getStringExtra("FROM"),
+                url = getIntent().getStringExtra("URL");
 
+        if(from != null) {
+            startExtApp(url);
+        }
     }
 
 
@@ -240,6 +245,7 @@ public class FileBrowser extends Activity  {
                 LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[7], "sideRightMenueIcons", "open", "closed");
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -1220,6 +1226,7 @@ public class FileBrowser extends Activity  {
                                     qrBarCode.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
                                                        Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(qrBarCode);
+                                    fileBrowser.finish();
                                 } catch (Exception e) {
                                     startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/hewogithub63/e-sySoft.freeFileBrowser/tree/main/release/")));
                                 }
@@ -1588,18 +1595,18 @@ public class FileBrowser extends Activity  {
                     public boolean onLongClick(View v) {
                         String extProgrUrl = v.getTag().toString().substring(v.getTag().toString().lastIndexOf("  ") + 2);
 
-                        if (fileBrowser.intendStarted) {
+                        /*if (fileBrowser.intendStarted) {
                             if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                                 fileBrowser.showMediaDisplay.createMediaPlay(extProgrUrl);
 
                             }
-                        } else {
+                        } else { */
 
                             if (extProgrUrl.endsWith(".html"))
                                 extProgrUrl = "file://" + extProgrUrl;
 
                             fileBrowser.startExtApp(extProgrUrl);
-                        }
+                        //}
                         devicePath = extProgrUrl;
                         fileBrowser.reloadFileBrowserDisplay();
                         return true;
@@ -1669,7 +1676,8 @@ public class FileBrowser extends Activity  {
         String tag01 =  view.getTag().toString();
         // stop running Mediaplayer
         if (tag01.contains("open") && fileBrowser.intendStarted) {
-            if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+            if((fileBrowser.fragId == 7 && ((device.endsWith(".txt") || (device.endsWith("pdf"))))) &&
+                    fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
                 if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("running") &&
                         (devicePath.endsWith(".pdf") || devicePath.endsWith(".txt"))) {
                     fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
@@ -1684,7 +1692,8 @@ public class FileBrowser extends Activity  {
                     fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
                 }
             }
-            if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
+            if ((fileBrowser.fragId == 4 && ((!device.endsWith(".txt") && !device.endsWith("pdf")))) &&
+                    fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                 //fileBrowser.showMediaDisplay.disrupt = true;
 
                 if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
@@ -1699,7 +1708,7 @@ public class FileBrowser extends Activity  {
 
                         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "openOne", "closed");
                         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "runningOne", "closed");
-                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "openOne", "closed");
+                        fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
                     }
                     fileBrowser.showMediaDisplay.mP.stop();
                     fileBrowser.showMediaDisplay.mP.reset();
@@ -1761,6 +1770,9 @@ public class FileBrowser extends Activity  {
             form = Url.substring(Url.lastIndexOf("."));
             if(Url.startsWith("mailto"))
                 form = "mailto";
+            else if(Url.startsWith("http"))
+                form = Url.substring(0,Url.indexOf(":"));
+
         } else if(!Url.startsWith("http")) {
             form = "*";
         } else if(Url.startsWith("http")){
@@ -1768,10 +1780,12 @@ public class FileBrowser extends Activity  {
                 form = "protonmail";
             else
                 form = "http";
+                //form = Url.substring(0,Url.indexOf(":"));
         }
 
         if(form.contains(" "))
             form = form.substring(0,form.indexOf(" "));
+        form = form.trim();
 
         switch (form) {
 
@@ -1786,14 +1800,17 @@ public class FileBrowser extends Activity  {
                 fileBrowser.startActivity(progrIntent);
                 return;
             }
-            case (".html"): {
+            case (".html"): case ("https"):{
+                if(fileBrowser.haveNetwork()) {
+                    fileBrowser.intendStarted = true;
+                    Bundle bund = new Bundle();
+                    bund.putString("URL", Url);
+                    changeIcon(headMenueIcon[6], "headMenueIcons", "closed", "open");
+                    fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 1, 1,
+                            displayWidth - 2, displayHeight - 2);
+                } else
+                    fileBrowser.messageStarter("mailNoInternet", docu_Loader("Language/" + language + "/NoInternet_avaliable.txt"), 6000);
 
-                fileBrowser.intendStarted = true;
-                Bundle bund = new Bundle();
-                bund.putString("URL", Url);
-                changeIcon(headMenueIcon[6],"headMenueIcons", "closed", "open");
-                fragmentStart(webBrowserDisplay, 8, "webBrowserDisplay", bund, 1, 1,
-                        displayWidth -2, displayHeight -2);
                 return;
             }
             case (".txt"): case (".pdf"): {
@@ -1895,6 +1912,7 @@ public class FileBrowser extends Activity  {
                 if(fileBrowser.createSendEmail == null || !fileBrowser.createSendEmail.isVisible()) {
                     Bundle bund = new Bundle();
                     bund.putString("EMAILADD", Url.substring(Url.indexOf(":")+1).trim());
+
                     fragmentStart(createSendEmail, 5, "emailDisplay", bund, 1, 1,
                             displayWidth -2, displayHeight -2);
                 }
@@ -1940,6 +1958,7 @@ public class FileBrowser extends Activity  {
             frameId.setLayoutParams(new FrameLayout.LayoutParams(width, height));
             frameLy.get(frameID).setClickable(true);
         }
+
         frameId.setX(xpos);
         frameId.setY(ypos);
 

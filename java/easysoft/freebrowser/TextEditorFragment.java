@@ -584,29 +584,7 @@ public class TextEditorFragment extends Fragment {
 
                             fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
                             if (tag.contains("Info")) {
-                                calledBack = "";
-                                if (!TxEditor.getText().toString().contains("(!")) {
-                                    String[] splitStr = TxEditor.getText().toString().split("\n");
-                                    int n = 0;
-                                    for (int i = 4; i < splitStr.length; i++) {
-                                        if (!accountAddrData[i].equals(splitStr[i])) {
-                                            n++;
-                                            break;
-                                        }
-                                    }
-                                    if (n > 0) {
-                                        TxEditor.setText(TxEditor.getText().toString().trim());
-
-                                        accountAddrData = TxEditor.getText().toString().split("\n");
-                                        fileBrowser.read_writeFileOnInternalStorage("write", "accountAddrData", "accountAddrData.txt", TxEditor.getText().toString());
-                                    }
-                                }
-
-                                mainRel.removeView(selector);
-                                action = memoryAction;
-                                mainTx = memoryTx;
-                                mainLin.removeView(textRel);
-                                createTextEditorDisplay(mainLin);
+                                saveInfo();
                             } else if (tag.contains("text")) {
                                 if(logoPath.endsWith(".png"))
                                     logoPath = logoPath.substring(0, logoPath.lastIndexOf("."));
@@ -639,6 +617,32 @@ public class TextEditorFragment extends Fragment {
         mainLin.addView(headTxScroll);
 
         return mainLin;
+    }
+
+    public void saveInfo () {
+
+            calledBack = "";
+            if (!TxEditor.getText().toString().contains("(!")) {
+                String[] splitStr = TxEditor.getText().toString().split("\n");
+                int n = 0;
+                for (int i = 4; i < splitStr.length; i++) {
+                    if (!accountAddrData[i].equals(splitStr[i])) {
+                        n++;
+                        break;
+                    }
+                }
+                if (n > 0) {
+                    TxEditor.setText(TxEditor.getText().toString().trim());
+
+                    accountAddrData = TxEditor.getText().toString().split("\n");
+                    fileBrowser.read_writeFileOnInternalStorage("write", "accountAddrData", "accountAddrData.txt", TxEditor.getText().toString());
+                }
+            }
+        mainRel.removeView(selector);
+        action = memoryAction;
+        mainTx = memoryTx;
+        mainLin.removeView(textRel);
+        createTextEditorDisplay(mainLin);
     }
 
     public LinearLayout createScaleButtons() {

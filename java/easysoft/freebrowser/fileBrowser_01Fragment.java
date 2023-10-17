@@ -164,18 +164,19 @@ public class fileBrowser_01Fragment extends Fragment {
                             public boolean onLongClick(View v) {
                                 String extProgrUrl = v.getTag().toString().substring(v.getTag().toString().lastIndexOf("  ") + 2);
 
-                                if (fileBrowser.intendStarted) {
-                                    if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
+                                /*if (fileBrowser.intendStarted) {
+                                    if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible() &&
+                                            (fileBrowser.fragId == 4 && ((!devicePath.endsWith(".txt") && !devicePath.endsWith("pdf"))))) {
                                         fileBrowser.showMediaDisplay.createMediaPlay(extProgrUrl);
 
                                     }
-                                } else {
+                                } else {*/
 
                                     if (extProgrUrl.endsWith(".html"))
                                         extProgrUrl = "file://" + extProgrUrl;
 
                                     fileBrowser.startExtApp(extProgrUrl);
-                                }
+                                //}
                                 devicePath = extProgrUrl;
                                 fileBrowser.reloadFileBrowserDisplay();
                                 return true;
@@ -264,10 +265,11 @@ public class fileBrowser_01Fragment extends Fragment {
         String sPath = tag.substring(tag.lastIndexOf("  ") + 2);
         int lp = Integer.parseInt(tag.substring(0, tag.indexOf("_")));
         devicePath = sPath;
-            // stop running Mediaplayer
+        // stop running Mediaplayer
             if (tag.contains("open") && fileBrowser.intendStarted) {
 
-                if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+                if((fileBrowser.fragId == 7 && ((devicePath.endsWith(".txt") || (devicePath.endsWith("pdf"))))) &&
+                        fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
                     if(fileBrowser.headMenueIcon02[5].getTag().toString().contains("running") &&
                             (tag.contains(".pdf") || tag.contains(".txt"))) {
                         fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
@@ -282,7 +284,8 @@ public class fileBrowser_01Fragment extends Fragment {
                         fileBrowser.fragmentShutdown(fileBrowser.createTxEditor,7);
                     }
                 }
-                if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
+                if ((fileBrowser.fragId == 4 && ((!devicePath.endsWith(".txt") && !devicePath.endsWith("pdf")))) &&
+                        fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
                     //fileBrowser.showMediaDisplay.disrupt = true;
 
                     if (fileBrowser.runningMediaList != null && fileBrowser.runningMediaList.size() > 0)
@@ -298,7 +301,7 @@ public class fileBrowser_01Fragment extends Fragment {
 
                             fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "openOne", "closed");
                             fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "runningOne", "closed");
-                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "openOne", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
                         }
 
                         runningMediaList = new ArrayList<>(0);

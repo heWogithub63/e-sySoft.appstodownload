@@ -581,7 +581,8 @@ public class showMessageFragment extends Fragment {
 
             } else if(kindOf.startsWith("mailNoInternet")) {
                 fileBrowser.threadStop = true;
-                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
+                if(fileBrowser.createSendEmail != null)
+                   fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
 
             } else if(kindOf.equals("Instruction_LogoAccount"))
                 fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[1],"TextEditorIcons","open","closed");
@@ -589,60 +590,44 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.threadStop = true;
             } else if(kindOf.equals("Instruction_MailAccount")) {
                 fileBrowser.keyboardTrans = mailTx;
-                int fact = displayHeight/18,
-                        fact01 = displayHeight/18;
-                if(yfact < 0.625) {
-                    fact = displayHeight / 28;
-                    fact01 = 0;
-                }
-                if(yfact >= 0.8) {
-                    fact01 = displayHeight/12;
-                }
-                final int fac = fact01, fa = fact;
-                fileBrowser.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mailTx.requestFocus();
-                        if(mailTx.getText().toString().contains("(!") && mailTx.getText().toString().contains("!)"))
-                            mailTx.setSelection(mailTx.getText().toString().indexOf("(!"), mailTx.getText().toString().indexOf("!)") +2);
-                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fa),
-                                    displayWidth -10, (int)(displayHeight/3) +fac);
-
+                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible()) {
+                    int fact = displayHeight/18,
+                            fact01 = displayHeight/18;
+                    if(yfact < 0.625) {
+                        fact = displayHeight / 28;
+                        fact01 = 0;
                     }
-                });
-
-
+                    fileBrowser.keyboardTrans = requestedText;
+                    if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                                displayWidth -10, (int)(displayHeight/3) +fact01);
+                }
             } else if(kindOf.equals("Instruction_EditorAccount")) {
                 fileBrowser.keyboardTrans = TxEditor;
-                int fact = displayHeight/18,
-                        fact01 = displayHeight/18;
-                if(yfact < 0.625) {
-                    fact = displayHeight / 28;
-                    fact01 = 0;
-                }
-                if(yfact >= 0.8) {
-                    fact01 = displayHeight/12;
-                }
 
-
-                final int fac = fact01, fa = fact;
+                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible()) {
+                    int fact = displayHeight/18,
+                            fact01 = displayHeight/18;
+                    if(yfact < 0.625) {
+                        fact = displayHeight / 28;
+                        fact01 = 0;
+                    }
+                    fileBrowser.keyboardTrans = requestedText;
+                    if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                                displayWidth -10, (int)(displayHeight/3) +fact01);
+                }
                 fileBrowser.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(fileBrowser.createTxEditor != null  && fileBrowser.createTxEditor.isVisible() && fileBrowser.createTxEditor.action.equals("info"))
+                        if (fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.createTxEditor.action.equals("info"))
                             fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
 
                         TxEditor.requestFocus();
                         if (TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
                             TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") + 2);
-                        if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                            fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fa),
-                                    displayWidth -10, (int)(displayHeight/3) +fac);
-
                     }
                 });
-
 
             } else if(kindOf.startsWith("successAction")) {
                 kindOf = kindOf.substring(kindOf.indexOf(" ")+1);
