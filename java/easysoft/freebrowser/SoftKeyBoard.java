@@ -118,7 +118,7 @@ public class SoftKeyBoard extends Fragment {
         kbIcPa.addRule(RelativeLayout.CENTER_VERTICAL);
         RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/12,displayWidth/14);
         kbIcPa1.addRule(RelativeLayout.CENTER_VERTICAL);
-        //if(fileBrowser.fragId != 8 || (fileBrowser.fragId == 8 && fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())) {
+        if(fileBrowser.fragId != 8) {
             ImageView Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
             Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
@@ -132,17 +132,6 @@ public class SoftKeyBoard extends Fragment {
                     if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
                         new keyblinkIcon(view, "OK").start();
                         fileBrowser.showMessage.clickOk();
-                    } else if(fileBrowser.fragId == 8) {
-                        new keyblinkIcon(view, "OK").start();
-                        String tx = txEd.getText().toString();
-                        if(!tx.equals((""))) {
-                            tx = tx.replace(" ","+");
-                            tx = fileBrowser.searchMashineUrl+"search?q="+tx;
-                            fileBrowser.webBrowserDisplay.webView.loadUrl(fileBrowser.searchMashineUrl+"search?q="+tx);
-                            if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
-                                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-                            }
-                        }
                     } else if((fileBrowser.fragId == 5 || fileBrowser.fragId == 7) && calledBack.equals("InfoView")) {
                         switch (fileBrowser.fragId) {
                             case (5) : {
@@ -165,7 +154,43 @@ public class SoftKeyBoard extends Fragment {
             });
 
             KeyboardIconLin.addView(Okicon);
-        //}
+        } else if(fileBrowser.fragId == 8 && (calledFrom.contains("Search") ||
+                (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()))) {
+
+            ImageView searchIcon = new ImageView(fileBrowser);
+            searchIcon.setLayoutParams(kbIcPa1);
+            searchIcon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/search_closed.png"));
+            searchIcon.setTag("searchIcon search_closed.png");
+            searchIcon.setPadding(0, 0, 10, 0);
+
+            searchIcon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
+                    if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
+                        fileBrowser.showMessage.clickOk();
+                    else {
+                        String tx = txEd.getText().toString();
+                        if (!tx.equals((""))) {
+                            tx = tx.replace(" ", "+");
+
+                            if (calledFrom.startsWith("SearchEngine")) {
+                                String querry = "search";
+                                tx = fileBrowser.webBrowserDisplay.runningUrl + querry + "?" + calledFrom.substring(calledFrom.lastIndexOf("_") + 1) + "=" + tx;
+                            } else
+                                tx = fileBrowser.webBrowserDisplay.runningUrl.substring(0, fileBrowser.webBrowserDisplay.runningUrl.lastIndexOf("/")) + "?search=" + tx;
+
+                            fileBrowser.webBrowserDisplay.webView.loadUrl(tx);
+
+                        }
+                        calledFrom = "KeyBoard";
+                    }
+                }
+            });
+
+            KeyboardIconLin.addView(searchIcon);
+        }
 
         ImageView keyboardicon = new ImageView(fileBrowser);
         keyboardicon.setLayoutParams(kbIcPa);
@@ -600,13 +625,16 @@ public class SoftKeyBoard extends Fragment {
                     url = "KeyBoard/letter1";
                 else if(kindOf.equals("PASTE"))
                     url = "KeyBoard/letter1";
+                else if(kindOf.equals("search"))
+                    url = "KeyBoard/search";
+
 
                 try {
                     Thread.sleep(250);
                 } catch (InterruptedException ie) {
                 }
-                if(kindOf.equals("OK")) {
-                    String finalUrl = url;
+                if(kindOf.equals("OK") || kindOf.equals("search")) {
+                    final String finalUrl = url;
                     fileBrowser.runOnUiThread(new Runnable() {
 
                         @Override
@@ -635,11 +663,12 @@ public class SoftKeyBoard extends Fragment {
                 }
                 n++;
             }
-            if(!kindOf.equals("OK"))
+            if(!kindOf.equals("OK") && !kindOf.equals("search"))
                 ((TextView)iView).setTextColor(fileBrowser.getResources().getColor(R.color.black));
             else {
+                String finalUrl1 = url;
                 fileBrowser.runOnUiThread(new Runnable() {
-                    final String finalUrl = "KeyBoard/letterOK";
+                    final String finalUrl = finalUrl1;
                     @Override
                     public void run() {
                         if (iView.getTag().toString().contains("open")) {

@@ -33,7 +33,7 @@ import static easysoft.freebrowser.FileBrowser.*;
 
 public class WebBrowserFragment extends Fragment {
     View view;
-    FrameLayout webLayout;
+    FrameLayout webLayout, timerGifLay;
     WebView webView;
     RelativeLayout mainRel, review;
     LinearLayout steerLin, header;
@@ -90,10 +90,18 @@ public class WebBrowserFragment extends Fragment {
             //your codes here
 
         }
+        timerGifLay = new FrameLayout(fileBrowser);
+        timerGifLay.setLayoutParams(new FrameLayout.LayoutParams(displayWidth / 8, displayWidth / 8));
+        timerGifLay.setX(displayWidth -displayWidth/4);
+        timerGifLay.setY(displayHeight/8);
+        timerGifLay.setVisibility(View.INVISIBLE);
+        timerGifLay.addView(new FileBrowser.GifTimer(fileBrowser.context));
+
         view = inflater.inflate(R.layout.fragment_web_browser, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.webBrowserMainRel);
 
         mainRel.addView(WebAction(0));
+        mainRel.addView(timerGifLay);
         mainRel.addView(createSteerIcons());
         mainRel.addView(createSwitcher());
         mainRel.addView(createReview());
@@ -208,10 +216,24 @@ public class WebBrowserFragment extends Fragment {
                     public void onClick(String tag,String id, String type) {
                         actionId = id;
                         actionIdChanged = true;
-                        if(tag.equals("INPUT")||tag.contains("TEXT")||tag.contains("text")||id.equals("q"))
+                        if((type.contains("search") || type.contains("text")) && (tag.contains("INPUT") || tag.contains("TEXT"))) {
+                            calledFrom = "";
+                            if (id.endsWith("p") || id.endsWith("q") || id.endsWith("s") || id.contains("search")) {
+                                calledFrom = "SearchEngine_" + id;
+                            } else
+                                calledFrom = "EditSearch";
+
                             handleJavascriptInput("", 0, 0);
-                        else
-                            hideKeyboard();
+                        } else {
+                            fileBrowser.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+
+
                     }
                 },
                 "appHost"
@@ -289,6 +311,8 @@ public class WebBrowserFragment extends Fragment {
 
                     final String injectedJs = "javascript:(function(){" + fileBrowser.injectedJs("JS/getSelectedObject.js") + "})()";
                     view.loadUrl(injectedJs);
+                if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
 
                 runningUrl = url;
                 boolean contain = false;
@@ -315,7 +339,8 @@ public class WebBrowserFragment extends Fragment {
                         steerImgs[4].setEnabled(true);
                     }
                 }
-               //newLoadedPage = false;
+               if(fileBrowser.webBrowserDisplay.timerGifLay.getVisibility() == View.VISIBLE)
+                   fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.INVISIBLE);
             }
         });
 

@@ -305,6 +305,7 @@ public class showMessageFragment extends Fragment {
         }
     }
     public void clickOk () {
+
         if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.fragId == 7)
             fileBrowser.createTxEditor.timerGifLay.setVisibility(View.VISIBLE);
         if (kindOf.contains("ask") ) {

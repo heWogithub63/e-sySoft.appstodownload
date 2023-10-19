@@ -617,6 +617,8 @@ public class showListFragment extends Fragment {
                                 fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                             } else if(caller.equals("webSideMemoryList")) {
                                 if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
+                                    fileBrowser.calledFrom = "MemoryList";
+                                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
 
                                     fileBrowser.webBrowserDisplay.ishandled = true;
                                     String tag1 = v.getTag().toString().substring(v.getTag().toString().indexOf(" ") +1,
