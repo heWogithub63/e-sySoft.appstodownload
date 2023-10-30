@@ -193,6 +193,10 @@ public class WebBrowserFragment extends Fragment {
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ie) {}
+                    
                     hideKeyboard();
                     popupSoftkeyboard();
                 }
