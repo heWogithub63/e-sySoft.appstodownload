@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -119,7 +118,7 @@ public class showListFragment extends Fragment {
                     listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.green));
 
                 if(((!canWrite || !insertaction)  && (arrayList.get(i)[i1].contains("Einfügen") || arrayList.get(i)[i1].contains("Paste")))  ||
-                        (isPdf && (arrayList.get(i)[i1].equals("Text Datei") || arrayList.get(i)[i1].contains("import")))) {
+                        (isPdf && (arrayList.get(i)[i1].equals("Text Datei")))) {
                     listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.grey));
                     listTx[listTx.length - 1].setEnabled(false);
                 }
@@ -143,6 +142,7 @@ public class showListFragment extends Fragment {
                 }
                 if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && (fileBrowser.createTxEditor.isBackground && arrayList.get(i)[i1].contains("Text ") ||
                         (fileBrowser.createTxEditor.isLogo && arrayList.get(i)[i1].contains("Text ")))) {
+                    System.err.println(fileBrowser.createTxEditor.isLogo +"--"+ fileBrowser.createTxEditor.isBackground);
                     listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.grey));
                     listTx[listTx.length - 1].setEnabled(false);
                 }
@@ -281,22 +281,19 @@ public class showListFragment extends Fragment {
                                                 kind_of + ".txt"),  5000);
 
                                     } else if ((kind_of.contains("Umbenennen") || kind_of.contains("Rename"))) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
                                         kind_of = "askForRename";
                                         //commandString = "rename -l  " + devicePath_trans;
                                         commandString = "mv -f  " + devicePath_trans;
                                         fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Rename.txt"),  0);
                                     } else if ((kind_of.contains("Löschen") || kind_of.contains("Delete"))) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
                                         kind_of = "_askForDelete";
                                         //commandString = "delete  " + devicePath_trans;
                                         commandString = "rm -rf  " + devicePath_trans;
                                         fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Delete.txt"), 0);
                                     } else if (kind_of.contains("-->")) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
                                               /*String toTrash = fileBrowser.context.getFilesDir() +"/TrashIndex";
                                               if(!devicePath_trans.substring(devicePath_trans.lastIndexOf("/") +1).contains("."))*/
                                         String toTrash = fileBrowser.context.getFilesDir() +"/TrashIndex" + devicePath_trans.substring(devicePath_trans.lastIndexOf("/"));
@@ -310,21 +307,18 @@ public class showListFragment extends Fragment {
                                         });
                                         return;
                                     } else if ((kind_of.contains("Neuer Ordner") || kind_of.contains("New Folder"))) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
                                         kind_of = "askForCreate";
                                         //commandString = "create  " + devicePath_trans;
                                         commandString = "mkdir  " + devicePath;
                                         fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_CreateFolder.txt"),  0);
                                     } else if ((kind_of.contains("Suchen") || kind_of.contains("Search"))) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
                                         kind_of = "askForSearch";
                                         commandString = "ls -aR  " +devicePath_trans;
                                         fileBrowser.messageStarter(kind_of, docu_Loader("Language/" + language + "/Instruction_Search.txt"),  0);
                                     } else if ((kind_of.contains("Einfügen") || kind_of.contains("Paste")) && !commandString.equals("")) {
-                                        fileBrowser.blink = new blinkIcon(v, "FileAction");
-                                        fileBrowser.blink.start();
+
 
                                         //
                                         String todo = commandString.substring(0, commandString.indexOf("  ")),
@@ -340,6 +334,8 @@ public class showListFragment extends Fragment {
                                         fileBrowser.runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
+                                                fileBrowser.timeImage.setVisibility(View.VISIBLE);
+                                                fileBrowser.timerAnimation.start();
                                                 fileBrowser.startTerminalCommands(todo, from, to1);
                                             }
                                         });
@@ -453,18 +449,16 @@ public class showListFragment extends Fragment {
                                 int o = 3;
                                 if(caller.contains("Sent"))
                                     o = 6;
-
-                                fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[o], "Call");
-                                fileBrowser.blink.start();
-                                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.VISIBLE);
+                                fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
+                                fileBrowser.createSendEmail.timerAnimation.start();
 
                                 fileBrowser.createSendEmail.handleSendThread(kind);
                                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                                     fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                 }
                             } else if(caller.equals("mailSaveList")) {
-                                fileBrowser.blink = new FileBrowser.blinkIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length -4], "Save");
-                                fileBrowser.blink.start();
+                                fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
+                                fileBrowser.createSendEmail.timerAnimation.start();
 
                                 if(fileBrowser.createSendEmail.saveAddressant(fileBrowser.createSendEmail.memoryList[1]))
                                     fileBrowser.createSendEmail.saveEmail(tag.substring(tag.indexOf(" ")+1, tag.lastIndexOf("_")));
@@ -534,12 +528,13 @@ public class showListFragment extends Fragment {
                                 }
 
                             } else if(caller.equals("PdfSideList")) {
+
                                 int pNr = Integer.parseInt(tag.substring(tag.lastIndexOf(" ")+1, tag.lastIndexOf("_"))) -1;
                                 selectedTx_01 = pNr;
                                 scrPosY = gridScr.getScrollY();
-                                try {
-                                    fileBrowser.createTxEditor.imgView.setImageBitmap(fileBrowser.createTxEditor.openPdf(pNr, new File(devicePath)));
-                                } catch(IOException io){}
+                                fileBrowser.createTxEditor.openPdfStart(pNr,new File(device));
+                                fileBrowser.createTxEditor.imgView.setImageBitmap(fileBrowser.createTxEditor.pdfOpenBit);
+
                                 showListLayout.bringToFront();
                             } else if(caller.equals("PdfCombineList")) {
                                 int sz = 2;
@@ -563,9 +558,8 @@ public class showListFragment extends Fragment {
                                 } else if(tag.substring(tag.indexOf(" ") +1).startsWith("Text ")) {
 
                                     if(fileBrowser.createTxEditor != null & fileBrowser.createTxEditor.isVisible()) {
-                                        fileBrowser.createTxEditor.isBackground = true;
                                         fileBrowser.createTxEditor.isBackgroundPath = devicePath;
-                                        fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+                                        fileBrowser.createTxEditor.createTxOverPdf();
                                     }
 
                                 }
@@ -618,7 +612,8 @@ public class showListFragment extends Fragment {
                             } else if(caller.equals("webSideMemoryList")) {
                                 if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
                                     fileBrowser.calledFrom = "MemoryList";
-                                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
+                                    fileBrowser.webBrowserDisplay.timeImage.setVisibility(View.VISIBLE);
+                                    fileBrowser.webBrowserDisplay.timerAnimation.start();
 
                                     fileBrowser.webBrowserDisplay.ishandled = true;
                                     String tag1 = v.getTag().toString().substring(v.getTag().toString().indexOf(" ") +1,

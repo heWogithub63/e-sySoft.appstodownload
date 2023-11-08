@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.AnimationDrawable;
 import android.os.*;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -32,13 +33,17 @@ import static easysoft.freebrowser.FileBrowser.*;
 
 
 public class WebBrowserFragment extends Fragment {
+    Context context;
     View view;
-    FrameLayout webLayout, timerGifLay;
+    FrameLayout webLayout;
     WebView webView;
     RelativeLayout mainRel, review;
     LinearLayout steerLin, header;
     ImageView[] steerImgs;
     ImageView switcher;
+
+    AnimationDrawable timerAnimation;
+    ImageView timeImage;
 
     int webViewWidth, webViewHeight;
 
@@ -62,6 +67,7 @@ public class WebBrowserFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context = getContext();
         if (getArguments() != null) {
             uri = getArguments().getString("URL");
         }
@@ -72,8 +78,8 @@ public class WebBrowserFragment extends Fragment {
         webViewWidth = displayWidth;
         webViewHeight = displayHeight;
 
-        fileBrowser.changeIcon(headMenueIcon[6],"headMenueIcons","closed", "running");
-        fileBrowser.changeIcon(headMenueIcon[6],"headMenueIcons","open", "running");
+        fileBrowser.changeIcon(headMenueIcon[6], "headMenueIcons", "closed", "running");
+        fileBrowser.changeIcon(headMenueIcon[6], "headMenueIcons", "open", "running");
 
     }
 
@@ -82,26 +88,36 @@ public class WebBrowserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         int SDK_INT = android.os.Build.VERSION.SDK_INT;
-        if (SDK_INT > 8)
-        {
+        if (SDK_INT > 8) {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                     .permitAll().build();
             StrictMode.setThreadPolicy(policy);
             //your codes here
 
         }
-        timerGifLay = new FrameLayout(fileBrowser);
-        timerGifLay.setLayoutParams(new FrameLayout.LayoutParams(displayWidth / 8, displayWidth / 8));
-        timerGifLay.setX(displayWidth -displayWidth/4);
-        timerGifLay.setY(displayHeight/8);
-        timerGifLay.setVisibility(View.INVISIBLE);
-        timerGifLay.addView(new FileBrowser.GifTimer(fileBrowser.context));
 
         view = inflater.inflate(R.layout.fragment_web_browser, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.webBrowserMainRel);
+        //AnimationTimer
+        timeImage = new ImageView(context);
+        timeImage.setBackgroundResource(R.drawable.timer);
+        timeImage.setLayoutParams(new FrameLayout.LayoutParams(displayWidth / 8, displayWidth / 8));
+        timeImage.setX(displayWidth - displayWidth / 4);
+        timeImage.setY(displayHeight / 8);
+        timeImage.setVisibility(View.INVISIBLE);
+        timeImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                timeImage.setVisibility(View.INVISIBLE);
+                timerAnimation.stop();
+            }
+        });
 
+        timerAnimation = (AnimationDrawable) timeImage.getBackground();
+        //
         mainRel.addView(WebAction(0));
-        mainRel.addView(timerGifLay);
+        mainRel.addView(timeImage);
+
         mainRel.addView(createSteerIcons());
         mainRel.addView(createSwitcher());
         mainRel.addView(createReview());
@@ -140,17 +156,17 @@ public class WebBrowserFragment extends Fragment {
                 fileBrowser.getSystemService(
                         Context.INPUT_METHOD_SERVICE);
 
-            imm.hideSoftInputFromWindow(webView.getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(webView.getWindowToken(), 0);
 
     }
 
-    private RelativeLayout createReview () {
+    private RelativeLayout createReview() {
         RelativeLayout.LayoutParams reviewParam = new RelativeLayout.LayoutParams(webViewHeight / 22, webViewHeight / 22);
         reviewParam.addRule(RelativeLayout.CENTER_IN_PARENT);
         review = new RelativeLayout(fileBrowser);
         review.setLayoutParams(reviewParam);
-        review.setX((float)(displayWidth -webViewHeight / 20));
-        review.setY((float)(webViewHeight -webViewHeight / 14));
+        review.setX((float) (displayWidth - webViewHeight / 20));
+        review.setY((float) (webViewHeight - webViewHeight / 14));
 
         ImageView reviewImg = new ImageView(fileBrowser);
         reviewImg.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/review_open.png"));
@@ -168,7 +184,7 @@ public class WebBrowserFragment extends Fragment {
                     view.setTag(view.getTag().toString().replace("open", "closed"));
                     steerLin.setY(webViewHeight - webViewHeight / 10);
                 }
-                ((ImageView)view).setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+tag));
+                ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/" + tag));
 
             }
         });
@@ -177,7 +193,7 @@ public class WebBrowserFragment extends Fragment {
     }
 
     public void handleJavascriptInput(String charIndex, int startpos, int stoppos) {
-        String script = "(function() {var element = document.getElementById('"+actionId+"')" +
+        String script = "(function() {var element = document.getElementById('" + actionId + "')" +
                 "; element.value = " + "'" + charIndex +
                 "';element.setSelectionRange(" + startpos + ", " + stoppos + ");})();";
 
@@ -188,20 +204,21 @@ public class WebBrowserFragment extends Fragment {
             }
         });
 
-        if(actionIdChanged) {
+        if (actionIdChanged) {
             Handler handler = new Handler(fileBrowser.getMainLooper());
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         Thread.sleep(50);
-                    } catch (InterruptedException ie) {}
-                    
+                    } catch (InterruptedException ie) {
+                    }
+
                     hideKeyboard();
                     popupSoftkeyboard();
                 }
 
-            }, 15);
+            }, 25);
         }
         actionIdChanged = false;
     }
@@ -217,10 +234,10 @@ public class WebBrowserFragment extends Fragment {
         webView.addJavascriptInterface(
                 new Object() {
                     @JavascriptInterface
-                    public void onClick(String tag,String id, String type) {
+                    public void onClick(String tag, String id, String type) {
                         actionId = id;
                         actionIdChanged = true;
-                        if((type.contains("search") || type.contains("text")) && (tag.contains("INPUT") || tag.contains("TEXT"))) {
+                        if ((type.contains("search") || type.contains("text")) && (tag.contains("INPUT") || tag.contains("TEXT"))) {
                             calledFrom = "";
                             if (id.endsWith("p") || id.endsWith("q") || id.endsWith("s") || id.contains("search")) {
                                 calledFrom = "SearchEngine_" + id;
@@ -228,13 +245,6 @@ public class WebBrowserFragment extends Fragment {
                                 calledFrom = "EditSearch";
 
                             handleJavascriptInput("", 0, 0);
-                        } else {
-                            fileBrowser.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
-                                }
-                            });
                         }
 
 
@@ -265,10 +275,13 @@ public class WebBrowserFragment extends Fragment {
                             + Environment.DIRECTORY_DOWNLOADS + "/" +
                             fileName.replace(" ", "");
 
-                   File file = new File(address);
+                    File file = new File(address);
                     boolean a = file.createNewFile();
-                    URL link = new URL(url.substring(url.indexOf(":")+1));
-
+                    URL link = null;
+                    if (url.startsWith("blob"))
+                       link = new URL(url.substring(url.indexOf(":") + 1));
+                    else
+                        link = new URL(url);
                     downloadFile(link, address);
 
                 } catch (Exception e) {
@@ -313,8 +326,8 @@ public class WebBrowserFragment extends Fragment {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
 
-                    final String injectedJs = "javascript:(function(){" + fileBrowser.injectedJs("JS/getSelectedObject.js") + "})()";
-                    view.loadUrl(injectedJs);
+                final String injectedJs = "javascript:(function(){" + fileBrowser.injectedJs("JS/getSelectedObject.js") + "})()";
+                view.loadUrl(injectedJs);
                 if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
                     fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
 
@@ -343,8 +356,8 @@ public class WebBrowserFragment extends Fragment {
                         steerImgs[4].setEnabled(true);
                     }
                 }
-               if(fileBrowser.webBrowserDisplay.timerGifLay.getVisibility() == View.VISIBLE)
-                   fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.INVISIBLE);
+                timeImage.setVisibility(View.INVISIBLE);
+                timerAnimation.stop();
             }
         });
 
@@ -377,7 +390,7 @@ public class WebBrowserFragment extends Fragment {
                 ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (InterruptedException ie) {
                 }
 
@@ -402,7 +415,7 @@ public class WebBrowserFragment extends Fragment {
 
         steerLin = new LinearLayout(fileBrowser);
         steerLin.setOrientation(LinearLayout.HORIZONTAL);
-        RelativeLayout.LayoutParams steerLinRel = new RelativeLayout.LayoutParams(5*webViewWidth / 7, webViewHeight / 14);
+        RelativeLayout.LayoutParams steerLinRel = new RelativeLayout.LayoutParams(5 * webViewWidth / 7, webViewHeight / 14);
         //steerLinRel.addRule(RelativeLayout.CENTER_HORIZONTAL);
         steerLin.setLayoutParams(steerLinRel);
         steerLin.setY(webViewHeight - webViewHeight / 10);
@@ -412,7 +425,7 @@ public class WebBrowserFragment extends Fragment {
 
         steerImgs = new ImageView[0];
         String[] steerNames = new String[]{"Rotation_closed.png", "Empty.png", "webSideback_closed.png", "webSideSearch.png", "https_closed.png", "webSideMemory_closed.png", "webSideforward_closed.png"};
-        if(webViewHeight < displayHeight)
+        if (webViewHeight < displayHeight)
             steerNames = new String[]{"Rotation_closed.png"};
 
         for (int i = 0; i < steerNames.length; i++) {
@@ -421,12 +434,12 @@ public class WebBrowserFragment extends Fragment {
             steerImgs[steerImgs.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(webViewHeight / f,
                     webViewHeight / f));
             steerImgs[steerImgs.length - 1].setTag(steerNames[i]);
-            if(orientation.equals("Landscape")) {
+            if (orientation.equals("Landscape")) {
                 steerImgs[steerImgs.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(webViewWidth / f,
                         webViewWidth / f));
                 steerImgs[steerImgs.length - 1].setTag(steerNames[i].replace("closed", "open"));
-                steerLin.setLayoutParams(new RelativeLayout.LayoutParams(webViewWidth / f ,webViewWidth / f ));
-                steerLin.setX(8*displayHeight/9);
+                steerLin.setLayoutParams(new RelativeLayout.LayoutParams(webViewWidth / f, webViewWidth / f));
+                steerLin.setX(8 * displayHeight / 9);
             }
             steerImgs[steerImgs.length - 1].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/" + steerImgs[steerImgs.length - 1].getTag().toString()));
 
@@ -435,7 +448,7 @@ public class WebBrowserFragment extends Fragment {
                 steerImgs[steerImgs.length - 1].setEnabled(false);
 
 
-            if(!steerNames[i].startsWith("Empty"))
+            if (!steerNames[i].startsWith("Empty"))
                 steerImgs[steerImgs.length - 1].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -475,26 +488,26 @@ public class WebBrowserFragment extends Fragment {
                 String[] webSideMem = fileBrowser.read_writeFileOnInternalStorage("read", "WebSideMemory", "WebSideMemory_Saved.txt", "");
                 if (webSideMem.length > 0) {
 
-                        fileBrowser.changeIcon(steerImgs[5], "browserIcons", "closed", "open");
+                    fileBrowser.changeIcon(steerImgs[5], "browserIcons", "closed", "open");
 
-                        double f = 2.5;
-                        if (yfact <= 0.625)
-                            f = 2;
+                    double f = 2.5;
+                    if (yfact <= 0.625)
+                        f = 2;
 
-                        int[] iconpos = new int[2];
-                        v.getLocationOnScreen(iconpos);
+                    int[] iconpos = new int[2];
+                    v.getLocationOnScreen(iconpos);
 
-                        fileBrowser.createList("webSideMemoryList", 1, "WebSideMemory WebSideMemory_Saved.txt", 6,
-                                (int) (iconpos[0]), (int) (iconpos[1] - webViewHeight / 22), (int) (webViewWidth / f), "lo");
+                    fileBrowser.createList("webSideMemoryList", 1, "WebSideMemory WebSideMemory_Saved.txt", 6,
+                            (int) (iconpos[0]), (int) (iconpos[1] - webViewHeight / 22), (int) (webViewWidth / f), "lo");
 
-                        fileBrowser.frameLy.get(3).bringToFront();
+                    fileBrowser.frameLy.get(3).bringToFront();
 
                 }
 
-            } else if(fileBrowser.showList != null || fileBrowser.showList.isVisible()) {
+            } else if (fileBrowser.showList != null || fileBrowser.showList.isVisible()) {
                 fileBrowser.showList.showListLayout.removeView(fileBrowser.showList.trash);
                 fileBrowser.changeIcon(steerImgs[5], "browserIcons", "open", "closed");
-                fileBrowser.fragmentShutdown(fileBrowser.showList,3);
+                fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
             }
         } else if (tag.contains("webSideback")) {
             ishandled = true;
@@ -534,7 +547,7 @@ public class WebBrowserFragment extends Fragment {
 
             int angel;
 
-            if(v.getTag().toString().contains("closed")) {
+            if (v.getTag().toString().contains("closed")) {
                 orientation = "Landscape";
                 webViewWidth = displayHeight;
                 webViewHeight = displayWidth;
@@ -542,8 +555,7 @@ public class WebBrowserFragment extends Fragment {
                 webLayout.setX(webViewHeight);
 
                 angel = 90;
-            }
-            else {
+            } else {
                 orientation = "Portrait";
                 webViewWidth = displayWidth;
                 webViewHeight = displayHeight;
@@ -551,7 +563,7 @@ public class WebBrowserFragment extends Fragment {
                 webLayout.setX(0);
                 webLayout.setY(0);
                 angel = 0;
-                }
+            }
             //
             RelativeLayout.LayoutParams webViewParams = new RelativeLayout.LayoutParams(webViewWidth, webViewHeight);
             webViewParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
@@ -563,11 +575,11 @@ public class WebBrowserFragment extends Fragment {
 
             ((ImageView) v).setImageBitmap(bitmapLoader("Icons/browserIcons/" + v.getTag().toString()));
 
-            if(orientation.equals("Portrait")) {
+            if (orientation.equals("Portrait")) {
                 mainRel.addView(createSteerIcons());
                 mainRel.addView(createSwitcher());
                 mainRel.addView(createReview());
-            } else if(orientation.equals("Landscape")) {
+            } else if (orientation.equals("Landscape")) {
                 mainRel.addView(createSteerIcons());
             }
 
@@ -633,39 +645,43 @@ public class WebBrowserFragment extends Fragment {
             this.setOnTouchListener(new OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent motionEvent) {
-                    if(motionEvent.getAction() == MotionEvent.ACTION_DOWN)
-                        if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
-                            fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard,6);
+                    if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+                        if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                            fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                     return false;
                 }
             });
         }
 
         public void initWebSetting(WebView webView) {
-            WebSettings setting = this.getSettings();
+            WebSettings settings = this.getSettings();
+            settings.setJavaScriptEnabled(true);
 
-            setting.setAllowFileAccess(true);
-            setting.setAllowFileAccessFromFileURLs(true);
-            setting.setAllowUniversalAccessFromFileURLs(true);
-            setting.setAppCacheEnabled(true);
-            setting.setDatabaseEnabled(true);
-            setting.setDomStorageEnabled(true);
-            setting.setCacheMode(WebSettings.LOAD_DEFAULT);
-            setting.setAppCachePath(this.getContext().getCacheDir().getAbsolutePath());
-            setting.setUseWideViewPort(true);
-            setting.setLoadWithOverviewMode(true);
-            setting.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
-            setting.setLightTouchEnabled(true);
-            setting.setJavaScriptEnabled(true);
-            setting.setBuiltInZoomControls(true);
-            setting.setSupportZoom(true);
-            setting.setDisplayZoomControls(false);
-            setting.setJavaScriptCanOpenWindowsAutomatically(true);
-            setting.setPluginState(WebSettings.PluginState.ON);
+            settings.setAppCachePath(getActivity().getApplicationContext().getCacheDir().getAbsolutePath());
+            settings.setUseWideViewPort(true);
+            settings.setPluginState(WebSettings.PluginState.ON);
+
+            settings.setAllowFileAccess(true);
+            settings.setAllowFileAccessFromFileURLs(true);
+            settings.setAllowUniversalAccessFromFileURLs(true);
+            settings.setAppCacheEnabled(true);
+            settings.setDatabaseEnabled(true);
+            settings.setDomStorageEnabled(true);
+            settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+            settings.setAppCachePath(this.getContext().getCacheDir().getAbsolutePath());
+            settings.setUseWideViewPort(true);
+            settings.setLoadWithOverviewMode(true);
+            settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+            settings.setLightTouchEnabled(true);
+            settings.setBuiltInZoomControls(true);
+            settings.setSupportZoom(true);
+            settings.setDisplayZoomControls(false);
+            settings.setJavaScriptCanOpenWindowsAutomatically(true);
+            settings.setPluginState(WebSettings.PluginState.ON);
 
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                setting.setAllowFileAccessFromFileURLs(true);
+                settings.setAllowFileAccessFromFileURLs(true);
             }
         }
     }

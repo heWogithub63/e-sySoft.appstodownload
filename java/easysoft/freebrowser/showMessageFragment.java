@@ -153,7 +153,7 @@ public class showMessageFragment extends Fragment {
             String tx = "";
             if(devicePath != null && devicePath.length() > 0) {
                 if (devicePath.substring(1).contains("."))
-                    tx = devicePath.substring(devicePath.lastIndexOf("."));
+                    tx = devicePath.substring(devicePath.lastIndexOf("/")+1);
                 else if (kindOf.startsWith("create"))
                     tx = devicePath.substring(devicePath.lastIndexOf("/") + 1) + "/";
                 else if (kindOf.startsWith("find"))
@@ -211,8 +211,7 @@ public class showMessageFragment extends Fragment {
                         fact01 = 0;
                     }
                     fileBrowser.keyboardTrans = requestedText;
-                    if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                        fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
                                 displayWidth -10, (int)(displayHeight/3) +fact01);
                 }
             } else if(kindOf.equals("httpsRequest")) {
@@ -306,9 +305,9 @@ public class showMessageFragment extends Fragment {
     }
     public void clickOk () {
 
-        if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.fragId == 7)
-            fileBrowser.createTxEditor.timerGifLay.setVisibility(View.VISIBLE);
         if (kindOf.contains("ask") ) {
+            fileBrowser.timeImage.setVisibility(View.VISIBLE);
+            fileBrowser.timerAnimation.start();
             String todo = commandString.substring(0, commandString.indexOf("  ")),
                     from = commandString.substring(commandString.indexOf("  ") + 2),
                     kind = "",
@@ -334,7 +333,8 @@ public class showMessageFragment extends Fragment {
                 to = " -> find " + newName;
             } else if (kindOf.endsWith("Delete")) {
                 //new FileBrowser.dataHandler(todo, from, to,null).start();
-
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
                 if(kindOf.contains("Trash")) {
                     if (fileBrowser.showList != null && fileBrowser.showList.isVisible())
                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
@@ -382,6 +382,9 @@ public class showMessageFragment extends Fragment {
         } else if (kindOf.equals("Extern_Device_Permission")) {
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.equals("mailSendRequest")) {
+            fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
+            fileBrowser.createSendEmail.timerAnimation.start();
+
             String ms = fileBrowser.createSendEmail.mailTx.getText().toString();
             ClipboardManager clipBoard;
             clipBoard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
@@ -391,6 +394,9 @@ public class showMessageFragment extends Fragment {
 
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.endsWith("Document_Save")) {
+            fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
+            fileBrowser.createTxEditor.timerAnimation.start();
+
             String tx = requestedText.getText().toString().replace(" ","");
 
             if (tx.contains(".") && !tx.contains(","))
@@ -398,6 +404,8 @@ public class showMessageFragment extends Fragment {
             if (kindOf.startsWith("Tx")) {
                 fileBrowser.createTxEditor.buildTxFile(devicePath, tx);
             } else if (kindOf.startsWith("PDF") || kindOf.startsWith("Pdf")) {
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.start();
 
                 if(fileBrowser.createTxEditor.kindOfFormat.equals(".txt")) {
                     String[] txString = new String[0];
@@ -454,6 +462,9 @@ public class showMessageFragment extends Fragment {
 
 
             } else if(kindOf.startsWith("pdfCombined")) {
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.start();
+
                 String destination = "";
                 if(tx.contains(",")) {
                     destination = tx.substring(0, tx.indexOf(",")).trim();
@@ -469,16 +480,16 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.createTxEditor.Merge_PdfFiles(devicePath, destination, mergedFiles);
             }
         } else if(kindOf.equals("httpsRequest")) {
+            fileBrowser.webBrowserDisplay.timeImage.setVisibility(View.VISIBLE);
+            fileBrowser.webBrowserDisplay.timerAnimation.start();
+
             if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
                 fileBrowser.webBrowserDisplay.webView.loadUrl(requestedText.getText().toString());
                 if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
                     fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                 }
-                //fileBrowser.changeIcon(fileBrowser.webBrowserDisplay.steerImgs[2], "browserIcons", "open", "closed");
-
             }
         }
-        //fileBrowser.threadStop = true;
     }
 
     private ImageView createCopyButton (int line) {
@@ -491,10 +502,11 @@ public class showMessageFragment extends Fragment {
         copyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fileBrowser.blink = new blinkIcon(v, "copyall");
-                fileBrowser.blink.start();
 
-                    String ms = "";
+                fileBrowser.timeImage.setVisibility(View.VISIBLE);
+                fileBrowser.timerAnimation.start();
+
+                String ms = "";
                     ClipboardManager clipBoard;
                     clipBoard = (ClipboardManager) getActivity().getSystemService(CLIPBOARD_SERVICE);
                     if (messageString.length > 0)
@@ -503,6 +515,8 @@ public class showMessageFragment extends Fragment {
                     ClipData clip = ClipData.newPlainText("label", ms);
                     clipBoard.setPrimaryClip(clip);
 
+                String[] mess = docu_Loader("Language/" + language + "/CopiedToClippboard.txt");
+                fileBrowser.messageStarter("Instruction", mess, 5000);
             }
         });
 
@@ -581,14 +595,22 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.intendStarted = true;
 
             } else if(kindOf.startsWith("mailNoInternet")) {
-                fileBrowser.threadStop = true;
-                if(fileBrowser.createSendEmail != null)
-                   fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
 
-            } else if(kindOf.equals("Instruction_LogoAccount"))
-                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[1],"TextEditorIcons","open","closed");
-            else if(kindOf.equals("InfoContact")) {
-                fileBrowser.threadStop = true;
+                if(fileBrowser.createSendEmail != null) {
+                    fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
+                    fileBrowser.createSendEmail.timerAnimation.stop();
+                }
+
+
+            } else if(kindOf.equals("Instruction_LogoAccount")) {
+                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[1], "TextEditorIcons", "open", "closed");
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.stop();
+            } else if(kindOf.equals("InfoContact")) {
+                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[6],"sideRightMenueIcons","open","closed");
+
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
             } else if(kindOf.equals("Instruction_MailAccount")) {
                 fileBrowser.keyboardTrans = mailTx;
                 if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible()) {
@@ -603,6 +625,8 @@ public class showMessageFragment extends Fragment {
                         fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
                                 displayWidth -10, (int)(displayHeight/3) +fact01);
                 }
+                fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createSendEmail.timerAnimation.stop();
             } else if(kindOf.equals("Instruction_EditorAccount")) {
                 fileBrowser.keyboardTrans = TxEditor;
 
@@ -631,6 +655,7 @@ public class showMessageFragment extends Fragment {
                 });
 
             } else if(kindOf.startsWith("successAction")) {
+
                 kindOf = kindOf.substring(kindOf.indexOf(" ")+1);
                 if(kindOf.contains("delete")) {
                     if(kindOf.endsWith("delete")) {
@@ -667,27 +692,32 @@ public class showMessageFragment extends Fragment {
                     fileBrowser.fragmentShutdown(fileBrowser.showList,3);
 
                 fileBrowser.changeIcon(headMenueIcon[2],"headMenueIcons","open","closed");
-
-
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
 
             } else if(kindOf.equals("Successful_TxDocumentSave")) {
 
-                fileBrowser.createTxEditor.timerGifLay.setVisibility(View.INVISIBLE);
+                timerRun = false;
                 fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[3],"TextEditorIcons", "open", "closed");
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.stop();
 
-                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                    if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
-                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
 
             } else if(kindOf.equals("Successful_PdfDocumentSave")) {
                 fileBrowser.startExtApp(devicePath);
             }
 
-            if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible() && fileBrowser.fragId == 5)
-                fileBrowser.createSendEmail.timerGifLay.setVisibility(View.INVISIBLE);
+            if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible()) {
+                fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createSendEmail.timerAnimation.stop();
+            }
 
-            fileBrowser.threadStop = true;
+            if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+            if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+
+
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
 
         }

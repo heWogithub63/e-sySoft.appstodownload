@@ -2,13 +2,11 @@ package easysoft.freebrowser;
 
 import android.annotation.SuppressLint;
 import android.app.Fragment;
+import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.*;
 
 import java.util.Arrays;
@@ -19,6 +17,7 @@ import static easysoft.freebrowser.FileBrowser.*;
 
 
 public class MediaDisplayFragment extends Fragment {
+    Context context;
     rundomTimer imgTimer;
     videoRunTime videoRunTimer;
     static ImageView[] contrButtons;
@@ -30,7 +29,7 @@ public class MediaDisplayFragment extends Fragment {
     TextView duration;
     float previousX, pointer;
     double scaleFact = 1;
-    int arrayPointer = 0, hours, minutes, seconds, smseconds;
+    int arrayPointer = 0, angle = 0, hours, minutes, seconds, smseconds;
     String tag = "";
 
     View view;
@@ -69,12 +68,14 @@ public class MediaDisplayFragment extends Fragment {
             mediaDisplayLayout.setLayoutParams(new FrameLayout.LayoutParams(displayWidth, displayHeight / 16));
             mediaDisplayLayout.setY(displayHeight -displayHeight/11);
         }
+
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        context = getContext();
         view = inflater.inflate(R.layout.fragment_media_display, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.mainRel);
 
@@ -95,18 +96,60 @@ public class MediaDisplayFragment extends Fragment {
         videoView.setMediaController(mediaController);
 
         if(kindOfMedia.equals("PICTURES")) {
-            RelativeLayout.LayoutParams imgRelParam = new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth() -100,mediaDisplayLayout.getHeight()));
+            RelativeLayout.LayoutParams imgRelParam = new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth() -10,mediaDisplayLayout.getHeight()/3));
             imgRelParam.addRule(RelativeLayout.CENTER_IN_PARENT);
-            imgDisplay = new ImageView(fileBrowser);
+            imgDisplay = new ImageView(context);
             imgDisplay.setLayoutParams(imgRelParam);
+            imgDisplay.setOnTouchListener(new View.OnTouchListener() {
+                float x, y, preX, preY;
+                int pC;
+                @SuppressLint("ClickableViewAccessibility")
+                @Override
+                public boolean onTouch(View view, MotionEvent me) {
+                    pC = me.getPointerCount();
 
+                    switch (me.getAction()) {
+                        case (MotionEvent.ACTION_DOWN): {
+
+                            x = me.getX();
+                            y = me.getY();
+
+                        }
+                        case (MotionEvent.ACTION_MOVE): {
+
+                            if(pC == 1) {
+                                if(angle == 0)
+                                    view.setX(view.getX() + (me.getX() - x));
+                                break;
+                            } else if(pC == 2 && ((view.getHeight()*scaleFact) <= displayHeight) && scaleFact >= 1)  {
+                                scaleFact = scaleFact +(-(me.getY() - y) *0.001);
+                                if((view.getHeight()*scaleFact) >= displayHeight && me.getY() < y)
+                                    scaleFact = scaleFact +((me.getY() - y) *0.001);
+                                if(scaleFact <= 1 && me.getY() > y)
+                                    scaleFact = scaleFact +((me.getY() - y) *0.001);
+                                view.setScaleX((float) scaleFact);
+                                view.setScaleY((float) scaleFact);
+                                break;
+                            }
+                        }
+                        case (ACTION_UP): {
+                            try {
+                                Thread.sleep(250);
+                            } catch (InterruptedException ie) {}
+                            break;
+                        }
+                    }
+
+                    return true;
+                }
+            });
             mainRel.addView(imgDisplay);
 
             if (runningMediaList != null && runningMediaList.size() > 0) {
                 mediaURL = runningMediaList.get(0);
             }
 
-            createRotateImg();
+            mainRel.addView(createRotateImg());
             mainRel.addView(createPlayChoosePanel());
             createImageShow(mediaURL);
 
@@ -131,8 +174,8 @@ public class MediaDisplayFragment extends Fragment {
                         switch (me.getAction()) {
                             case (MotionEvent.ACTION_DOWN): {
 
-                                    x = me.getX();
-                                    y = me.getY();
+                                x = me.getX();
+                                y = me.getY();
 
                             }
                             case (MotionEvent.ACTION_MOVE): {
@@ -173,7 +216,7 @@ public class MediaDisplayFragment extends Fragment {
         }
 
         if(!kindOfMedia.equals("AUDIO"))
-           mainRel.addView(createSwitcher());
+            mainRel.addView(createSwitcher());
 
         devicePath = mediaURL;
         fileBrowser.reloadFileBrowserDisplay();
@@ -184,10 +227,10 @@ public class MediaDisplayFragment extends Fragment {
     }
     private ImageView createSwitcher() {
 
-        switcher = new ImageView(fileBrowser);
-        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
+        switcher = new ImageView(context);
+        switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 15, displayHeight / 2));
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
-        switcher.setX(displayWidth - displayWidth / 9);
+        switcher.setX(displayWidth - displayWidth / 13);
         switcher.setY(displayHeight / 22);
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -195,7 +238,7 @@ public class MediaDisplayFragment extends Fragment {
                 ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
 
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 } catch (InterruptedException ie) {
                 }
 
@@ -272,7 +315,7 @@ public class MediaDisplayFragment extends Fragment {
 
     public LinearLayout createPlayChoosePanel() {
         int n = 3, contr = RelativeLayout.CENTER_HORIZONTAL, height = mediaDisplayLayout.getHeight()/10,
-            icsz = 48;
+                icsz = 48;
         if(kindOfMedia.equals("AUDIO")) {
             n = 2;
             contr = RelativeLayout.ALIGN_PARENT_LEFT;
@@ -284,24 +327,24 @@ public class MediaDisplayFragment extends Fragment {
         linRel.addRule(contr);
 
         String[] contrButStr = new String[]{"Back", "Empty", "Random", "Empty", "Forward"};
-        LinearLayout controlButtonLin = new LinearLayout(fileBrowser);
+        LinearLayout controlButtonLin = new LinearLayout(context);
         controlButtonLin.setOrientation(LinearLayout.VERTICAL);
         controlButtonLin.setLayoutParams(linRel);
 
         RelativeLayout.LayoutParams linContrRel = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
-        RelativeLayout steerRel = new RelativeLayout(fileBrowser);
+        RelativeLayout steerRel = new RelativeLayout(context);
         steerRel.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
 
         linContrRel.addRule(contr);
-        LinearLayout steerContrLin = new LinearLayout(fileBrowser);
+        LinearLayout steerContrLin = new LinearLayout(context);
         steerContrLin.setOrientation(LinearLayout.HORIZONTAL);
         steerContrLin.setLayoutParams(linContrRel);
 
         if(!kindOfMedia.equals("AUDIO")) {
             controlButtonLin.setY(mediaDisplayLayout.getHeight() / 20);
             RelativeLayout.LayoutParams linTxRel = new RelativeLayout.LayoutParams(mediaDisplayLayout.getWidth() / 2, height/2);
-            titel = new TextView(fileBrowser);
+            titel = new TextView(context);
             titel.setTextColor(getResources().getColor(R.color.blue));
             titel.setText(setText(mediaURL));
             titel.setTextSize(textSize);
@@ -309,7 +352,33 @@ public class MediaDisplayFragment extends Fragment {
             titel.setY(20);
 
             steerRel.addView(titel);
-            steerRel.addView(createScaleButtons());
+            /*if(kindOfMedia.equals("VIDEO")) {
+                ImageView Rotation = new ImageView(context);
+                Rotation.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(height/2, height/2)));
+                Rotation.setTag("Rotation_closed");
+                Rotation.setImageBitmap(bitmapLoader("Icons/mediaIcons/Rotation_closed.png"));
+                Rotation.setX(3*displayWidth/5);
+                Rotation.setY(0);
+
+                Rotation.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        angle = 0;
+                        if (v.getTag().toString().contains("closed")) {
+                            v.setTag(v.getTag().toString().replace("closed", "open"));
+                            angle = 90;
+                        } else {
+                            v.setTag(v.getTag().toString().replace("open", "closed"));
+                            angle = 0;
+                        }
+                        videoView.setRotation(angle);
+                        ((ImageView) v).setImageBitmap(bitmapLoader("Icons/mediaIcons/" + v.getTag().toString() + ".png"));
+
+                    }
+                });
+                steerRel.addView(Rotation);
+
+            }*/
 
         } else {
             controlButtonLin.setPadding((int) (20*xfact),(int) (10*yfact),0,0);
@@ -326,7 +395,7 @@ public class MediaDisplayFragment extends Fragment {
                 }
 
                 contrButtons = Arrays.copyOf(contrButtons, contrButtons.length + 1);
-                contrButtons[contrButtons.length - 1] = new ImageView(fileBrowser);
+                contrButtons[contrButtons.length - 1] = new ImageView(context);
                 contrButtons[contrButtons.length - 1].setTag(contrButStr[i] + iconStatus + ".png");
                 contrButtons[contrButtons.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (icsz * xfact), (int) (icsz * xfact)));
                 contrButtons[contrButtons.length - 1].setImageBitmap(bitmapLoader("Icons/mediaIcons/" +
@@ -392,17 +461,22 @@ public class MediaDisplayFragment extends Fragment {
         return tx;
     }
 
-    public void createRotateImg () {
-        ImageView Rotation = new ImageView(fileBrowser);
-        Rotation.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams((int)(100 *xfact), (int)(100 *xfact))));
-        Rotation.setX(mediaDisplayLayout.getWidth() -mediaDisplayLayout.getWidth()/5);
-        Rotation.setY(mediaDisplayLayout.getHeight() -mediaDisplayLayout.getHeight()/8);
+    public LinearLayout createRotateImg () {
+        LinearLayout rotLin = new LinearLayout(context);
+        rotLin.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/2, (int)(100 *xfact)));
+        rotLin.setOrientation(LinearLayout.HORIZONTAL);
+
+        rotLin.setX(displayWidth/2);
+        rotLin.setY(mediaDisplayLayout.getHeight() -mediaDisplayLayout.getHeight()/8);
+
+        ImageView Rotation = new ImageView(context);
+        Rotation.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams((int)(100 *xfact), RelativeLayout.LayoutParams.MATCH_PARENT)));
         Rotation.setTag("Rotation_closed");
         Rotation.setImageBitmap(bitmapLoader("Icons/mediaIcons/Rotation_closed.png"));
         Rotation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int angle = 0;
+                angle = 0;
                 if(v.getTag().toString().contains("closed")) {
                     v.setTag(v.getTag().toString().replace("closed", "open"));
                     angle = 90;
@@ -411,18 +485,15 @@ public class MediaDisplayFragment extends Fragment {
                     v.setTag(v.getTag().toString().replace("open", "closed"));
                     angle = 0;
                 }
-
                 imgDisplay.setRotation(angle);
                 ((ImageView) v).setImageBitmap(bitmapLoader("Icons/mediaIcons/" + v.getTag().toString() + ".png"));
 
             }
         });
-        mainRel.addView(Rotation);
 
-        ImageView Drucker = new ImageView(fileBrowser);
-        Drucker.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams((int)(100 *xfact), (int)(100 *xfact))));
-        Drucker.setX(mediaDisplayLayout.getWidth() -mediaDisplayLayout.getWidth()/2);
-        Drucker.setY(mediaDisplayLayout.getHeight() -mediaDisplayLayout.getHeight()/8);
+
+        ImageView Drucker = new ImageView(context);
+        Drucker.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(displayWidth/4, RelativeLayout.LayoutParams.MATCH_PARENT)));
         Drucker.setTag("Drucker_closed");
         Drucker.setImageBitmap(bitmapLoader("Icons/mediaIcons/Drucker.png"));
         Drucker.setOnClickListener(new View.OnClickListener() {
@@ -431,59 +502,9 @@ public class MediaDisplayFragment extends Fragment {
                 fileBrowser.doPrint(imgDisplay);
             }
         });
-        mainRel.addView(Drucker);
-
-    }
-
-    public LinearLayout createScaleButtons() {
-
-        LinearLayout scaleLin = new LinearLayout(fileBrowser);
-        scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
-        scaleLin.setOrientation(LinearLayout.HORIZONTAL);
-        scaleLin.setPadding(10,10,10,10);
-        scaleLin.setX(displayWidth/2);
-        scaleLin.setY(20);
-
-        String[] scaleTx = new String[]{"lupe"};
-        if(kindOfMedia.equals("PICTURES")) {
-            scaleTx = new String[]{"minus","lupe","plus"};
-        }
-
-        ImageView[] scaleImg = new ImageView[scaleTx.length];
-        for(int i=0;i<scaleTx.length;i++) {
-            scaleImg[i] = new ImageView(fileBrowser);
-            scaleImg[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/"+scaleTx[i]+".png"));
-            scaleImg[i].setTag(scaleTx[i]);
-            scaleImg[i].setLayoutParams(new RelativeLayout.LayoutParams((int)(xfact*displayWidth/16),(int)(xfact*displayWidth/16)));
-
-            scaleImg[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    String tag = view.getTag().toString();
-
-                    if(tag.equals("minus") && scaleFact > 1)
-                        scaleFact = scaleFact -0.1;
-                    else if(tag.equals("plus"))
-                        scaleFact = scaleFact +0.1;
-                    else if(tag.equals("lupe")) {
-                        scaleFact = 1;
-                        videoView.setX(10);
-                        videoView.setY(displayHeight/2 - videoView.getHeight()/2);
-                    }
-
-                    if(kindOfMedia.equals("VIDEO")) {
-                        videoView.setScaleX((float) scaleFact);
-                        videoView.setScaleY((float) scaleFact);
-                    }
-                    else if (kindOfMedia.equals("PICTURES")) {
-                        imgDisplay.setScaleX((float) scaleFact);
-                        imgDisplay.setScaleY((float) scaleFact);
-                    }
-                }
-            });
-            scaleLin.addView(scaleImg[i]);
-        }
-        return scaleLin;
+        rotLin.addView(Drucker);
+        rotLin.addView(Rotation);
+       return rotLin;
     }
 
     private LinearLayout createVideoController(int videoLength) {
@@ -497,13 +518,13 @@ public class MediaDisplayFragment extends Fragment {
 
         RelativeLayout.LayoutParams contrLinParam = new RelativeLayout.LayoutParams(displayWidth, displayHeight/14);
         contrLinParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        contrLin = new LinearLayout(fileBrowser);
+        contrLin = new LinearLayout(context);
         contrLin.setLayoutParams(contrLinParam);
         contrLin.setOrientation(LinearLayout.VERTICAL);
         contrLin.setY(mediaDisplayLayout.getHeight() -displayHeight/10);
         //contrLin.setBackgroundColor(getResources().getColor(R.color.white));
 
-        LinearLayout contrLinButtons = new LinearLayout(fileBrowser);
+        LinearLayout contrLinButtons = new LinearLayout(context);
         contrLinButtons.setOrientation(LinearLayout.HORIZONTAL);
         contrLinButtons.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth, displayHeight/16));
         //contrLinButtons.setBackgroundColor(getResources().getColor(R.color.white));
@@ -513,7 +534,7 @@ public class MediaDisplayFragment extends Fragment {
 
         for(int i=0;i<contrButtons.length;i++) {
             contrImgs = Arrays.copyOf(contrImgs, contrImgs.length +1);
-            contrImgs[contrImgs.length -1] = new ImageView(fileBrowser);
+            contrImgs[contrImgs.length -1] = new ImageView(context);
             contrImgs[contrImgs.length -1].setPadding(25,5,25,5);
             contrImgs[contrImgs.length -1].setTag(contrButtons[i]);
             contrImgs[contrImgs.length -1].setLayoutParams(new RelativeLayout.LayoutParams(displayHeight/20,displayHeight/20));
@@ -567,7 +588,7 @@ public class MediaDisplayFragment extends Fragment {
             contrLinButtons.addView(contrImgs[contrImgs.length -1]);
         }
 
-        RelativeLayout contrRunRel = new RelativeLayout(fileBrowser);
+        RelativeLayout contrRunRel = new RelativeLayout(context);
         contrRunRel.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/2, displayHeight/14));
 
         runImgs = new ImageView[0];
@@ -575,7 +596,7 @@ public class MediaDisplayFragment extends Fragment {
 
         for(int i=0;i<runLine.length;i++) {
             runImgs = Arrays.copyOf(runImgs, runImgs.length + 1);
-            runImgs[runImgs.length - 1] = new ImageView(fileBrowser);
+            runImgs[runImgs.length - 1] = new ImageView(context);
             runImgs[runImgs.length - 1].setPadding(25, 5, 25, 5);
             runImgs[runImgs.length - 1].setTag(runLine[i]);
             if (i == 0) {
@@ -587,11 +608,11 @@ public class MediaDisplayFragment extends Fragment {
             contrRunRel.addView(runImgs[runImgs.length - 1]);
         }
         contrLinButtons.addView(contrRunRel);
-        LinearLayout durationTXLin = new LinearLayout(fileBrowser);
+        LinearLayout durationTXLin = new LinearLayout(context);
         durationTXLin.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 5, displayHeight / 20));
         durationTXLin.setOrientation(LinearLayout.HORIZONTAL);
 
-        duration = new TextView(fileBrowser);
+        duration = new TextView(context);
         duration.setText(formatted);
         duration.setTextColor(getResources().getColor(R.color.white));
         duration.setTextSize(textSize);
@@ -634,7 +655,7 @@ public class MediaDisplayFragment extends Fragment {
                 @Override
                 public void run() {
                     if (runningMediaList != null && runningMediaList.size() > 0)
-                       runmediaList();
+                        runmediaList();
                 }
             });
         }
@@ -651,40 +672,40 @@ public class MediaDisplayFragment extends Fragment {
         @Override
         public void run() {
 
-                    double speedFact = 1;
-                    if (smseconds < 100) speedFact = 0.75;
-                    else if (smseconds < 200) speedFact = 0.80;
-                    else if (smseconds < 300) speedFact = 0.90;
-                    else if (smseconds < 400) speedFact = 0.95;
+            double speedFact = 1;
+            if (smseconds < 100) speedFact = 0.75;
+            else if (smseconds < 200) speedFact = 0.80;
+            else if (smseconds < 300) speedFact = 0.90;
+            else if (smseconds < 400) speedFact = 0.95;
 
-                    pointer = (float) ((bar / smseconds) * speedFact * xfact);
+            pointer = (float) ((bar / smseconds) * speedFact * xfact);
 
-                    while (smseconds > 0) {
-                        runImgs[1].setX(runImgs[1].getX() + (float) (pointer));
-                        int hours = smseconds / 3600;
-                        int minutes = (smseconds / 60) - (hours * 60);
-                        int seconds = smseconds - (hours * 3600) - (minutes * 60);
-                        formatted = String.format("%d:%02d:%02d", hours, minutes, seconds);
-                        fileBrowser.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                duration.setText(formatted);
-                            }
-                        });
-
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException ie) {
-                            }
-
-                        while (videoPause) {
-                            try {
-                                Thread.sleep(100);
-                            } catch (InterruptedException ie) {
-                            }
-                        }
-                        smseconds = smseconds - 1;
+            while (smseconds > 0) {
+                runImgs[1].setX(runImgs[1].getX() + (float) (pointer));
+                int hours = smseconds / 3600;
+                int minutes = (smseconds / 60) - (hours * 60);
+                int seconds = smseconds - (hours * 3600) - (minutes * 60);
+                formatted = String.format("%d:%02d:%02d", hours, minutes, seconds);
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        duration.setText(formatted);
                     }
+                });
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                }
+
+                while (videoPause) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ie) {
+                    }
+                }
+                smseconds = smseconds - 1;
+            }
         }
     }
 }

@@ -1,0 +1,5 @@
+Der Inhalt des Manualles wurde
+in den Arbeitsspeicher 
+kopiert und kann mit 'Paste'
+nach öffnen eines TextFiles
+in Dieses übertragen werden.

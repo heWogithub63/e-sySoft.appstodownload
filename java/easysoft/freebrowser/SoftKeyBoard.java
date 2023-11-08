@@ -19,6 +19,7 @@ public class SoftKeyBoard extends Fragment {
     ClipboardManager clipBoard;
 
     View view;
+    ImageView Okicon;
     FrameLayout keyBoardLayout;
     ArrayList<String[]> smallTabsTx;
     ArrayList<String[]> largeTabsTx;
@@ -91,7 +92,7 @@ public class SoftKeyBoard extends Fragment {
                     }
                 }
 
-                    return true;
+                return true;
             }
         });
         createKeyboard(smallTabsTx);
@@ -119,7 +120,7 @@ public class SoftKeyBoard extends Fragment {
         RelativeLayout.LayoutParams kbIcPa1 = new RelativeLayout.LayoutParams(displayWidth/12,displayWidth/14);
         kbIcPa1.addRule(RelativeLayout.CENTER_VERTICAL);
         if(fileBrowser.fragId != 8) {
-            ImageView Okicon = new ImageView(fileBrowser);
+            Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
             Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
             Okicon.setTag("OkIcon letterOK_closed.png");
@@ -128,23 +129,24 @@ public class SoftKeyBoard extends Fragment {
             Okicon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
 
-                    if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
-                        new keyblinkIcon(view, "OK").start();
+                        //fileBrowser.changeIcon(view, "./KeyBoard", "closed", "open");
                         fileBrowser.showMessage.clickOk();
-                    } else if((fileBrowser.fragId == 5 || fileBrowser.fragId == 7) && calledBack.equals("InfoView")) {
+                    }
+                    if ((fileBrowser.fragId == 5 || fileBrowser.fragId == 7) && calledBack.equals("InfoView")) {
                         switch (fileBrowser.fragId) {
-                            case (5) : {
+                            case (5): {
                                 fileBrowser.createSendEmail.saveInfo();
                                 fileBrowser.createSendEmail.createNewDisplay();
-                                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length -1],
+                                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[fileBrowser.createSendEmail.icons.length - 1],
                                         "mailIcons", "open", "closed");
-                                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard,6);
+                                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
                                 break;
                             }
-                            case (7) : {
-                                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[fileBrowser.createTxEditor.icons.length -1],
-                                        "TextEditorIcons","open","closed");
+                            case (7): {
+                                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[fileBrowser.createTxEditor.icons.length - 1],
+                                        "TextEditorIcons", "open", "closed");
                                 fileBrowser.createTxEditor.saveInfo();
                                 break;
                             }
@@ -167,7 +169,9 @@ public class SoftKeyBoard extends Fragment {
                 @Override
                 public void onClick(View view) {
 
-                    fileBrowser.webBrowserDisplay.timerGifLay.setVisibility(View.VISIBLE);
+                    fileBrowser.webBrowserDisplay.timeImage.setVisibility(View.VISIBLE);
+                    fileBrowser.webBrowserDisplay.timerAnimation.start();
+
                     if (fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
                         fileBrowser.showMessage.clickOk();
                     else {
@@ -175,13 +179,14 @@ public class SoftKeyBoard extends Fragment {
                         if (!tx.equals((""))) {
                             tx = tx.replace(" ", "+");
 
-                            if (calledFrom.startsWith("SearchEngine")) {
-                                String querry = "search";
-                                tx = fileBrowser.webBrowserDisplay.runningUrl + querry + "?" + calledFrom.substring(calledFrom.lastIndexOf("_") + 1) + "=" + tx;
-                            } else
+                            String querry = "search";
+                            tx = fileBrowser.webBrowserDisplay.runningUrl + querry + "?" + calledFrom.substring(calledFrom.lastIndexOf("_") + 1) + "=" + tx;
+                            try {
+                                fileBrowser.webBrowserDisplay.webView.loadUrl(tx);
+                            } catch (Exception e) {
                                 tx = fileBrowser.webBrowserDisplay.runningUrl.substring(0, fileBrowser.webBrowserDisplay.runningUrl.lastIndexOf("/")) + "?search=" + tx;
-
-                            fileBrowser.webBrowserDisplay.webView.loadUrl(tx);
+                                fileBrowser.webBrowserDisplay.webView.loadUrl(tx);
+                            }
 
                         }
                         calledFrom = "KeyBoard";
@@ -247,6 +252,7 @@ public class SoftKeyBoard extends Fragment {
         RelativeLayout[] tabsRel = new RelativeLayout[0];
         ImageView[] tabsButtons = new ImageView[0];
         TextView[] tabsTx = new TextView[0];
+        TextView[] tabsTxShadow = new TextView[0];
 
         for(int i=0;i<arrayList.size(); i++) {
             for(int n=0;n<3;n++) {
@@ -276,34 +282,45 @@ public class SoftKeyBoard extends Fragment {
                 tabsButtons[tabsButtons.length -1] = new ImageView(fileBrowser);
                 tabsTx = Arrays.copyOf(tabsTx, tabsTx.length +1);
                 tabsTx[tabsTx.length -1] = new TextView(fileBrowser);
-                tabsTx[tabsTx.length -1].setTextSize(textSize -1);
-                tabsTx[tabsTx.length -1].setTextColor(getResources().getColor(R.color.black));
+                tabsTx[tabsTx.length -1].setTextSize((float)(1.1*textSize));
+                tabsTx[tabsTx.length -1].setTextColor(getResources().getColor(R.color.white));
                 tabsTx[tabsTx.length -1].setText(arrayList.get(i)[i1]);
                 tabsTx[tabsTx.length -1].setGravity(Gravity.CENTER);
 
+                tabsTxShadow = Arrays.copyOf(tabsTxShadow, tabsTxShadow.length +1);
+                tabsTxShadow[tabsTxShadow.length -1] = new TextView(fileBrowser);
+                tabsTxShadow[tabsTxShadow.length -1].setTextSize((float)(1.1*textSize));
+                tabsTxShadow[tabsTxShadow.length -1].setTextColor(getResources().getColor(R.color.grey));
+                tabsTxShadow[tabsTxShadow.length -1].setText(arrayList.get(i)[i1]);
+                tabsTxShadow[tabsTxShadow.length -1].setGravity(Gravity.CENTER);
+                tabsTxShadow[tabsTxShadow.length -1].setX(2);
+                tabsTxShadow[tabsTxShadow.length -1].setY(2);
+
 
                 switch(arrayList.get(i)[i1].length()) {
-                     case(1): {
-                         int l = 0;
-                         tabsRel[tabsRel.length -1].setLayoutParams(tabsLinParams[l]);
-                         tabsButtons[tabsButtons.length -1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter.png"));
-                         tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
-                         tabsTx[tabsTx.length -1].setTextSize(textSize);
-                         tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                    case(1): {
+                        int l = 0;
+                        tabsRel[tabsRel.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsButtons[tabsButtons.length -1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter.png"));
+                        tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
 
-                         tabsRel[tabsRel.length -1].addView(tabsButtons[tabsButtons.length -1]);
-                         tabsRel[tabsRel.length -1].addView(tabsTx[tabsTx.length -1]);
-                         break;
-                     }
+                        tabsRel[tabsRel.length -1].addView(tabsButtons[tabsButtons.length -1]);
+                        tabsRel[tabsRel.length -1].addView(tabsTxShadow[tabsTxShadow.length -1]);
+                        tabsRel[tabsRel.length -1].addView(tabsTx[tabsTx.length -1]);
+                        break;
+                    }
                     case(2): case(3): {
                         int l = 2;
                         tabsRel[tabsRel.length -1].setLayoutParams(tabsLinParams[1]);
                         tabsButtons[tabsButtons.length -1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter1.png"));
                         tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[1]);
-                        tabsTx[tabsTx.length -1].setTextSize(textSize);
                         tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
 
                         tabsRel[tabsRel.length -1].addView(tabsButtons[tabsButtons.length -1]);
+                        tabsRel[tabsRel.length -1].addView(tabsTxShadow[tabsTxShadow.length -1]);
                         tabsRel[tabsRel.length -1].addView(tabsTx[tabsTx.length -1]);
                         break;
                     }
@@ -312,8 +329,8 @@ public class SoftKeyBoard extends Fragment {
                         tabsRel[tabsRel.length -1].setLayoutParams(tabsLinParams[2]);
                         tabsButtons[tabsButtons.length -1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter1.png"));
                         tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
-                        tabsTx[tabsTx.length -1].setTextSize(textSize);
                         tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
 
                         if(arrayList.get(i)[i1].contains("Enter")) {
                             l=3;
@@ -322,6 +339,8 @@ public class SoftKeyBoard extends Fragment {
                             tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
                             tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
                             tabsTx[tabsTx.length -1].setY(-keyBoardLayout.getHeight()/32 +15);
+                            tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
+                            tabsTxShadow[tabsTxShadow.length -1].setY(-keyBoardLayout.getHeight()/32 +15);
 
                         }
                         if(arrayList.get(i)[i1].contains("Shift")) {
@@ -332,8 +351,11 @@ public class SoftKeyBoard extends Fragment {
                                 tabsButtons[tabsButtons.length - 1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter1_1_open.png"));
                             tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
                             tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                            tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
+
                         }
                         tabsRel[tabsRel.length -1].addView(tabsButtons[tabsButtons.length -1]);
+                        tabsRel[tabsRel.length -1].addView(tabsTxShadow[tabsTxShadow.length -1]);
                         tabsRel[tabsRel.length -1].addView(tabsTx[tabsTx.length -1]);
                         break;
                     }
@@ -343,8 +365,10 @@ public class SoftKeyBoard extends Fragment {
                         tabsButtons[tabsButtons.length -1].setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letter3.png"));
                         tabsButtons[tabsButtons.length -1].setLayoutParams(tabsLinParams[l]);
                         tabsTx[tabsTx.length -1].setLayoutParams(tabsLinParams[l]);
+                        tabsTxShadow[tabsTxShadow.length -1].setLayoutParams(tabsLinParams[l]);
 
                         tabsRel[tabsRel.length -1].addView(tabsButtons[tabsButtons.length -1]);
+                        tabsRel[tabsRel.length -1].addView(tabsTxShadow[tabsTxShadow.length -1]);
                         tabsRel[tabsRel.length -1].addView(tabsTx[tabsTx.length -1]);
                         break;
                     }
@@ -367,26 +391,25 @@ public class SoftKeyBoard extends Fragment {
     }
 
     private void onClickHandling(TextView view) {
-
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             VibrationEffect vibrationEffect = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
             fileBrowser.vibrator.vibrate(vibrationEffect);
         }
-            try {
-                txEd = (EditText) fileBrowser.getCurrentFocus(); //fileBrowser.keyboardTrans;
-            } catch (Exception e) {
-                if(calledBack.equals("WebView")) {
-                    txEd = new EditText(fileBrowser);
-                    txEd.setText(collectionStr);
-                    txEd.setSelection(startPointer);
-                    if(endPointer > startPointer)
-                        txEd.setSelection(startPointer,endPointer);
+        try {
+            txEd = (EditText) fileBrowser.getCurrentFocus(); //fileBrowser.keyboardTrans;
+        } catch (Exception e) {
+            if(calledBack.equals("WebView")) {
+                txEd = new EditText(fileBrowser);
+                txEd.setText(collectionStr);
+                txEd.setSelection(startPointer);
+                if(endPointer > startPointer)
+                    txEd.setSelection(startPointer,endPointer);
 
-                } else {
-                    fileBrowser.messageStarter("noEditFildSelected", docu_Loader("Language/" + language + "/NoEditFildSelected.txt"), 7000);
-                    return;
-                }
+            } else {
+                fileBrowser.messageStarter("noEditFildSelected", docu_Loader("Language/" + language + "/NoEditFildSelected.txt"), 7000);
+                return;
             }
+        }
 
         String tab = view.getText().toString();
 
@@ -398,6 +421,9 @@ public class SoftKeyBoard extends Fragment {
                 endPointer = startPointer;
 
             if(tab.length() == 1) {
+                if(calledFrom.equals("pdfTx"))
+                    txEd.setLayoutParams(new RelativeLayout.LayoutParams(txEd.getWidth()+2*textSize,txEd.getHeight()));
+
                 txEd.setText(txEd.getText().toString().substring(0,startPointer) + tab + txEd.getText().toString().substring(endPointer));
                 txEd.setSelection(startPointer + tab.length());
                 startPointer = startPointer + tab.length();
@@ -423,6 +449,9 @@ public class SoftKeyBoard extends Fragment {
                     break;
                 }
                 case("Back"): {
+                    if(calledFrom.equals("pdfTx"))
+                        txEd.setLayoutParams(new RelativeLayout.LayoutParams(txEd.getWidth()-2*textSize,txEd.getHeight()));
+
                     if(txEd.getText().toString().length() >0) {
                         startPointer = txEd.getSelectionStart() -1;
                         if(startPointer < 0) startPointer = 0;
@@ -442,6 +471,9 @@ public class SoftKeyBoard extends Fragment {
                     break;
                 }
                 case("{ }"): {
+                    if(calledFrom.equals("pdfTx"))
+                        txEd.setLayoutParams(new RelativeLayout.LayoutParams(txEd.getWidth()+4*textSize,txEd.getHeight()));
+
                     txEd.setText(txEd.getText().toString().substring(0,startPointer) + tab + txEd.getText().toString().substring(endPointer));
                     txEd.setSelection(startPointer + tab.length());
                     startPointer = startPointer + tab.length();
@@ -454,7 +486,7 @@ public class SoftKeyBoard extends Fragment {
                     kindOf_keys = "large";
                     createKeyboard(largeTabsTx);
                     if(!calledBack.equals("WebView"))
-                       keyBoardMainRel.addView(createKeyboardIcon());
+                        keyBoardMainRel.addView(createKeyboardIcon());
                     break;
                 }
                 case("vvvv"): {
@@ -463,7 +495,7 @@ public class SoftKeyBoard extends Fragment {
                     kindOf_keys = "small";
                     createKeyboard(smallTabsTx);
                     if(!calledBack.equals("WebView"))
-                       keyBoardMainRel.addView(createKeyboardIcon());
+                        keyBoardMainRel.addView(createKeyboardIcon());
                     break;
                 }
                 case("vv"): {
@@ -547,6 +579,11 @@ public class SoftKeyBoard extends Fragment {
                     ClipData.Item item;
                     if(clipBoard.getPrimaryClip() != null) {
                         item = clipBoard.getPrimaryClip().getItemAt(0);
+                        if(calledFrom.equals("pdfTx")) {
+                            int  row = item.getText().toString().length()/50;
+                            if((""+row).contains("-")) row =1;
+                            txEd.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/8, row*2*textSize));
+                        }
                         txEd.setText(txEd.getText().toString().substring(0, startPointer) + item.getText().toString() + txEd.getText().toString().substring(endPointer));
                         txEd.setSelection(endPointer);
                         startPointer = endPointer;
@@ -554,6 +591,9 @@ public class SoftKeyBoard extends Fragment {
                     break;
                 }
                 case("TAB"): {
+                    if(calledFrom.equals("pdfTx"))
+                        txEd.setLayoutParams(new RelativeLayout.LayoutParams(txEd.getWidth()+2*textSize,txEd.getHeight()));
+
                     txEd.setText(txEd.getText().toString().substring(0,startPointer) + " " + txEd.getText().toString().substring(endPointer));
                     startPointer = startPointer +1;
                     txEd.setSelection(startPointer);
@@ -561,6 +601,9 @@ public class SoftKeyBoard extends Fragment {
                     break;
                 }
                 case(">"): case("<"): {
+                    if(calledFrom.equals("pdfTx"))
+                        txEd.setLayoutParams(new RelativeLayout.LayoutParams(txEd.getWidth()+2*textSize,txEd.getHeight()));
+
                     txEd.setText(txEd.getText().toString().substring(0,startPointer) + tab + txEd.getText().toString().substring(endPointer));
                     txEd.setSelection(startPointer + tab.length());
                     startPointer = startPointer + tab.length();
@@ -586,11 +629,11 @@ public class SoftKeyBoard extends Fragment {
             }
 
             if((!tab.equals("Shift") && shift && !shiftFixed) || (tab.equals("Shift") && shiftFixed))  {
-               shift = false;
-               keyBoardMainRel.removeAllViews();
-               kindOf_keys = "small";
-               createKeyboard(smallTabsTx);
-               keyBoardMainRel.addView(createKeyboardIcon());
+                shift = false;
+                keyBoardMainRel.removeAllViews();
+                kindOf_keys = "small";
+                createKeyboard(smallTabsTx);
+                keyBoardMainRel.addView(createKeyboardIcon());
             } else if(!tab.equals("Shift") && !shift && shiftFixed) {
                 shift = true;
                 keyBoardMainRel.removeAllViews();

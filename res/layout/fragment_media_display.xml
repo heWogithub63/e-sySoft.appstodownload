@@ -16,8 +16,9 @@
                   android:layout_height="match_parent">
 
                   <VideoView android:id="@+id/videoView"
-                             android:layout_height="fill_parent"
-                             android:layout_width="fill_parent"/>
+                       android:layout_height="fill_parent"
+                       android:layout_width="fill_parent"
+                       android:layout_centerInParent="true"/>
           </RelativeLayout>
   </RelativeLayout>
 </RelativeLayout>
