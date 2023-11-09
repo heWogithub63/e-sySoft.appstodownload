@@ -602,7 +602,12 @@ public class showMessageFragment extends Fragment {
                 }
 
 
-            } else if(kindOf.equals("Instruction_LogoAccount")) {
+            } else if(kindOf.equals("Instruction")) {
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
+            }
+
+            else if(kindOf.equals("Instruction_LogoAccount")) {
                 fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[1], "TextEditorIcons", "open", "closed");
                 fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
                 fileBrowser.createTxEditor.timerAnimation.stop();

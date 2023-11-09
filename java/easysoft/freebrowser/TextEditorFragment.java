@@ -1130,7 +1130,7 @@ public class TextEditorFragment extends Fragment {
 
 
 
-        int height = arrayList.size() * 2*textSize;
+        int height = arrayList.size() * 5*textSize;
         if(arrayList.size() > 6)
             height = displayHeight/9;
 

@@ -1,75 +1,83 @@
-Vielen Dank für den Download von FreeBrowser.
+Vielen Dank, für das Downloden
+von FreeFileBrowser.
 
-Die App stellt Ihnen einen File-Browser,
-einen Internet-Zugang, einen Text- und Pdf-
-Editor, einen Video-Player, einen 
-Bild-Betrachter, einen Musikplayer, sowie ein Email-Programm
-zur Verfügung.
+Die App beinhaltet einen FileBrowser,
+einen Internet WebBrowser, einen Text/Pdf
+Editor, einen Vidioplayer,einen Bilder
+Displayer, einen Musikplayer sowie
+einen E-mail Client.
 
-Sprachen: Deutsch, Englisch
+Sprachen Deutsch, Englisch
 
-Zur Bedienung:
-    kurzer Click --> Selektion eines Files,
-       auf das Icon  Links, Namen oder Ordner
-                     mit anschliesender Mani-
-                     pulations-Möglichkeit.
-    langer Click --> Öffnen eines Files oder
-       auf das Icon  Links.
+Verwendung:
+   Kurzer Click  --> Selektion einer Datei,
+   auf ein Icon.     Document, oder Ordners
+                     um  die Manipulations
+                     Funktionen zu nutzen.
+                     Der Ordner wird geöffnet.
+   Langer Click  --> ein Document oder Link
+   auf ein Icon.     wird geöffnet.
 
-    zurück zum File-Browser --> vom 
-                     MultiMediaPanel, TextEditor oder E-mail client
-                     durch Wischen nach rechts am rechten
-                     oberen Bildrand.
-                     --> vom InternetBrowser
-                     durch Wischen nach rechts am rechten
-                     unteren Bildrand.
+   Zurück zum FileBrowser von einem geöffneten
+   Programm -->  langer Click an der rechten,
+                 oberen Display Seite.Das Programm
+                 Display gleited dann nach rechts.
 
-    Mediadateien --> Erstellung einer
-                     Medialiste durch Selektion
-                     des Ordners der die Media Dateien
-                     beinhaltet.
-                     -> MultMedialList Button
+   Mediadateien: Erstellen einer Medialiste durch
+                 Selektion des Ordners der die
+                 Mediadateien enthält -> pressen des
+                 Medialist Button.
+                 Wenn der selektierte Ordner auch
+                 weiter Ordner mit beinhalteten Media
+                 Dateien enthält -> Mit der Suchen Funktion
+                 (im Menue nach pressen des ersten Buttons
+                  der obersten Zeile) und Eingabe eines
+                  Suchdetails (z.B. ' .mp4 ') -> pressen des
+                  MultymediaList Buttons.
 
-                     oder durch Selektion des Ordners, der
-                     Ordner mit Media Dateien
-                     beinhaltet.
-                     -> Suchen mit Eingabe der 
-                     gewünschten 
-                     Datei-Kriterien (z.B. .mp4)
-                     -> MultMedialList Button
-                     
+                  Die Vergrößerung/Verkleinerung des Multimedia
+                  Elements ist durch die Zweifingertechnik möglich.
 
-    SoftKeyBoard --> Das Bildschirm-Keyboard ist
-                     nach oben oder unten verschiebbar, durch
-                     langes Tippen an einer tastenfreien
-                     Stelle mit anschliesenden Verschieben.
+   SoftKeyboard:  Das Verschieben des KeyBoards nach oben und unten
+                  ist durch einen Langen Click auf eine tastenfreie
+                  Stelle zu bewerkstelligen.
+                  Ist ein interaktives Werkzeug auf einer darunterliegenden
+                  Seite durch das KeyBoard verdeckt, ist es erst nach
+                  verschieben des KeyBoards verwendbar.
 
-    Pdf Editor: ermöglicht die Erstellung einseitiger,
-                mehrseitiger PDFs (Aufruf der einzelnen Seiten -> PDF).
-                Das Einfügen von
-                Bildern (u.a.Unterschriften), sowie die Verknüpfung
-                mehrerer Pdfs durch Klick auf --> Neu --> PDF.
+   Pdf Editor:    Die Erstellung von einseitigen, mehrseitigen PDFs
+                  ist möglich, desweiteren das Einfügen von Bildern(z.B. Unterschrift)
+                  , Texten.
+                  --> laden des Pdfs -> pressen des Neu-Erstellen Buttons
+                      (erster Button oberste Zeile) -> pressen des PDF-Buttons.
 
-    Text Editor: ermöglicht das Einfügen von Überschriften,
-                 Logos (Vorbesetzung -> Info, 
-                 !! Benutze den SelektierungsPfeil!!), 
-                 Hintergrundsbilder (u.a. Formulare),
-                 mit anschl. Sicherungsmöglichkeit als PDF oder Text.
+   Text Editor:   Das Einfügen von vorgefertigten Daten (Datum, Absender, Logos)
+                  ist abrufbar durch das Menü des Text-Buttons.
+                  Die Vorbesetzung des Absenders wird durch einen Eintrag unter
+                  Info-Button realisiert. Hier bitte Selektionsmöglichkeit mit dem
+                  Selektionspfeil nutzen. ( Es ist wichtig das die Syntax stimmt.
+                  In Ihrem eingetragen Text sollte kein ' !( ' mehr vorkommen.
+                  der nicht vorselektierte Text muß bestehen bleiben).
 
-    Internet Zugang: ermöglicht das Speichern von offenen Seiten,
-                     History LongClick.
-                     Springen zur Suchmaschiene,
-                     die im FileBrowser voreingestellt werden kann,
-                     (zweiter linker Button in der untersten Zeile).
-                     Die Steuerbutton auf der Webseite sind versenkbar,
-                     durch klick auf den rechten Button der untersten Zeile.
-                     Springen in den bereits geladenen Webseiten durch Klick
-                     auf die vorwärts, rückwärts Button.
+   Internet Zugang: Durch die Benutzung der Kontroll Button am Unteren Bildrand
+                  (versenkbar/wiederherstellbar -> letzter Button) sind Sie in der
+                  Lage Funktionen wie erstellen einer History, vor/rückwärtsblättern,
+                  Suchfunktionen via voreingestellter Suchmaschiene (im Feilbrowser
+                  letzter Button oberste Zeile), Webseiten Aufruf durch https:// Eingabe
+                  zu bewerkstelligen.
 
-    E-mail: alle Funktionen eines e-mail Programms, sind erst
-            nach Eingabe der Account Daten unter -> Info benutzbar.
-            !! Benutze den SelektierungsPfeil !!
-            In deinem emai-account must Du die 'to steps security'
-            activieren und ein app-Passwort generieren.
-            Dein Passwort unter Info ersetzt Du dann durch Dieses.
-            Der app-name ist 'freeFileBrowser'
+   E-mail Client: Das e-mail Programm ist nur benutzbar nach ausfüllen, der unter Info-
+                  Butten vorgegebenen Daten Ihres e-mail Accounts. Hier wieder den
+                  Selections-Button benutzen. (Syntax ist wichtig).
+                  Um e-mail senden oder empfangen zu können müßen Sie unter Passwort ein
+                  sogenanntes thirdparty Programm Passwort eingeben, das Sie durch Einloggen
+                  in Ihren e-Mail Account ( z.B. Gmail ) unter Einstellungen -> Passwort ->
+                  thirdParty Passwort abrufen können.
+
+   Wechseln zwischen den einzelnen geööfneten Programen -->
+                  Wenn das ProgrammIcon im FileBrowser
+                  Grau ist: bedutet das das Programm ist nicht geladen.
+                  Blau ist: bedeutet das das Programm im Hintergrund geladen ist. Sie können es
+                            durch pressen dieses Buttons in den Vordergrund stellen.
+                  Grün ist: bedeutet das das Programm läuft. Sie können es durch pressen des Buttons
+                            beenden oder durch pressen des grünen Pfeil-Buttons in das Display rufen.
