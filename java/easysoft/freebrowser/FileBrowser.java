@@ -2385,6 +2385,7 @@ public class FileBrowser extends Activity  {
                                     break;
                                 }
                                 case (5) : {
+
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[5], "headMenueIcons", "open", "running");
                                     fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
 
@@ -2431,7 +2432,8 @@ public class FileBrowser extends Activity  {
                         fileBrowser.fragmentShutdown(fileBrowser.showList,3);
 
                     if(framely == 5) {
-                        if (fileBrowser.createSendEmail.attachedList != null && calledBy.equals("Attached")){
+
+                        if (fileBrowser.createSendEmail.attachedList != null && calledFrom.equals("Attached")){
 
                             fileBrowser.runOnUiThread(new Runnable() {
                                 @Override

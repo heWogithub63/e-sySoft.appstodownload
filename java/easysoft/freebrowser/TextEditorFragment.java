@@ -158,7 +158,7 @@ public class TextEditorFragment extends Fragment {
         switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 15, displayHeight / 2));
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
         switcher.setX(displayWidth - displayWidth / 13);
-        switcher.setY(displayHeight / 22);
+        switcher.setY(displayHeight / 12);
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -406,7 +406,7 @@ public class TextEditorFragment extends Fragment {
 
         headTxScroll = new HorizontalScrollView(context);
         headTxScroll.setHorizontalScrollBarEnabled(false);
-        headTxScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/5, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        headTxScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -10, RelativeLayout.LayoutParams.WRAP_CONTENT));
         headTxScroll.setBackgroundColor(getResources().getColor(R.color.white_overlay));
         headTxScroll.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
@@ -428,8 +428,7 @@ public class TextEditorFragment extends Fragment {
 
                 icons = Arrays.copyOf(icons, icons.length + 1);
                 icons[icons.length - 1] = new ImageView(context);
-                icons[icons.length - 1].setLayoutParams(new RelativeLayout.LayoutParams(displayWidth/12,
-                        displayWidth/12));
+                icons[icons.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth / 16 * xfact), (int) (displayWidth / 16 * xfact)));
 
                 icons[icons.length - 1].setTag("true " + s);
                 icons[icons.length - 1].setEnabled(true);
@@ -452,6 +451,7 @@ public class TextEditorFragment extends Fragment {
 
 
                 icons[icons.length - 1].setImageBitmap(fileBrowser.bitmapLoader("Icons/TextEditorIcons/" + s));
+                if (!s.contains("Empty"))
                 icons[icons.length - 1].setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

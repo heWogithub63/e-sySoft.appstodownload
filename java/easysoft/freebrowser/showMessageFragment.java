@@ -630,6 +630,19 @@ public class showMessageFragment extends Fragment {
                         fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
                                 displayWidth -10, (int)(displayHeight/3) +fact01);
                 }
+                if(calledBack.equals("InfoView")) {
+                    fileBrowser.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            fileBrowser.createSendEmail.mailTx.requestFocus();
+                            if (fileBrowser.createSendEmail.mailTx.getText().toString().contains("(!") && fileBrowser.createSendEmail.mailTx.getText().toString().contains("!)"))
+                                fileBrowser.createSendEmail.mailTx.setSelection(fileBrowser.createSendEmail.mailTx.getText().toString().indexOf("(!"),
+                                        fileBrowser.createSendEmail.mailTx.getText().toString().indexOf("!)") + 2);
+                        }
+                    });
+                }
+
                 fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
                 fileBrowser.createSendEmail.timerAnimation.stop();
             } else if(kindOf.equals("Instruction_EditorAccount")) {
@@ -653,9 +666,9 @@ public class showMessageFragment extends Fragment {
                         if (fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.createTxEditor.action.equals("info"))
                             fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
 
-                        TxEditor.requestFocus();
-                        if (TxEditor.getText().toString().contains("(!") && TxEditor.getText().toString().contains("!)"))
-                            TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), TxEditor.getText().toString().indexOf("!)") + 2);
+                        fileBrowser.createTxEditor.TxEditor.requestFocus();
+                        if (fileBrowser.createTxEditor.TxEditor.getText().toString().contains("(!") && fileBrowser.createTxEditor.TxEditor.getText().toString().contains("!)"))
+                            fileBrowser.createTxEditor.TxEditor.setSelection(TxEditor.getText().toString().indexOf("(!"), fileBrowser.createTxEditor.TxEditor.getText().toString().indexOf("!)") + 2);
                     }
                 });
 

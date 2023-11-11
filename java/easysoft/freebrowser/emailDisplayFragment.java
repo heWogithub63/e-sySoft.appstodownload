@@ -66,6 +66,7 @@ public class emailDisplayFragment extends Fragment {
 
     static boolean createMail = false;
     boolean textIsHtml = false;
+    int attNr = 0, att1Nr = 0;
 
     public emailDisplayFragment() {
     }
@@ -76,7 +77,7 @@ public class emailDisplayFragment extends Fragment {
         return fragment;
     }
 
-    @Override
+        @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -146,7 +147,8 @@ public class emailDisplayFragment extends Fragment {
         switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 15, displayHeight / 2));
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
         switcher.setX(displayWidth - displayWidth / 13);
-        switcher.setY(displayHeight / 22);
+        switcher.setY(displayHeight / 12);
+        switcher.setBackgroundColor(getResources().getColor(R.color.white_overlay));
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -504,7 +506,8 @@ public class emailDisplayFragment extends Fragment {
         AttachLin = new LinearLayout(context);
         AttachLin.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(displayWidth, displayHeight / 5)));
         AttachLin.setOrientation(LinearLayout.HORIZONTAL);
-        AttachLin.setPadding(20, 0, 20, 0);
+        AttachLin.setPadding(20, 20, 20, 20);
+        AttachLin.setBackgroundColor(getResources().getColor(R.color.white_overlay));
 
         if (posIcon.contains("New") || createMail || emailAddress.length() > 0)
             praefix = fileBrowser.docu_Loader("Language/" + language + "/MailHeadLines.txt");
@@ -624,6 +627,8 @@ public class emailDisplayFragment extends Fragment {
         mailTx.setTextColor(getResources().getColor(R.color.black));
         mailTx.setText(memoryList[3]);
         mailTx.setShowSoftInputOnFocus(false);
+        mailTx.setFocusable(true);
+
         mailTx.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -675,11 +680,12 @@ public class emailDisplayFragment extends Fragment {
             String MyAtt = "", myMemo = "";
             String[] memo = memoryList[3].split("\n");
 
-            for (String s : memo)
+            for (String s : memo) {
                 if (!s.contains("Attached Link") && !s.contains("http")) {
                     myMemo = myMemo + s + "\n";
                 } else
                     MyAtt = s.replace("null", "");
+            }
 
             mailTx.setText(myMemo);
 
@@ -726,16 +732,30 @@ public class emailDisplayFragment extends Fragment {
         TextLin.addView(txScroll);
 
         if ((attachedList != null && attachedList.size() > 0 && createMail) || mailAttached) {
-            RelativeLayout.LayoutParams attachedLayParam = new RelativeLayout.LayoutParams((int) (220 * xfact), (int) (120 * xfact));
+            if(AttachLin.getChildCount() > 0) {
+                AttachLin.removeAllViews();
+            }
+
+               RelativeLayout.LayoutParams attachedLayParam = new RelativeLayout.LayoutParams(displayHeight/12, displayHeight/12);
+
+            RelativeLayout attaRel = new RelativeLayout(context);
+            attaRel.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
             RelativeLayout[] attRel = new RelativeLayout[0];
 
             for (int i = 0; i < attachedList.size(); i++) {
+
                 for (int i1 = 0; i1 < attachedList.get(i).length; i1++) {
                     if ((((float) i1 / 2) + "").endsWith(".5")) {
                         attRel = Arrays.copyOf(attRel, attRel.length + 1);
                         attRel[attRel.length - 1] = new RelativeLayout(context);
                         attRel[attRel.length - 1].setLayoutParams(attachedLayParam);
-                        attRel[attRel.length - 1].setX((float) (i * 5 * xfact));
+
+                        if((((float) i / 5) + "").endsWith(".0") && i >0) {
+                            attNr = 0;
+                            att1Nr++;
+                        }
+                        attRel[attRel.length - 1].setX((float) (attNr * attachedLayParam.width +10));
+                        attRel[attRel.length - 1].setY(att1Nr *attachedLayParam.height +20);
 
                         TextView attachedTx = new TextView(context);
                         attachedTx.setTextSize((int) (textSize));
@@ -776,12 +796,17 @@ public class emailDisplayFragment extends Fragment {
 
                         attRel[attRel.length - 1].addView(attachedTx);
                         attRel[attRel.length - 1].addView(attachedImg);
-                        AttachLin.addView(attRel[attRel.length - 1]);
+                        attaRel.addView(attRel[attRel.length - 1]);
+                        attNr++;
                     }
                 }
+
             }
+            AttachLin.addView(attaRel);
             createMail = false;
             mailAttached = false;
+            attNr = 0;
+            att1Nr = 0;
         }
 
         mainLin.addView(TextLin);
@@ -800,7 +825,7 @@ public class emailDisplayFragment extends Fragment {
 
         headEMScroll = new HorizontalScrollView(context);
         headEMScroll.setHorizontalScrollBarEnabled(false);
-        headEMScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/5, RelativeLayout.LayoutParams.WRAP_CONTENT));
+        headEMScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth-20, RelativeLayout.LayoutParams.WRAP_CONTENT));
         headEMScroll.setBackgroundColor(getResources().getColor(R.color.white_overlay));
         headEMScroll.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
@@ -811,9 +836,10 @@ public class emailDisplayFragment extends Fragment {
         });
         LinearLayout iconLin = new LinearLayout(context);
 
-        iconLin.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                (int) ((fileBrowser.displayHeight -2) / 9))));
-        iconLin.setOrientation(LinearLayout.HORIZONTAL);
+
+        iconLin.setLayoutParams(new RelativeLayout.LayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT)));
+
+                iconLin.setOrientation(LinearLayout.HORIZONTAL);
         iconLin.setPadding(10, 10, 10, 10);
 
         for (String s : fileBrowser.file_icon_Loader("Icons/mailIcons")) {
@@ -835,7 +861,7 @@ public class emailDisplayFragment extends Fragment {
                         icons[icons.length - 1].setTag("false " + s);
                     }
                 }
-                if (s.startsWith("XInfo") && (mailAccountData == null || mailAccountData.length == 0)) {
+                if (s.startsWith("xInfo") && (mailAccountData == null || mailAccountData.length == 0)) {
                     icons[icons.length - 1].setEnabled(true);
                     icons[icons.length - 1].setTag("true " + s);
                 } else if ((mailAccountData != null && mailAccountData.length > 0))
@@ -943,7 +969,7 @@ public class emailDisplayFragment extends Fragment {
                                         arrayList = new ArrayList<>();
                                         fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                                     }
-                                    calledBy = "Attached";
+                                    calledFrom = "Attached";
                                     fileBrowser.startMovePanel(5);
                                     return;
                                 } else if (tag.contains("Send")) {

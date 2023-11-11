@@ -279,7 +279,7 @@ public class WebBrowserFragment extends Fragment {
                     boolean a = file.createNewFile();
                     URL link = null;
                     if (url.startsWith("blob"))
-                       link = new URL(url.substring(url.indexOf(":") + 1));
+                        link = new URL(url.substring(url.indexOf(":") + 1));
                     else
                         link = new URL(url);
                     downloadFile(link, address);
@@ -383,7 +383,7 @@ public class WebBrowserFragment extends Fragment {
         switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 9, displayHeight / 2));
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
         switcher.setX(displayWidth - displayWidth / 9);
-        switcher.setY(displayHeight / 22);
+        switcher.setY(displayHeight / 13);
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {

@@ -231,7 +231,7 @@ public class MediaDisplayFragment extends Fragment {
         switcher.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 15, displayHeight / 2));
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
         switcher.setX(displayWidth - displayWidth / 13);
-        switcher.setY(displayHeight / 22);
+        switcher.setY(displayHeight / 13);
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
