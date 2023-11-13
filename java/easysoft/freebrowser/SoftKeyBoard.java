@@ -122,16 +122,15 @@ public class SoftKeyBoard extends Fragment {
         if(fileBrowser.fragId != 8) {
             Okicon = new ImageView(fileBrowser);
             Okicon.setLayoutParams(kbIcPa1);
-            Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_closed.png"));
+            Okicon.setImageBitmap(fileBrowser.bitmapLoader("KeyBoard/letterOK_open.png"));
             Okicon.setTag("OkIcon letterOK_closed.png");
             Okicon.setPadding(0, 0, 10, 0);
 
             Okicon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
 
-                        //fileBrowser.changeIcon(view, "./KeyBoard", "closed", "open");
+                    if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible()) {
                         fileBrowser.showMessage.clickOk();
                     }
                     if ((fileBrowser.fragId == 5 || fileBrowser.fragId == 7) && calledBack.equals("InfoView")) {
@@ -406,8 +405,12 @@ public class SoftKeyBoard extends Fragment {
                     txEd.setSelection(startPointer,endPointer);
 
             } else {
-                fileBrowser.messageStarter("noEditFildSelected", docu_Loader("Language/" + language + "/NoEditFildSelected.txt"), 7000);
-                return;
+                try {
+                    txEd = fileBrowser.keyboardTrans;
+                } catch (NullPointerException ne) {
+                    fileBrowser.messageStarter("noEditFildSelected", docu_Loader("Language/" + language + "/NoEditFildSelected.txt"), 7000);
+                    return;
+                }
             }
         }
 
@@ -580,9 +583,22 @@ public class SoftKeyBoard extends Fragment {
                     if(clipBoard.getPrimaryClip() != null) {
                         item = clipBoard.getPrimaryClip().getItemAt(0);
                         if(calledFrom.equals("pdfTx")) {
-                            int  row = item.getText().toString().length()/50;
-                            if((""+row).contains("-")) row =1;
-                            txEd.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/8, row*2*textSize));
+                            
+                            int rowheight, rowwidth;
+
+                            float  rowh = item.getText().toString().length()/55;
+                            rowwidth = displayWidth -displayWidth/6;
+                            if ((rowh+"").startsWith("0.")) {
+                                rowh = 1;
+                                rowwidth = 2*textSize * item.getText().toString().length();
+                            }
+                            txEd.setBackgroundColor(getResources().getColor(R.color.white_overlay));
+                            rowheight = (int)(txEd.getHeight() * rowh);
+
+                            txEd.setLayoutParams(new RelativeLayout.LayoutParams(rowwidth, rowheight));
+                            txEd.setText(txEd.getText().toString().substring(0, startPointer) + item.getText().toString() + txEd.getText().toString().substring(endPointer));
+                            txEd.setSelection(txEd.getText().toString().length());
+                            break;
                         }
                         txEd.setText(txEd.getText().toString().substring(0, startPointer) + item.getText().toString() + txEd.getText().toString().substring(endPointer));
                         txEd.setSelection(endPointer);

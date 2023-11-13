@@ -67,6 +67,7 @@ public class TextEditorFragment extends Fragment {
     LinearLayout TextLin;
     String caller = "", call = "", mainTx = "", headerTx = "", kindOfFormat = "", action = "", memoryAction = "", pdfFileUrl = "";
     String[] readedText, accountAddrData;
+    boolean newPDF = false;
     static double scaleFact = 1;
     static String logoPath = "", memoryTx = "", loadedFile = "", isBackgroundPath = "";
     static boolean importImg = false, noAddr = true, isBackground = false, isLogo = false;
@@ -95,10 +96,14 @@ public class TextEditorFragment extends Fragment {
                     }
                     mainTx = mainTx + s + "\n";
                 }
-            else if(kindOfFormat.equals(".pdf")&& !caller.endsWith("New")) {
+            else if(kindOfFormat.equals(".pdf") && !caller.endsWith("New")) {
                 scaleFact = 1.0;
                 selectedTx_01 = 0;
                 pdfFileUrl = readedText[0];
+            }
+            else if(kindOfFormat.equals(".pdf") && caller.endsWith("New")) {
+                newPDF = true;
+                pdfPageCount = 0;
             }
 
         }
@@ -515,7 +520,6 @@ public class TextEditorFragment extends Fragment {
 
                                 fileBrowser.frameLy.get(3).bringToFront();
                             } else if(tag.contains("pdf")) {
-                                System.err.println(caller+"...."+tag);
                                 fileBrowser.closeListlinkedIcons(new ImageView[] {icons[3], icons[1], icons[4], icons[5]}, new String[]{
                                         "TextEditorIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
                                 action = "pdfPage";
@@ -817,15 +821,13 @@ public class TextEditorFragment extends Fragment {
             pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
         }
 
-        if (importImg)
-            imgPath = devicePath;
-
         if (importImg) {
+            imgPath = devicePath;
             calledBy = "importImg";
             calledFrom = "impImg";
             scaleFact = 1;
             pdfDisplayRel.setOnTouchListener(null);
-            if(pdfTxLays != null)
+            if(pdfTxLays != null && pdfTxLays[pageNr] != null)
                 pdfTxLays[pageNr].setOnTouchListener(null);
 
             importImgView[pageNr] = new ImageView(context);
@@ -883,8 +885,15 @@ public class TextEditorFragment extends Fragment {
             });
 
         }
-        openPdfStart(pageNr,new File(pdfFileUrl));
-        bitmap = pdfOpenBit;
+
+        if(!newPDF && !pdfFileUrl.equals("")) {
+            openPdfStart(pageNr, new File(pdfFileUrl));
+            bitmap = pdfOpenBit;
+        } else if(newPDF){
+            importImgView = new ImageView[1];
+            pdfTxLays = new RelativeLayout[1];
+            newPDF = false;
+        }
         imgView = new ImageView(context);
 
         scaleFact = 1;
@@ -898,7 +907,7 @@ public class TextEditorFragment extends Fragment {
         activImgView = imgView;
 
         pdfDisplayRel.addView(imgView);
-        if(pdfTxLays != null && pdfTxLays[pageNr] != null)
+        if(!newPDF && pdfTxLays != null && pdfTxLays[pageNr] != null)
             pdfDisplayRel.addView(pdfTxLays[pageNr]);
 
         if(importImg)
@@ -1188,7 +1197,6 @@ public class TextEditorFragment extends Fragment {
                 pdfDisplayRel.removeView(pdfTxLays[pageNr]);
         }
         if((pdfTxLays != null && pdfTxLays[pg] != null) && ((!calledFrom.equals("savPdf") && pg != pageNr) || (calledFrom.equals("savPdf") && pg == pageNr))) {
-            Log.e("Drin", "<--");
             pdfDisplayRel.addView(pdfTxLays[pg]);
         }
 
@@ -1197,7 +1205,6 @@ public class TextEditorFragment extends Fragment {
                 pdfDisplayRel.removeView(importImgView[pageNr]);
         }
         if((importImgView != null && importImgView[pg] != null) && ((!calledFrom.equals("savPdf") && pg != pageNr) || (calledFrom.equals("savPdf") && pg == pageNr))) {
-            Log.e("Drin", "<::");
             pdfDisplayRel.addView(importImgView[pg]);
         }
 
@@ -1238,7 +1245,6 @@ public class TextEditorFragment extends Fragment {
 
                 pdfPageCount = mPdfRenderer.getPageCount();
                 pageNr = pageNumber;
-
                 if(pageNr == 0 && pdfTxLays == null && importImgView == null) {
                     importImgView = new ImageView[pdfPageCount];
                     pdfTxLays = new RelativeLayout[pdfPageCount];

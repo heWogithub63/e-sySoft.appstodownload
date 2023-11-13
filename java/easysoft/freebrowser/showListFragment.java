@@ -581,7 +581,6 @@ public class showListFragment extends Fragment {
                                         kind = "PDFDocument_Save";
                                         if(fileBrowser.createTxEditor.loadedFile.endsWith(".pdf"))
                                             kind = "PDF01Document_Save";
-
                                     }
 
                                     fileBrowser.messageStarter(kind,
