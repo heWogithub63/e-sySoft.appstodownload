@@ -40,34 +40,36 @@ import static easysoft.freebrowser.showListFragment.selectedTx_01;
 public class TextEditorFragment extends Fragment {
     Context context;
     View view;
+
     ImageView timeImage;
     AnimationDrawable timerAnimation;
     EditText[] txarea = new EditText[0];
     FrameLayout txEditorLayout, timerGifLay;
     ImageView selector, timer, switcher;
     RelativeLayout mainRel, textRel;
-    RelativeLayout[] pdfTxLays;
-    LinearLayout headIconLin, mainLin, iconLin;
-    LinearLayout pdfDisplayLin;
+    LinearLayout headIconLin, iconLin, mainLin, pdfDisplayLin;
     RelativeLayout pdfDisplayRel;
     LinearLayout scaleLin;
     ScrollView pdfScroll, scView;
-    int pageNr = 0, selectedTx = 0, scY;
-    HorizontalScrollView headTxScroll;
+    int pageNr = 0, selectedTx = 0, selectedTab = -1, selectedPdfTab = 0, AnzOpenPdf = -1;
+    int[] scY = new int[] {0,0,0,0,0,0,0,0,0,0};
+    HorizontalScrollView headTxScroll, mainSc;
+    ArrayList<String> preFixed = new ArrayList<>();
+    ArrayList<RelativeLayout[]> addLayers = new ArrayList<>();
 
     enterOpenPdf startOpenPdf;
     Bitmap pdfOpenBit;
 
     static EditText TxEditor;
     TextView txDate, txSenderAddress;
-    TextView[] txPages;
-    ImageView[] icons;
+    TextView[] txPages, tabTx;
+    ImageView[] icons,tabImgs, importImgView = new ImageView[0];
     ImageView  imgView, activImgView;
-    ImageView[] importImgView;
+
     LinearLayout TextLin;
-    String caller = "", call = "", mainTx = "", headerTx = "", kindOfFormat = "", action = "", memoryAction = "", pdfFileUrl = "";
+    String caller = "", call = "", headerTx = "", kindOfFormat = "", action = "", memoryAction = "", mainTx = "";
     String[] readedText, accountAddrData;
-    boolean newPDF = false;
+    boolean newPDF = false, newTX = false;
     static double scaleFact = 1;
     static String logoPath = "", memoryTx = "", loadedFile = "", isBackgroundPath = "";
     static boolean importImg = false, noAddr = true, isBackground = false, isLogo = false;
@@ -87,47 +89,110 @@ public class TextEditorFragment extends Fragment {
             caller = getArguments().getString("CALLER");
             kindOfFormat = getArguments().getString("FORMAT");
             readedText = getArguments().getStringArray("TEXT");
-
-            if(kindOfFormat.equals(".txt") && !caller.endsWith("New"))
-                for(String s: readedText) {
-                    if(s.startsWith("An: ") || s.startsWith("To: ")) {
-                        headerTx = mainTx;
-                        mainTx = "";
-                    }
-                    mainTx = mainTx + s + "\n";
-                }
-            else if(kindOfFormat.equals(".pdf") && !caller.endsWith("New")) {
-                scaleFact = 1.0;
-                selectedTx_01 = 0;
-                pdfFileUrl = readedText[0];
-            }
-            else if(kindOfFormat.equals(".pdf") && caller.endsWith("New")) {
-                newPDF = true;
-                pdfPageCount = 0;
-            }
-
         }
+
         accountAddrData = fileBrowser.read_writeFileOnInternalStorage("read", "accountAddrData","accountAddrData.txt", "");
         if (accountAddrData == null || accountAddrData.length == 0) {
             calledBy  = "";
             accountAddrData = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/EditorAccountData.txt");
         }
-
         txEditorLayout = fileBrowser.frameLy.get(7);
         noAddr = true;
         isBackground = false;
         loadedFile = devicePath;
+        tabImgs = new ImageView[0];
+        tabTx = new TextView[0];
+
+        variablenInstantion(caller,kindOfFormat,readedText);
+    }
+
+    public void variablenInstantion (String call, String koF,String[] rTx) {
+        context = getContext();
+
+        caller = call;
+        action = "";
+        kindOfFormat = koF;
+        noAddr = true;
+        isLogo = false;
+        logoPath = "";
+        readedText = rTx;
+        mainTx = "";
+        isBackground = false;
+        loadedFile = devicePath;
+        pageNr = 0;
+        pdfPageCount = 0;
+
+        selectedTab = preFixed.size();
+
+        if(kindOfFormat.equals(".txt")) {
+            mainLin = new LinearLayout(context);
+            mainLin.setOrientation(LinearLayout.VERTICAL);
+            mainLin.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, displayHeight - displayHeight / 12));
+
+            mainLin.setBackgroundColor(getResources().getColor(R.color.white_overlay));
+        }
+
+        if(kindOfFormat.equals(".txt") && !caller.endsWith("New")) {
+            newTX = false;
+            for (String s : readedText) {
+                if (s.startsWith("An: ") || s.startsWith("To: ")) {
+                    headerTx = mainTx;
+                    mainTx = "";
+                }
+                mainTx = mainTx + s + "\n";
+            }
+        } else if(kindOfFormat.equals(".pdf") && !caller.endsWith("New")) {
+            newPDF = false;
+            scaleFact = 1.0;
+            selectedTx_01 = 0;
+            AnzOpenPdf++;
+            addLayers.add(new RelativeLayout[0]);
+        }
+        else if(kindOfFormat.equals(".txt") && caller.endsWith("New")) {
+            newTX = true;
+            loadedFile = devicePath + "/New_Txt.txt";
+        }
+        else if(kindOfFormat.equals(".pdf") && caller.endsWith("New")) {
+            newPDF = true;
+            selectedPdfTab = 0;
+            pdfPageCount = 0;
+            loadedFile = devicePath + "/New_Pdf.txt";
+            AnzOpenPdf++;
+            addLayers.add(new RelativeLayout[0]);
+            addLayers.set(selectedPdfTab,new RelativeLayout[1]);
+        }
+
+
+        preFixed.add("selectedTab: "+selectedTab+"→caller: "+ caller +"→action: "+action+" →kindOfFormat: "+kindOfFormat+"→noAddr: " +noAddr+ "→isLogo: " +isLogo+ "→logoPath: " +logoPath+
+                "→isBackground: " +isBackground+ "→mainTx: " +mainTx+ "→selectedNr: "+pageNr+"→selectedPdfTab: "+AnzOpenPdf+"→pdfPageCount: "+pdfPageCount+"→devicePath: " + loadedFile);
+
+        if(preFixed.size() > 1) {
+            selectedTx = 0;
+            mainRel.removeAllViews();
+            mainRel.addView(createHaderIcons());
+
+            if(kindOfFormat.equals(".txt")) {
+                mainRel.addView(createTextEditorDisplay());
+
+            } else if(kindOfFormat.equals(".pdf")) {
+                mainRel.addView(createPdfEditorDisplay());
+            }
+            mainRel.addView(createTabIcons());
+            mainRel.addView(timeImage);
+            mainRel.addView(createSwitcher());
+            fileBrowser.startMovePanel(fileBrowser.fragId);
+        }
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        context = getContext();
+
         view = inflater.inflate(R.layout.fragment_text_editor, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.textEditorMainRel);
         mainRel.setBackgroundColor(getResources().getColor(R.color.white));
-
+        mainRel.setPadding(5,5,5,5);
         //AnimationTimer
         timeImage = new ImageView(context);
         timeImage.setBackgroundResource(R.drawable.timer);
@@ -145,13 +210,15 @@ public class TextEditorFragment extends Fragment {
 
         timerAnimation = (AnimationDrawable) timeImage.getBackground();
         //
-        if(kindOfFormat.equals(".txt"))
-            mainRel.addView(createTextEditorDisplay(createHaderIcons()));
-        else if(kindOfFormat.equals(".pdf")) {
-            mainRel.addView(createPdfEditorDisplay(createHaderIcons()));
-            if(pdfPageCount > 1)
-                mainRel.addView(pageList(displayWidth -displayWidth/4,10));
+
+        mainRel.addView(createHaderIcons());
+
+        if(kindOfFormat.equals(".txt")) {
+            mainRel.addView(createTextEditorDisplay());
+        } else if(kindOfFormat.equals(".pdf")) {
+            mainRel.addView(createPdfEditorDisplay());
         }
+        mainRel.addView(createTabIcons());
         mainRel.addView(timeImage);
         mainRel.addView(createSwitcher());
         txEditorLayout.bringToFront();
@@ -164,11 +231,13 @@ public class TextEditorFragment extends Fragment {
         switcher.setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_closed.png"));
         switcher.setX(displayWidth - displayWidth / 13);
         switcher.setY(displayHeight / 12);
+
         switcher.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 ((ImageView) view).setImageBitmap(fileBrowser.bitmapLoader("Icons/" + "switcher_open.png"));
-
+                if(kindOfFormat.equals(".txt"))
+                    mainTx = TxEditor.getText().toString();
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ie) {
@@ -183,8 +252,13 @@ public class TextEditorFragment extends Fragment {
                             new String[]{"sideLeftMenueIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
                 }
 
-                if (devicePath != null && devicePath.length() > 0)
+                if (loadedFile != null && loadedFile.length() > 0)
                     fileBrowser.reloadFileBrowserDisplay();
+                for(int i=1;i<icons.length;i++)
+                    fileBrowser.changeIcon(icons[i],"TextEditorIcons","open","closed");
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.stop();
+
                 fileBrowser.startMovePanel(7);
 
                 if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible()) {
@@ -199,29 +273,163 @@ public class TextEditorFragment extends Fragment {
 
     public void refreshToFillIn() {
 
-        String[] strings = (TxEditor.getText().toString()).split("\n");
+        String fix = preFixed.get(selectedTab);
+           String[] fixs = fix.split("→");
+           fix = "";
+           for (String s : fixs) {
+               switch(s.substring(0,s.indexOf(": ")+2)) {
+                   case("selectedTab: "): {
+                       s = s.substring(0,s.indexOf(": ")+2) + selectedTab;
+                       break;
+                   }
+                   case("caller: "): {
+                       s = s.substring(0,s.indexOf(": ")+2) + caller;
+                       break;
+                   }
+                   case("action: "): {
+                       s = s.substring(0,s.indexOf(": ")+2) + action;
+                       break;
+                   }
+                   case("noAddr: "): {
+                       if(kindOfFormat.equals(".txt"))
+                          s = s.substring(0,s.indexOf(": ")+2) + noAddr;
+                       break;
+                   }
+                   case("isLogo: "): {
+                       if(kindOfFormat.equals(".txt"))
+                          s = s.substring(0,s.indexOf(": ")+2) + isLogo;
+                       break;
+                   }
+                   case("logoPath: "): {
+                       if(kindOfFormat.equals(".txt"))
+                          s = s.substring(0,s.indexOf(": ")+2) + logoPath;
+                       break;
+                   }
+                   case("isBackground: "): {
+                       if(kindOfFormat.equals(".txt"))
+                          s = s.substring(0,s.indexOf(": ")+2) + isBackground;
+                       break;
+                   }
+                   case("mainTx: "): {
+                       if(kindOfFormat.equals(".txt"))
+                          s = s.substring(0,s.indexOf(": ")+2) + mainTx;
+                       break;
+                   }
+                   case("selectedNr: "): {
+                       if(kindOfFormat.equals(".pdf"))
+                          s = s.substring(0,s.indexOf(": ")+2) + pageNr;
+                       break;
+                   }
+                   case("pdfPageCount: "): {
+                       if(kindOfFormat.equals(".pdf"))
+                          s = s.substring(0,s.indexOf(": ")+2) + pdfPageCount;
+                       break;
+                   }
+               }
+               fix = fix + s +"→";
+           }
+           fix = fix.substring(0,fix.lastIndexOf("→"));
+           preFixed.set(selectedTab,fix);
+    }
+    public void refreshToDefine() {
+        String fix = preFixed.get(selectedTab);
+        String[] fixs = fix.split("→");
+        selectedTab = 0;
+        caller = "";
+        action = "";
+        kindOfFormat = "";
+        noAddr = false;
+        isLogo = false;
+        logoPath = "";
+        isBackground = false;
         mainTx = "";
-
-        for(String s : strings) {
-            if (s.startsWith("An: ") || s.startsWith("To: ")) {
-                headerTx = mainTx;
-                mainTx = "";
+        pageNr = 0;
+        selectedPdfTab = 0;
+        pdfPageCount =0;
+        loadedFile = "";
+        for (String s : fixs) {
+            switch(s.substring(0,s.indexOf(": ")+2)) {
+                case("selectedTab: "): {
+                    selectedTab = Integer.parseInt(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("caller: "): {
+                    caller = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
+                case("action: "): {
+                    action = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
+                case("kindOfFormat: "): {
+                    kindOfFormat = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
+                case("noAddr: "): {
+                    if(kindOfFormat.equals(".txt"))
+                       noAddr = Boolean.parseBoolean(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("isLogo: "): {
+                    if(kindOfFormat.equals(".txt"))
+                       isLogo = Boolean.parseBoolean(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("logoPath: "): {
+                    if(kindOfFormat.equals(".txt"))
+                       logoPath = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
+                case("isBackground: "): {
+                    if(kindOfFormat.equals(".txt"))
+                       isBackground = Boolean.parseBoolean(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("mainTx: "): {
+                    if(kindOfFormat.equals(".txt"))
+                       mainTx = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
+                case("selectedNr: "): {
+                    if(kindOfFormat.equals(".pdf"))
+                       pageNr = Integer.parseInt(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("selectedPdfTab: "): {
+                    if(kindOfFormat.equals(".pdf"))
+                       selectedPdfTab = Integer.parseInt(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("pdfPageCount: "): {
+                    if(kindOfFormat.equals(".pdf"))
+                       pdfPageCount = Integer.parseInt(s.substring(s.indexOf(": ")+2));
+                    break;
+                }
+                case("devicePath: "): {
+                     loadedFile = s.substring(s.indexOf(": ")+2);
+                    break;
+                }
             }
-            mainTx = mainTx + s + "\n";
         }
     }
 
-
-    public LinearLayout createTextEditorDisplay(LinearLayout mainLin) {
-        int factx = (int)(50*xfact),
-                facty = (int)(30*yfact);
+    public LinearLayout createTextEditorDisplay() {
+        float f = 12, f1 = 28;
+        if(yfact <= 0.625) {
+            f = 18;
+            f1 = 32;
+        }
 
         if(textRel != null)
             mainLin.removeView(textRel);
 
+
         textRel = new RelativeLayout(context);
         textRel.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.MATCH_PARENT));
+        //textRel.setBackgroundColor(getResources().getColor(R.color.black_overlay));
+        textRel.setX(displayWidth/f1);
+        textRel.setY(displayHeight/f);
 
         LinearLayout scaleLin = new LinearLayout(context);
         scaleLin.setLayoutParams(new RelativeLayout.LayoutParams(4*displayHeight/12, displayHeight/12));
@@ -239,9 +447,10 @@ public class TextEditorFragment extends Fragment {
         }
 
         TextLin = new LinearLayout(context);
-        TextLin.setLayoutParams(new RelativeLayout.LayoutParams(txEditorLayout.getWidth() - factx,  txEditorLayout.getHeight() - (facty)));
+        TextLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,  RelativeLayout.LayoutParams.WRAP_CONTENT));
         TextLin.setPadding(txEditorLayout.getWidth()/16,txEditorLayout.getHeight()/28, txEditorLayout.getWidth()/18,txEditorLayout.getHeight()/16);
         TextLin.setOrientation(LinearLayout.HORIZONTAL);
+        //TextLin.setBackgroundColor(getResources().getColor(R.color.black_overlay));
 
         if(isBackground) {
             mainTx = "";
@@ -280,8 +489,6 @@ public class TextEditorFragment extends Fragment {
         if((action.length() > 0 && action.contains("Address")) && !(mainTx.contains("(!") && mainTx.contains("!)"))) {
             noAddr = false;
             calledBy = "textEditor";
-            if(mainTx.contains(headerTx))
-                mainTx = mainTx.substring(headerTx.length());
 
             if(logoPath.endsWith(".png")&& action.contains("Logo")) {
                 ImageView headIconView = new ImageView(context);
@@ -317,30 +524,31 @@ public class TextEditorFragment extends Fragment {
 
                 headiconRel.addView(txDate);
 
-                if (mainTx.length() == 0) {
-                    String[] headLines = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/MailHeadLines.txt");
-                    for (int i = 1; i < headLines.length; i++) {
-                        if (i < headLines.length - 1)
-                            mainTx = mainTx +headLines[i] + "\n\n";
-                        else
-                            mainTx = mainTx +headLines[i] + "\n";
-                    }
+            }
+            if (mainTx.length() <= 2) {
+                String[] headLines = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/TextHeadLines.txt");
+                headerTx = "";
+                for (String s : headLines) {
+                    headerTx = headerTx + s +"\n\n";
                 }
+                mainTx = headerTx + mainTx;
             }
 
             headIconLin.addView(headiconRel);
-            headIconLin.setY(displayHeight/62);
+            headIconLin.setY(displayHeight/22);
             textRel.addView(headIconLin);
             TextLin.setY(headiconRelParam.height);
 
-        } else {
-            TextLin.setY(0);
+        } /*else {
+            TextLin.setY(displayHeight/22);
             mainTx = headerTx + mainTx;
             headerTx = "";
-        }
+        }*/
 
         TxEditor = new EditText(context);
         TxEditor.setTextColor(getResources().getColor(R.color.black));
+        if(isBackground)
+            TxEditor.setTextColor(getResources().getColor(R.color.white));
         TxEditor.setText(mainTx);
         TxEditor.setTextSize(textSize);
         TxEditor.setPadding(10,10,10,10);
@@ -348,24 +556,46 @@ public class TextEditorFragment extends Fragment {
         TxEditor.setShowSoftInputOnFocus(false);
         TxEditor.setDrawingCacheEnabled(true);
 
-        if(caller.endsWith("New"))
+        if(caller.endsWith("New")) {
+            if(mainTx.length() == 0)
+                TxEditor.setText(" \n");
+            if(TxEditor.getText().toString().length() < 60)
+               TxEditor.setSelection(TxEditor.getText().toString().indexOf(":")+2);
+            else
+                TxEditor.setSelection(TxEditor.getText().toString().length() -1);
             TxEditor.requestFocus();
+            int fact = displayHeight/18,
+                    fact01 = displayHeight/18;
+            if(yfact < 0.625) {
+                fact = displayHeight / 28;
+                fact01 = 0;
+            }
+            if(yfact >= 0.8) {
+                fact01 = displayHeight/12;
+            }
+
+            if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
+                fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
+                        displayWidth -10, (int)(displayHeight/3) +fact01);
+        }
         TxEditor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int fact = displayHeight/18,
-                        fact01 = displayHeight/18;
-                if(yfact < 0.625) {
-                    fact = displayHeight / 28;
-                    fact01 = 0;
+                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible()) {
+                    int fact = displayHeight / 18,
+                            fact01 = displayHeight / 18;
+                    if (yfact < 0.625) {
+                        fact = displayHeight / 28;
+                        fact01 = 0;
+                    }
+                    if (yfact >= 0.8) {
+                        fact01 = displayHeight / 12;
+                    }
+                    fileBrowser.keyboardTrans = ((EditText) v);
+
+                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6, "softKeyBoard", null, 5, (int) (2 * displayHeight / 3 - fact),
+                            displayWidth - 10, (int) (displayHeight / 3) + fact01);
                 }
-                if(yfact >= 0.8) {
-                    fact01 = displayHeight/12;
-                }
-                fileBrowser.keyboardTrans = ((EditText) v);
-                if(fileBrowser.softKeyBoard == null || !fileBrowser.softKeyBoard.isVisible())
-                    fileBrowser.fragmentStart(fileBrowser.softKeyBoard, 6,"softKeyBoard",null,5,(int)(2*displayHeight/3 -fact),
-                            displayWidth -10, (int)(displayHeight/3) +fact01);
             }
         });
 
@@ -375,7 +605,7 @@ public class TextEditorFragment extends Fragment {
             selector.setLayoutParams(new RelativeLayout.LayoutParams((int) (80 * xfact), (int) (80 * xfact)));
             selector.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/txEditorSelector.png"));
             selector.setX(3 * displayWidth / 5);
-            selector.setY(displayHeight / 3);
+            selector.setY(displayHeight / 10);
 
             selector.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -389,7 +619,7 @@ public class TextEditorFragment extends Fragment {
 
             mainRel.addView(selector);
         }
-
+        refreshToFillIn();
         txScroll.addView(TxEditor);
         TextLin.addView(txScroll);
         textRel.addView(TextLin);
@@ -399,20 +629,115 @@ public class TextEditorFragment extends Fragment {
         return mainLin;
     }
 
-    public LinearLayout createHaderIcons () {
+    public HorizontalScrollView createTabIcons () {
+        float f = 14, f1 = 20;
+        if(yfact <= 0.625) {
+            f = 18;
+            f1 = 24;
+        }
+        mainRel.removeView(mainSc);
+
+        mainSc = new HorizontalScrollView(context);
+        mainSc.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -displayWidth/8, (int)(displayHeight / f1 )));
+        mainSc.setY(displayHeight/f);
+        mainSc.setX(displayWidth/16);
+
+        RelativeLayout TabRel = new RelativeLayout(context);
+        TabRel.setLayoutParams(new RelativeLayout.LayoutParams(preFixed.size()*(displayWidth / 6) +10, RelativeLayout.LayoutParams.MATCH_PARENT ));
+        TabRel.setBackgroundColor(getResources().getColor(R.color.white_overlay));
+        TabRel.setPadding(5, 5, 5, 5);
+
+
+        tabImgs = Arrays.copyOf(tabImgs,tabImgs.length +1);
+        tabTx = Arrays.copyOf(tabTx,tabTx.length +1);
+        String Tx = "";
+
+        for (int i = 0; i < preFixed.size(); i++) {
+
+            tabImgs[i] = new ImageView(context);
+            tabImgs[i].setBackgroundColor(getResources().getColor(R.color.white_overlay));
+            tabImgs[i].setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 6, RelativeLayout.LayoutParams.MATCH_PARENT));
+            tabImgs[i].setScaleType(ImageView.ScaleType.FIT_XY);
+            tabImgs[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/tab_closed.png"));
+            if (i == selectedTab)
+                tabImgs[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/tab_open.png"));
+            tabImgs[i].setX(i * displayWidth / 6);
+
+            TabRel.addView(tabImgs[i]);
+
+            Tx = preFixed.get(i).substring(preFixed.get(i).indexOf("devicePath: ")+12);
+            Tx = Tx.substring(Tx.lastIndexOf("/")+1);
+
+            if (Tx.length() >= 8)
+                Tx = Tx.substring(0, 8) + "\n" + Tx.substring(Tx.lastIndexOf(".") + 1).toUpperCase();
+
+            tabTx[i] = new TextView(context);
+            tabTx[i].setBackgroundColor(getResources().getColor(R.color.white_overlay));
+            tabTx[i].setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            tabTx[i].setLayoutParams(new RelativeLayout.LayoutParams(displayWidth / 6, RelativeLayout.LayoutParams.WRAP_CONTENT));
+            tabTx[i].setPadding(20, 25, 20, 5);
+            tabTx[i].setTextColor(getResources().getColor(R.color.black));
+            if (i == selectedTab)
+                tabTx[i].setTextColor(getResources().getColor(R.color.dark_green));
+
+            tabTx[i].setText(Tx);
+            tabTx[i].setTextSize(textSize - 2);
+            tabTx[i].setX(i * displayWidth / 6 + 20);
+            tabTx[i].setTag(""+i);
+
+            tabTx[i].setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+                    if (kindOfFormat.equals(".txt") && TxEditor.getText().toString().length() > 5) {
+                        mainTx = TxEditor.getText().toString();
+                    }
+
+                    refreshToFillIn();
+                    int tag = Integer.parseInt(v.getTag().toString());
+
+                    selectedTab = tag;
+
+                    for (int i = 0; i < tabTx.length; i++) {
+                        tabTx[i].setTextColor(getResources().getColor(R.color.black));
+                        tabImgs[i].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/tab_closed.png"));
+                    }
+                    ((TextView) v).setTextColor(getResources().getColor(R.color.dark_green));
+                    tabImgs[tag].setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/tab_open.png"));
+                    refreshToDefine();
+
+                    mainRel.removeView(headTxScroll);
+                    if (kindOfFormat.equals(".txt")) {
+                        mainRel.removeView(mainLin);
+                        mainRel.removeView(pdfDisplayLin);
+                        mainRel.removeView(scView);
+                        mainRel.addView(createTextEditorDisplay(), 0);
+                    } else if (kindOfFormat.equals(".pdf")) {
+                        mainRel.addView(createPdfEditorDisplay(), 0);
+                    }
+                    mainRel.addView(createHaderIcons(),0);
+                }
+
+            });
+            TabRel.addView(tabTx[i]);
+        }
+
+        mainSc.addView(TabRel);
+        return mainSc;
+
+    }
+
+    public HorizontalScrollView createHaderIcons () {
 
         icons = new ImageView[0];
-        mainLin = new LinearLayout(context);
-        mainLin.setOrientation(LinearLayout.VERTICAL);
-        mainLin.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, displayHeight -displayHeight/12));
-        mainLin.setPadding(15,0,0,0);
-        mainLin.setBackgroundColor(getResources().getColor(R.color.white));
-
 
         headTxScroll = new HorizontalScrollView(context);
         headTxScroll.setHorizontalScrollBarEnabled(false);
         headTxScroll.setLayoutParams(new RelativeLayout.LayoutParams(displayWidth -10, RelativeLayout.LayoutParams.WRAP_CONTENT));
         headTxScroll.setBackgroundColor(getResources().getColor(R.color.white_overlay));
+        headTxScroll.setY(5);
+        headTxScroll.setX(displayWidth/16);
         headTxScroll.setOnScrollChangeListener(new View.OnScrollChangeListener() {
             @Override
             public void onScrollChange(View view, int i, int i1, int i2, int i3) {
@@ -447,7 +772,7 @@ public class TextEditorFragment extends Fragment {
                 }
                 if((kindOfFormat.equals(".pdf") && s.contains("Info")) || (kindOfFormat.equals(".txt") && s.contains("pdf")) ||
                         ((kindOfFormat.equals(".pdf") && !caller.equals("pdfEditorDisplayNew")) && !(s.contains("pdf") || s.contains("document-new") || s.contains("Drucker")|| s.contains("save"))) ||
-                        (caller.equals("pdfEditorDisplayNew") && !s.contains("pdf"))) {
+                        (caller.equals("pdfEditorDisplayNew") && !(s.contains("pdf") || s.contains("Drucker")|| s.contains("save"))) || (isBackground && !s.contains("Drucker"))) {
                     icons[icons.length - 1].setEnabled(false);
                     icons[icons.length - 1].setTag(icons[icons.length - 1].getTag().toString().replace("open","closed").
                             replace("true","false"));
@@ -457,192 +782,191 @@ public class TextEditorFragment extends Fragment {
 
                 icons[icons.length - 1].setImageBitmap(fileBrowser.bitmapLoader("Icons/TextEditorIcons/" + s));
                 if (!s.contains("Empty"))
-                icons[icons.length - 1].setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        calledBy = "TextEditorIcons";
-                        String tag = v.getTag().toString();
-                        if (tag.contains("closed")) {
-                            fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
+                    icons[icons.length - 1].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            calledBy = "TextEditorIcons";
+                            String tag = v.getTag().toString();
+                            if (tag.contains("closed")) {
+                                if(!tag.contains("Drucker"))
+                                   fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
 
-                            if (tag.contains("Info")) {
-                                memoryAction = action;
-                                action = "info";
-                                calledBack = "InfoView";
-                                memoryTx = TxEditor.getText().toString();
-                                textRel.removeView(headIconLin);
-                                fileBrowser.closeListlinkedIcons(new ImageView[] {icons[1], icons[3], icons[4]}, new String[]{
-                                        "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
+                                if (tag.contains("Info")) {
+                                    memoryAction = action;
+                                    action = "info";
+                                    calledBack = "InfoView";
+                                    memoryTx = TxEditor.getText().toString();
+                                    textRel.removeView(headIconLin);
+                                    fileBrowser.closeListlinkedIcons(new ImageView[] {icons[1], icons[3], icons[4]}, new String[]{
+                                            "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
 
-                                if (accountAddrData[4].contains("(!") || accountAddrData[5].contains("(!")) {
-                                    StringBuffer trans = new StringBuffer();
-                                    for (int i=0; i< accountAddrData.length; i++) {
-                                        if(i == accountAddrData.length -1)
-                                            trans.append(accountAddrData[i]);
-                                        else
-                                            trans.append(accountAddrData[i] + "\n");
+                                    if (accountAddrData[4].contains("(!") || accountAddrData[5].contains("(!")) {
+                                        StringBuffer trans = new StringBuffer();
+                                        for (int i=0; i< accountAddrData.length; i++) {
+                                            if(i == accountAddrData.length -1)
+                                                trans.append(accountAddrData[i]);
+                                            else
+                                                trans.append(accountAddrData[i] + "\n");
+                                        }
+
+                                        mainTx = trans.toString();
+                                        mainLin.removeView(textRel);
+
+                                        fileBrowser.messageStarter("Instruction_EditorAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"), 5000);
+                                    } else {
+                                        String trans = "";
+                                        for (int i=0; i< accountAddrData.length; i++) {
+                                            if (i == 3 && logoPath.length() > 0) {
+                                                trans = trans + accountAddrData[i]   + logoPath.substring(logoPath.lastIndexOf("/") + 1) + "\n";
+                                            } else
+                                                trans = trans +accountAddrData[i] + "\n";
+                                        }
+                                        TxEditor.setText(trans);
                                     }
 
-                                    mainTx = trans.toString();
-                                    mainLin.removeView(textRel);
-                                    //refreshToFillIn();
-                                    //createTextEditorDisplay(mainLin);
+                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
 
-                                    fileBrowser.messageStarter("Instruction_EditorAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"), 5000);
-                                } else {
-                                    String trans = "";
-                                    for (int i=0; i< accountAddrData.length; i++) {
-                                        if (i == 3 && logoPath.length() > 0) {
-                                            trans = trans + accountAddrData[i]   + logoPath.substring(logoPath.lastIndexOf("/") + 1) + "\n";
-                                        } else
-                                            trans = trans +accountAddrData[i] + "\n";
-                                    }
-                                    TxEditor.setText(trans);
-                                }
+                                } else if (tag.contains("text")) {
+                                    action = "text";
+                                    fileBrowser.closeListlinkedIcons(new ImageView[] {icons[3], icons[4], icons[5]}, new String[]{
+                                            "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
 
-                                if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                    fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                    float f = 3;
+                                    if(yfact <= 0.625)
+                                        f = 2;
 
-                            } else if (tag.contains("text")) {
-                                action = "text";
-                                fileBrowser.closeListlinkedIcons(new ImageView[] {icons[3], icons[4], icons[5]}, new String[]{
-                                        "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
+                                    int[] iconpos = new int[2];
+                                    v.getLocationOnScreen(iconpos);
 
-                                float f = 3;
-                                if(yfact <= 0.625)
-                                    f = 2;
+                                    fileBrowser.createList("TextList",1, "Language/" + fileBrowser.language + "/NewTxtFile.txt",6,
+                                            iconpos[0] +v.getWidth() +10, iconpos[1] + v.getHeight()/2, (int)(displayWidth / f), "ru");
 
-                                int[] iconpos = new int[2];
-                                v.getLocationOnScreen(iconpos);
-
-                                fileBrowser.createList("TextList",1, "Language/" + fileBrowser.language + "/NewTxtFile.txt",6,
-                                        iconpos[0] +v.getWidth() +10, iconpos[1] + v.getHeight()/2, (int)(displayWidth / f), "ru");
-
-                                fileBrowser.frameLy.get(3).bringToFront();
-                            } else if(tag.contains("pdf")) {
-                                fileBrowser.closeListlinkedIcons(new ImageView[] {icons[3], icons[1], icons[4], icons[5]}, new String[]{
-                                        "TextEditorIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
-                                action = "pdfPage";
-                                String kind = "PdfSideList";
-                                if (caller.endsWith("New"))
-                                    kind = "PdfCombineList";
-
-
-                                arrayList = new ArrayList<>();
-
-                                if (!caller.endsWith("New") && fileBrowser.pdfPageCount > 0) {
-                                    fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
-                                }
-
-                                if (caller.endsWith("New")) {
-
-                                    String[] st = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NewPdfFile.txt");
-                                    for (int s = 0; s < st.length; s++)
-                                        arrayList.add(new String[]{st[s]});
-
-                                }
-
-
-                                float f = 4;
-                                if(yfact <= 0.625)
-                                    f = 3;
-
-                                int[] iconpos = new int[2];
-                                v.getLocationOnScreen(iconpos);
-
-                                fileBrowser.createList(kind,1, "",6,
-                                        iconpos[0] +v.getWidth() +10, iconpos[1] + v.getHeight()/2, (int)(displayWidth / f), "ru");
-
-                                fileBrowser.frameLy.get(3).bringToFront();
-                            } else if(tag.contains("save")) {
-                                if(devicePath.length() > 0 && devicePath.contains("/")) {
-                                    if(devicePath.substring(devicePath.lastIndexOf("/")).contains("."))
-                                        devicePath = devicePath.substring(0, devicePath.lastIndexOf("/"));
-
-                                    fileBrowser.closeListlinkedIcons(new ImageView[]{icons[2], icons[1], icons[4], icons[5]}, new String[]{
+                                    fileBrowser.frameLy.get(3).bringToFront();
+                                } else if(tag.contains("pdf")) {
+                                    fileBrowser.closeListlinkedIcons(new ImageView[] {icons[3], icons[1], icons[4], icons[5]}, new String[]{
                                             "TextEditorIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
-                                    action = "saveDocument";
+                                    action = "pdfPage";
+                                    String kind = "PdfSideList";
+                                    if (caller.endsWith("New"))
+                                        kind = "PdfCombineList";
 
-                                    if (kindOfFormat.equals(".pdf")) {
-                                        fileBrowser.isPdf = true;
-                                        if (calledBy.equals("importImg"))
-                                            calledBy = "";
-                                    } else
-                                        fileBrowser.isPdf = false;
+
+                                    arrayList = new ArrayList<>();
+
+                                    if (!caller.endsWith("New") && fileBrowser.pdfPageCount > 0) {
+                                        fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
+                                    }
+
+                                    if (caller.endsWith("New")) {
+
+                                        String[] st = fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NewPdfFile.txt");
+                                        for (int s = 0; s < st.length; s++)
+                                            arrayList.add(new String[]{st[s]});
+
+                                    }
+
 
                                     float f = 4;
-                                    if (yfact <= 0.625)
+                                    if(yfact <= 0.625)
                                         f = 3;
 
                                     int[] iconpos = new int[2];
                                     v.getLocationOnScreen(iconpos);
 
-                                    fileBrowser.createList("PdfSaveList", 1, "Language/" + fileBrowser.language + "/TxEditorSave.txt", 6,
-                                            iconpos[0] + v.getWidth() + 10, iconpos[1] + v.getHeight() / 2, (int) (displayWidth / f), "ru");
+                                    fileBrowser.createList(kind,1, "",6,
+                                            iconpos[0] +v.getWidth() +10, iconpos[1] + v.getHeight()/2, (int)(displayWidth / f), "ru");
 
                                     fileBrowser.frameLy.get(3).bringToFront();
-                                } else {
-                                    fileBrowser.messageStarter("Unsuccessful_TxDocumentSave", docu_Loader("Language/" + language + "/Unsuccsessful_TxDocumentSave.txt"), 5000);
-                                    fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
+                                } else if(tag.contains("save")) {
+                                    if(loadedFile.length() > 0 && loadedFile.contains("/")) {
+
+                                        fileBrowser.closeListlinkedIcons(new ImageView[]{icons[2], icons[1], icons[4], icons[5]}, new String[]{
+                                                "TextEditorIcons", "TextEditorIcons", "TextEditorIcons", "TextEditorIcons"});
+                                        action = "saveDocument";
+
+                                        if (kindOfFormat.equals(".pdf")) {
+                                            fileBrowser.isPdf = true;
+                                            if (calledBy.equals("importImg"))
+                                                calledBy = "";
+                                        } else
+                                            fileBrowser.isPdf = false;
+
+                                        float f = 4;
+                                        if (yfact <= 0.625)
+                                            f = 3;
+
+                                        int[] iconpos = new int[2];
+                                        v.getLocationOnScreen(iconpos);
+
+                                        fileBrowser.createList("PdfSaveList", 1, "Language/" + fileBrowser.language + "/TxEditorSave.txt", 6,
+                                                iconpos[0] + v.getWidth() + 10, iconpos[1] + v.getHeight() / 2, (int) (displayWidth / f), "ru");
+
+                                        fileBrowser.frameLy.get(3).bringToFront();
+                                    } else {
+                                        fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
+                                        fileBrowser.createTxEditor.timerAnimation.stop();
+
+                                        fileBrowser.messageStarter("Unsuccessful_TxDocumentSave", docu_Loader("Language/" + language + "/Unsuccsessful_TxDocumentSave.txt"), 5000);
+                                        fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
+
+                                    }
+                                } else if (tag.contains("document")) {
+                                    action = "createDocument";
+                                    if(kindOfFormat.equals(".pdf")) {
+                                        caller = "pdfEditorDisplayNew";
+                                        arrayList = new ArrayList<>();
+                                        fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
+                                        if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                                            fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                    } else
+                                        fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
+                                } else if (tag.contains("Drucker")) {
+                                    if(kindOfFormat.equals(".txt"))
+                                        fileBrowser.doPrint(textRel);
+                                    else if(kindOfFormat.equals(".pdf"))
+                                        fileBrowser.doPrint(pdfDisplayLin);
+                                }
+                            }
+                            else if (tag.contains("open")) {
+
+                                fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
+                                if (tag.contains("Info")) {
+                                    saveInfo();
+                                } else if (tag.contains("text")) {
+                                    if(logoPath.endsWith(".png"))
+                                        logoPath = logoPath.substring(0, logoPath.lastIndexOf("."));
+                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+
+                                } else if (tag.contains("document")) {
+                                    if(kindOfFormat.equals(".pdf")) {
+                                        caller = "pdfEditorDisplay";
+                                        fileBrowser.isPdf = false;
+
+                                        if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+                                            fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                                        //iconLin.addView(createScaleButtons());
+                                    } else
+                                        fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
+                                } else if (tag.contains("pdf")) {
 
                                 }
-                            } else if (tag.contains("document")) {
-                                action = "createDocument";
-                                if(kindOfFormat.equals(".pdf")) {
-                                    caller = "pdfEditorDisplayNew";
-                                    arrayList = new ArrayList<>();
-                                    fileBrowser.changeIcon(icons[2],"TextEditorIcons","open","closed");
-                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                } else
-                                    fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
-                            } else if (tag.contains("Drucker")) {
-                                if(kindOfFormat.equals(".txt"))
-                                    fileBrowser.doPrint(textRel);
-                                else if(kindOfFormat.equals(".pdf"))
-                                    fileBrowser.doPrint(pdfDisplayLin);
-                            }
-                        }
-                        else if (tag.contains("open")) {
 
-                            fileBrowser.changeIcon(v,"TextEditorIcons","open","closed");
-                            if (tag.contains("Info")) {
-                                saveInfo();
-                            } else if (tag.contains("text")) {
-                                if(logoPath.endsWith(".png"))
-                                    logoPath = logoPath.substring(0, logoPath.lastIndexOf("."));
                                 if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                                     fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-
-                            } else if (tag.contains("document")) {
-                                if(kindOfFormat.equals(".pdf")) {
-                                    caller = "pdfEditorDisplay";
-                                    fileBrowser.isPdf = false;
-
-                                    if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                        fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-                                    //iconLin.addView(createScaleButtons());
-                                } else
-                                    fileBrowser.changeIcon(v,"TextEditorIcons","closed","open");
-                            } else if (tag.contains("pdf")) {
-
                             }
 
-                            if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
-                                fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
                         }
-
-                    }
-                });
+                    });
                 iconLin.addView(icons[icons.length - 1]);
                 o++;
             }
         }
 
         headTxScroll.addView(iconLin);
-        mainLin.addView(headTxScroll);
 
-        return mainLin;
+        return headTxScroll;
     }
 
     public void saveInfo () {
@@ -668,7 +992,7 @@ public class TextEditorFragment extends Fragment {
         action = memoryAction;
         mainTx = memoryTx;
         mainLin.removeView(textRel);
-        createTextEditorDisplay(mainLin);
+        createTextEditorDisplay();
     }
 
     public void buildTxFile (String folderpath, String filename) {
@@ -690,36 +1014,41 @@ public class TextEditorFragment extends Fragment {
 
     }
 
-    public void createTxOverPdf () {
+    public void createLayOverPdf () {
 
         String emptyTx = "";
         isPdf = true;
 
-        if(pdfDisplayRel != null && pdfTxLays != null) {
-
-            pdfTxLays[pageNr] = new RelativeLayout(context);
-            pdfTxLays[pageNr].setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT));
-            pdfTxLays[pageNr].setTag(pageNr);
-            pdfTxLays[pageNr].setFocusable(true);
-
-            pdfTxLays[pageNr].setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent me) {
-                    switch (me.getAction()) {
-                        case (MotionEvent.ACTION_DOWN): {
-                            if(txarea.length > 1 && txarea[txarea.length -1] != null  && txarea[txarea.length -1].getText().toString().equals("")) {
-                                ((RelativeLayout)view).removeView(txarea[txarea.length -1]);
-                                txarea = Arrays.copyOfRange(txarea, 0, txarea.length - 1);
+        if(pdfDisplayRel != null && addLayers != null) {
+            if(addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[pageNr] == null) {
+                addLayers.get(selectedPdfTab)[pageNr] = new RelativeLayout(context);
+                addLayers.get(selectedPdfTab)[pageNr].setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+                addLayers.get(selectedPdfTab)[pageNr].setTag(selectedPdfTab);
+                addLayers.get(selectedPdfTab)[pageNr].setFocusable(true);
+                pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[pageNr], pdfDisplayRel.getChildCount());
+            }
+            addLayers.get(selectedPdfTab)[pageNr].setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View view, MotionEvent me) {
+                        switch (me.getAction()) {
+                            case (MotionEvent.ACTION_DOWN): {
+                                if(txarea.length > 1 && txarea[txarea.length -1] != null  && txarea[txarea.length -1].getText().toString().equals("")) {
+                                    ((RelativeLayout)view).removeView(txarea[txarea.length -1]);
+                                    txarea = Arrays.copyOfRange(txarea, 0, txarea.length - 1);
+                                }
+                                if(importImg)
+                                    createAddImgView(view, me.getX(), me.getY());
+                                else
+                                    txRelTouched(view, me.getX(), me.getY());
+                                break;
                             }
-                            txRelTouched(view, me.getX(), me.getY());
-                            break;
                         }
+                        return false;
                     }
-                    return false;
-                }
-            });
+                });
 
-            pdfDisplayRel.addView(pdfTxLays[pageNr], pdfDisplayRel.getChildCount());
+            fileBrowser.messageStarter("AddLayConstruct", docu_Loader("Language/" + language + "/Instruction_AddLayConstruct.txt"), 2500);
+
         }
     }
 
@@ -727,7 +1056,7 @@ public class TextEditorFragment extends Fragment {
 
         txarea = Arrays.copyOf(txarea, txarea.length +1);
         txarea[txarea.length -1] = new EditText(context);
-        txarea[txarea.length -1].setLayoutParams(new RelativeLayout.LayoutParams(pdfDisplayRel.getHeight()/32, pdfDisplayRel.getHeight()/23));
+        txarea[txarea.length -1].setLayoutParams(new RelativeLayout.LayoutParams(pdfDisplayRel.getHeight()/32, pdfDisplayRel.getHeight()/26));
         txarea[txarea.length -1].setText("");
         txarea[txarea.length -1].setTextColor(getResources().getColor(R.color.black));
         txarea[txarea.length -1].setTextSize(6*textSize/7);
@@ -757,175 +1086,177 @@ public class TextEditorFragment extends Fragment {
                     displayWidth - 10, (int) (displayHeight / 3) + fact01);
         }
     }
+    private void createAddImgView (View view, float x, float y) {
 
-    public LinearLayout createPdfEditorDisplay (LinearLayout mainLin) {
+        calledBy = "importImg";
+        calledFrom = "impImg";
+        scaleFact = 1;
+        pdfDisplayRel.setOnTouchListener(null);
+        if (addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[pageNr] != null)
+            addLayers.get(selectedPdfTab)[pageNr].setOnTouchListener(null);
+
+        importImgView = Arrays.copyOf(importImgView, importImgView.length + 1);
+        importImgView[importImgView.length - 1] = new ImageView(fileBrowser);
+        importImgView[importImgView.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((displayWidth/2), RelativeLayout.LayoutParams.WRAP_CONTENT));
+        importImgView[importImgView.length - 1].setTag(importImgView.length - 1 +"--"+ pageNr);
+        importImgView[importImgView.length - 1].setAdjustViewBounds(true);
+        importImgView[importImgView.length - 1].setX(x);
+        importImgView[importImgView.length - 1].setY(y);
+
+        importImgView[importImgView.length - 1].setImageBitmap(fileBrowser.bitmapLoader(devicePath));
+        importImgView[importImgView.length - 1].setOnTouchListener(new View.OnTouchListener() {
+            float x, y, preX, preY;
+            int pC;
+
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View view, MotionEvent me) {
+                pC = me.getPointerCount();
+
+                switch (me.getAction()) {
+                    case (MotionEvent.ACTION_DOWN): {
+
+                        x = me.getX();
+                        y = me.getY();
+
+                    }
+                    case (MotionEvent.ACTION_MOVE): {
+
+                        if (pC == 1) {
+                            view.setY(view.getY() + (me.getY() - y));
+                            view.setX(view.getX() + (me.getX() - x));
+                            break;
+                        } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 0.25 * displayHeight) && scaleFact >= .5) {
+                            scaleFact = scaleFact + (-(me.getY() - y) * 0.001);
+                            if ((view.getHeight() * scaleFact) >= 0.25 * displayHeight && me.getY() < y)
+                                scaleFact = scaleFact + ((me.getY() - y) * 0.001);
+                            if (scaleFact <= .5 && me.getY() > y)
+                                scaleFact = scaleFact + ((me.getY() - y) * 0.001);
+                            view.setScaleX((float) scaleFact);
+                            view.setScaleY((float) scaleFact);
+                            break;
+                        }
+                    }
+                    case (ACTION_UP): {
+                        try {
+                            Thread.sleep(250);
+                        } catch (InterruptedException ie) {
+                        }
+                        break;
+                    }
+                }
+
+                return true;
+            }
+        });
+
+        ((RelativeLayout) view).addView(importImgView[importImgView.length - 1]);
+        fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[2],"TextEditorIcons","open","closed");
+        importImg = false;
+        mainRel.removeView(pdfDisplayLin);
+        mainRel.addView(createPdfEditorDisplay(),0);
+    }
+
+    public LinearLayout createPdfEditorDisplay () {
+        float f = 10, f1 = 24;
+        if(yfact <= 0.625) {
+            f = 16;
+            f1 = 28;
+        }
+        mainRel.removeView(mainLin);
+        mainRel.removeView(pdfDisplayLin);
+
         String imgPath = "";
-        Bitmap bitmap = null;
         RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-        if (activImgView != null) {
-            pdfDisplayRel.removeAllViews();
-            pdfDisplayLin.removeAllViews();
-            mainLin.removeView(pdfDisplayLin);
-        } else {
-            pdfDisplayRel = new RelativeLayout(context);
-            pdfDisplayRel.setLayoutParams(pdfDisRelParam);
-            pdfDisplayRel.setOnTouchListener(new View.OnTouchListener() {
-                float x, y, preX, preY;
-                int pC;
+        pdfDisplayLin = new LinearLayout(context);
+        pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+        pdfDisplayLin.setTag("pdfDisplayLin");
+        pdfDisplayLin.setX(displayWidth/f1);
+        pdfDisplayLin.setY(displayHeight/f);
 
-                @SuppressLint("ClickableViewAccessibility")
-                @Override
-                public boolean onTouch(View view, MotionEvent me) {
-                    pC = me.getPointerCount();
+        pdfDisplayRel = new RelativeLayout(context);
+        pdfDisplayRel.setLayoutParams(pdfDisRelParam);
 
-                    switch (me.getAction()) {
-                        case (MotionEvent.ACTION_DOWN): {
+        pdfDisplayRel.setOnTouchListener(new View.OnTouchListener() {
+            float x, y, preX, preY;
+            int pC;
 
-                            x = me.getX();
-                            y = me.getY();
+            @SuppressLint("ClickableViewAccessibility")
+            @Override
+            public boolean onTouch(View view, MotionEvent me) {
+                pC = me.getPointerCount();
 
-                        }
-                        case (MotionEvent.ACTION_MOVE): {
+                switch (me.getAction()) {
+                    case (MotionEvent.ACTION_DOWN): {
 
-                            if (pC == 1) {
-                                view.setY(view.getY() + (me.getY() - y));
-                                view.setX(view.getX() + (me.getX() - x));
-                                break;
-                            } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 1.75*displayHeight) && scaleFact >= 1) {
-                                scaleFact = scaleFact + (-(me.getY() - y) * 0.001);
-                                if ((view.getHeight() * scaleFact) >= 1.75*displayHeight && me.getY() < y)
-                                    scaleFact = scaleFact + ((me.getY() - y) * 0.001);
-                                if (scaleFact <= 1 && me.getY() > y)
-                                    scaleFact = scaleFact + ((me.getY() - y) * 0.001);
-                                view.setScaleX((float) scaleFact);
-                                view.setScaleY((float) scaleFact);
-                                break;
-                            }
-                        }
-                        case (ACTION_UP): {
-                            try {
-                                Thread.sleep(250);
-                            } catch (InterruptedException ie) {
-                            }
+                        x = me.getX();
+                        y = me.getY();
+
+                    }
+                    case (MotionEvent.ACTION_MOVE): {
+
+                        if (pC == 1) {
+                            view.setY(view.getY() + (me.getY() - y));
+                            view.setX(view.getX() + (me.getX() - x));
+                            break;
+                        } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 1.75 * displayHeight) && scaleFact >= 1) {
+                            scaleFact = scaleFact + (-(me.getY() - y) * 0.001);
+                            if ((view.getHeight() * scaleFact) >= 1.75 * displayHeight && me.getY() < y)
+                                scaleFact = scaleFact + ((me.getY() - y) * 0.001);
+                            if (scaleFact <= 1 && me.getY() > y)
+                                scaleFact = scaleFact + ((me.getY() - y) * 0.001);
+                            view.setScaleX((float) scaleFact);
+                            view.setScaleY((float) scaleFact);
                             break;
                         }
                     }
-
-                    return true;
-                }
-            });
-
-
-            pdfDisplayLin = new LinearLayout(context);
-            pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-        }
-
-        if (importImg) {
-            imgPath = devicePath;
-            calledBy = "importImg";
-            calledFrom = "impImg";
-            scaleFact = 1;
-            pdfDisplayRel.setOnTouchListener(null);
-            if(pdfTxLays != null && pdfTxLays[pageNr] != null)
-                pdfTxLays[pageNr].setOnTouchListener(null);
-
-            importImgView[pageNr] = new ImageView(context);
-            importImgView[pageNr].setLayoutParams(new RelativeLayout.LayoutParams((displayWidth/2), RelativeLayout.LayoutParams.WRAP_CONTENT));
-            importImgView[pageNr].setTag(pageNr);
-            importImgView[pageNr].setAdjustViewBounds(true);
-            importImgView[pageNr].setX(displayWidth/4);
-            importImgView[pageNr].setY(displayHeight/3);
-
-            importImgView[pageNr].setImageBitmap(fileBrowser.bitmapLoader(imgPath));
-            importImgView[pageNr].setOnTouchListener(new View.OnTouchListener() {
-                float x, y, preX, preY;
-                int pC;
-
-                @SuppressLint("ClickableViewAccessibility")
-                @Override
-                public boolean onTouch(View view, MotionEvent me) {
-                    pC = me.getPointerCount();
-
-                    switch (me.getAction()) {
-                        case (MotionEvent.ACTION_DOWN): {
-
-                            x = me.getX();
-                            y = me.getY();
-
+                    case (ACTION_UP): {
+                        try {
+                            Thread.sleep(250);
+                        } catch (InterruptedException ie) {
                         }
-                        case (MotionEvent.ACTION_MOVE): {
-
-                            if (pC == 1) {
-                                view.setY(view.getY() + (me.getY() - y));
-                                view.setX(view.getX() + (me.getX() - x));
-                                break;
-                            } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 0.25*displayHeight) && scaleFact >= .5) {
-                                scaleFact = scaleFact + (-(me.getY() - y) * 0.001);
-                                if ((view.getHeight() * scaleFact) >= 0.25*displayHeight && me.getY() < y)
-                                    scaleFact = scaleFact + ((me.getY() - y) * 0.001);
-                                if (scaleFact <= .5 && me.getY() > y)
-                                    scaleFact = scaleFact + ((me.getY() - y) * 0.001);
-                                view.setScaleX((float) scaleFact);
-                                view.setScaleY((float) scaleFact);
-                                break;
-                            }
-                        }
-                        case (ACTION_UP): {
-                            try {
-                                Thread.sleep(250);
-                            } catch (InterruptedException ie) {
-                            }
-                            break;
-                        }
+                        break;
                     }
-
-                    return true;
                 }
-            });
 
-        }
+                return true;
+            }
+        });
 
-        if(!newPDF && !pdfFileUrl.equals("")) {
-            openPdfStart(pageNr, new File(pdfFileUrl));
-            bitmap = pdfOpenBit;
-        } else if(newPDF){
-            importImgView = new ImageView[1];
-            pdfTxLays = new RelativeLayout[1];
-            newPDF = false;
-        }
         imgView = new ImageView(context);
 
         scaleFact = 1;
-        RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() -txEditorLayout.getHeight()/8);
+        RelativeLayout.LayoutParams imgRelParams = new RelativeLayout.LayoutParams(txEditorLayout.getWidth(), txEditorLayout.getHeight() - txEditorLayout.getHeight() / 8);
         imgRelParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         imgView = new ImageView(context);
         imgView.setLayoutParams(imgRelParams);
-        imgView.setImageBitmap(bitmap);
 
+        if (!newPDF && !loadedFile.equals("")) {
+            openPdfStart(pageNr, new File(loadedFile));
+        } else if (newPDF && addLayers.size() == 0) {
+            addLayers.add(new RelativeLayout[1]);
+        }
+        imgView.setImageBitmap(pdfOpenBit);
         activImgView = imgView;
 
         pdfDisplayRel.addView(imgView);
-        if(!newPDF && pdfTxLays != null && pdfTxLays[pageNr] != null)
-            pdfDisplayRel.addView(pdfTxLays[pageNr]);
 
-        if(importImg)
-        {
-            pdfDisplayRel.addView(importImgView[pageNr]);
-            activImgView = importImgView[pageNr];
+        if (addLayers != null && addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[pageNr] != null) {
+            if(((RelativeLayout)addLayers.get(selectedPdfTab)[pageNr].getParent()) != null)
+               ((RelativeLayout)addLayers.get(selectedPdfTab)[pageNr].getParent()).removeView(addLayers.get(selectedPdfTab)[pageNr]);
+            pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[pageNr]);
 
-            fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[0],"TextEditorIcons", "closed", "open");
-            icons[3].setEnabled(true);
-            icons[4].setEnabled(true);
+        }
 
-            importImg = false;
+        if (pdfPageCount > 1) {
+            mainRel.addView(pageList(displayWidth - displayWidth / 4, 10));
         }
 
         pdfDisplayLin.addView(pdfDisplayRel);
-        mainLin.addView(pdfDisplayLin);
 
-        return mainLin;
+        return pdfDisplayLin;
     }
 
     public void generatePDFfromTx(String[] txts, String folder, String file) {
@@ -992,7 +1323,7 @@ public class TextEditorFragment extends Fragment {
 
         try {
             pdfDocument.writeTo(new FileOutputStream(FILE));
-            devicePath = FILE;
+            loadedFile = FILE;
             kindOfFormat = ".pdf";
             if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
                 fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
@@ -1025,18 +1356,26 @@ public class TextEditorFragment extends Fragment {
         Paint paint = new Paint();
         pdfDocument = new PdfDocument();
 
-        if(pdfPageCount == 0 && importImgView.length >0);
-           pdfPageCount = 1;
-        pageNr = 0;
-        int pg = 0;
-        for(int i=0;i<pdfPageCount;i++) {
-            calledFrom = "savPdf";
-            pdfDisplayRel.removeAllViews();
-            openPdfStart(i,new File(pdfFileUrl));
+        if (caller.endsWith("New"))
+            pdfPageCount = 1;
 
-            imgView.setImageBitmap(pdfOpenBit);
-            pdfDisplayRel.addView(imgView);
-            createAddedLayer(pg);
+        for(int i=0;i<pdfPageCount;i++) {
+
+            pdfDisplayRel.removeAllViews();
+            if(!(caller.endsWith("NEW") && pdfPageCount == 1)) {
+                openPdfStart(i, new File(loadedFile));
+                imgView.setImageBitmap(pdfOpenBit);
+
+                pdfDisplayRel.addView(imgView);
+            }
+
+            if (addLayers != null && addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[i] != null) {
+                if(addLayers.get(selectedPdfTab)[i].getParent() != null)
+                    ((RelativeLayout) addLayers.get(selectedPdfTab)[i].getParent()).removeView(addLayers.get(selectedPdfTab)[i]);
+
+                pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[i]);
+
+            }
 
             if(isBackground)
                 bmp = fileBrowser.viewToBitmap(textRel);
@@ -1055,7 +1394,7 @@ public class TextEditorFragment extends Fragment {
                 pdfDisplayRel.draw(canvas);
 
             pdfDocument.finishPage(myPage);
-          pg++;
+
         }
 
         try {
@@ -1080,10 +1419,6 @@ public class TextEditorFragment extends Fragment {
     }
 
     public boolean Merge_PdfFiles(String folder,String file, String[] SourceFiles) {
-        String pdf = ".pdf";
-        if(file.endsWith(".pdf"))
-            pdf="";
-        String Destination = folder +"/"+ file.replace(" ","") +pdf;
 
         try {
             int f = 0;
@@ -1091,7 +1426,7 @@ public class TextEditorFragment extends Fragment {
             int n = reader.getNumberOfPages();
 
             Document document = new Document(reader.getPageSizeWithRotation(1));
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(Destination));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
 
             document.open();
             PdfContentByte cb = writer.getDirectContent();
@@ -1120,8 +1455,8 @@ public class TextEditorFragment extends Fragment {
             }
 
             document.close();
-            devicePath = Destination;
-            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PDFDocumentSave.txt"),  5000);
+            devicePath = file;
+            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
 
             //fileBrowser.reloadFileBrowserDisplay();
         } catch (Exception e) {
@@ -1131,6 +1466,8 @@ public class TextEditorFragment extends Fragment {
     }
     public ScrollView pageList (int x, int y) {
         fileBrowser.isPdf = false;
+        mainRel.removeView(scView);
+
         arrayList = new ArrayList<>(0);
         String page = "Seite";
         if(language.equals("English")) page = "Page";
@@ -1139,9 +1476,9 @@ public class TextEditorFragment extends Fragment {
 
 
 
-        int height = arrayList.size() * 5*textSize;
-        if(arrayList.size() > 6)
-            height = displayHeight/9;
+        int height = arrayList.size() * displayHeight/54;
+        if(arrayList.size() > 3)
+            height = displayHeight/18;
 
         scView = new ScrollView(context);
         scView.setLayoutParams(new FrameLayout.LayoutParams(displayWidth/5 +10,height +10));
@@ -1149,7 +1486,7 @@ public class TextEditorFragment extends Fragment {
         scView.setPadding(5,5,5,5);
         scView.post(new Runnable() {
             public void run() {
-                scView.smoothScrollBy(0, scY);
+                scView.smoothScrollBy(0, scY[selectedTab]);
             }
         });
         scView.setX(x);
@@ -1167,20 +1504,26 @@ public class TextEditorFragment extends Fragment {
             txPages[i].setText(arrayList.get(i)[0]);
             txPages[i].setTextSize(textSize);
             txPages[i].setTextColor(getResources().getColor(R.color.black));
-            if(selectedTx == i)
+            if(pageNr == i)
                 txPages[i].setTextColor(getResources().getColor(R.color.green));
             txPages[i].setTag(i);
             txPages[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[2],"TextEditorIcons","open","closed");
+
+                    calledFrom = "pageChoose";
                     int tag = Integer.parseInt(v.getTag().toString());
                     for(int i=0;i<txPages.length;i++)
                         txPages[i].setTextColor(getResources().getColor(R.color.black));
                     ((TextView)v).setTextColor(getResources().getColor(R.color.green));
                     selectedTx = tag;
-                    scY = scView.getScrollY();
-                    openPdfStart(tag,new File(pdfFileUrl));
-                    imgView.setImageBitmap(pdfOpenBit);
+                    scY[selectedTab] = scView.getScrollY();
+                    pageNr = tag;
+
+                    mainRel.removeView(pdfDisplayLin);
+                    mainRel.addView(createPdfEditorDisplay(), mainRel.getChildCount() - 4);
+
                 }
             });
             pgLin.addView(txPages[i]);
@@ -1192,28 +1535,19 @@ public class TextEditorFragment extends Fragment {
     }
     private void createAddedLayer (int pg) {
 
-        if(pdfTxLays != null && pdfTxLays.length > 0 && pdfTxLays[pageNr] != null && pdfDisplayRel != null && !calledFrom.equals("impImg")) {
-            if (pdfTxLays[pageNr] != null && Integer.parseInt(pdfTxLays[pageNr].getTag().toString()) != pg)
-                pdfDisplayRel.removeView(pdfTxLays[pageNr]);
+        if(addLayers != null && addLayers.get(selectedPdfTab)[pageNr] != null && pdfDisplayRel != null && !calledFrom.equals("impImg")) {
+            if (Integer.parseInt(addLayers.get(selectedTab)[pageNr].getTag().toString()) != pg)
+                pdfDisplayRel.removeView(addLayers.get(selectedPdfTab)[pageNr]);
         }
-        if((pdfTxLays != null && pdfTxLays[pg] != null) && ((!calledFrom.equals("savPdf") && pg != pageNr) || (calledFrom.equals("savPdf") && pg == pageNr))) {
-            pdfDisplayRel.addView(pdfTxLays[pg]);
-        }
-
-        if(importImgView != null && importImgView.length > 0 && importImgView[pageNr] != null && pdfDisplayRel != null && !calledFrom.equals("pdfTx")) {
-            if (importImgView[pageNr] != null && Integer.parseInt(importImgView[pageNr].getTag().toString()) != pg)
-                pdfDisplayRel.removeView(importImgView[pageNr]);
-        }
-        if((importImgView != null && importImgView[pg] != null) && ((!calledFrom.equals("savPdf") && pg != pageNr) || (calledFrom.equals("savPdf") && pg == pageNr))) {
-            pdfDisplayRel.addView(importImgView[pg]);
+        if(addLayers != null && addLayers.get(selectedPdfTab)[pageNr] != null && ((!calledFrom.equals("savPdf") && pg != pageNr) || (calledFrom.equals("savPdf") && pg == pageNr))) {
+            pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[pageNr]);
         }
 
         calledFrom = "";
     }
 
     public void openPdfStart(int pg, File f) {
-        if(!calledFrom.equals("savPdf"))
-            createAddedLayer(pg);
+
         startOpenPdf = new enterOpenPdf(pg,f);
         startOpenPdf.start();
         try {
@@ -1232,11 +1566,10 @@ public class TextEditorFragment extends Fragment {
         }
 
         public void openPdf() {
-
-            ParcelFileDescriptor fileDescriptor = null;
             Bitmap bitmap = null;
+            ParcelFileDescriptor fileDescriptor = null;
             try {
-                fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
+                fileDescriptor = fileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
 
                 PdfRenderer mPdfRenderer;
                 PdfRenderer.Page mPdfPage;
@@ -1244,13 +1577,10 @@ public class TextEditorFragment extends Fragment {
                 mPdfRenderer = new PdfRenderer(fileDescriptor);
 
                 pdfPageCount = mPdfRenderer.getPageCount();
-                pageNr = pageNumber;
-                if(pageNr == 0 && pdfTxLays == null && importImgView == null) {
-                    importImgView = new ImageView[pdfPageCount];
-                    pdfTxLays = new RelativeLayout[pdfPageCount];
-                }
 
-                mPdfPage = mPdfRenderer.openPage(pageNumber);
+                pageNr = pageNumber;
+                refreshToFillIn();
+                mPdfPage = mPdfRenderer.openPage(pageNr);
 
                 bitmap = Bitmap.createBitmap(mPdfPage.getWidth(),
                         mPdfPage.getHeight(),
@@ -1258,13 +1588,18 @@ public class TextEditorFragment extends Fragment {
                 mPdfPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
                 fileDescriptor.close();
+                refreshToDefine();
+                if(selectedPdfTab < addLayers.size() && addLayers.get(selectedPdfTab).length == 0)
+                    addLayers.set(selectedPdfTab,new RelativeLayout[pdfPageCount]);
+
             } catch (IOException io) {
-                Log.e("fileDescriptor",io.getMessage());
+
+                //addLayers.set(selectedPdfTab,new RelativeLayout[1]);
+                fileBrowser.messageStarter("Instruction", new String[]{io.getMessage()},  3500);
 
             }
 
-            devicePath = pdfFile.getPath();
-
+            loadedFile = pdfFile.getPath();
             pdfOpenBit = bitmap;
         }
 

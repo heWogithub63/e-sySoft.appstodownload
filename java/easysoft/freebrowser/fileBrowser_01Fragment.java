@@ -163,21 +163,15 @@ public class fileBrowser_01Fragment extends Fragment {
                             @Override
                             public boolean onLongClick(View v) {
                                 String extProgrUrl = v.getTag().toString().substring(v.getTag().toString().lastIndexOf("  ") + 2);
+                                devicePath = extProgrUrl;
 
-                                /*if (fileBrowser.intendStarted) {
-                                    if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible() &&
-                                            (fileBrowser.fragId == 4 && ((!devicePath.endsWith(".txt") && !devicePath.endsWith("pdf"))))) {
-                                        fileBrowser.showMediaDisplay.createMediaPlay(extProgrUrl);
-
-                                    }
-                                } else {*/
 
                                     if (extProgrUrl.endsWith(".html"))
                                         extProgrUrl = "file://" + extProgrUrl;
 
                                     fileBrowser.startExtApp(extProgrUrl);
                                 //}
-                                devicePath = extProgrUrl;
+
                                 fileBrowser.reloadFileBrowserDisplay();
                                 return true;
                             }

@@ -394,8 +394,6 @@ public class showMessageFragment extends Fragment {
 
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.endsWith("Document_Save")) {
-            fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
-            fileBrowser.createTxEditor.timerAnimation.start();
 
             String tx = requestedText.getText().toString().replace(" ","");
 
@@ -466,17 +464,17 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.createTxEditor.timerAnimation.start();
 
                 String destination = "";
-                if(tx.contains(",")) {
-                    destination = tx.substring(0, tx.indexOf(",")).trim();
-                    tx = tx.substring(tx.indexOf(",") +1);
-                }
-
                 String[] mergedFiles = tx.split(",");
                 for(int i=0;i<mergedFiles.length;i++) {
-                    mergedFiles[i] = devicePath +"/"+ mergedFiles[i].trim();
+
+                    mergedFiles[i] = devicePath +"/"+ mergedFiles[i].trim().replace(" ","");
                     if(!mergedFiles[i].endsWith(".pdf"))
                         mergedFiles[i] = mergedFiles[i] +".pdf";
                 }
+
+                destination = mergedFiles[0];
+                mergedFiles = Arrays.copyOfRange(mergedFiles,1,mergedFiles.length);
+
                 fileBrowser.createTxEditor.Merge_PdfFiles(devicePath, destination, mergedFiles);
             }
         } else if(kindOf.equals("httpsRequest")) {
@@ -639,6 +637,8 @@ public class showMessageFragment extends Fragment {
                             if (fileBrowser.createSendEmail.mailTx.getText().toString().contains("(!") && fileBrowser.createSendEmail.mailTx.getText().toString().contains("!)"))
                                 fileBrowser.createSendEmail.mailTx.setSelection(fileBrowser.createSendEmail.mailTx.getText().toString().indexOf("(!"),
                                         fileBrowser.createSendEmail.mailTx.getText().toString().indexOf("!)") + 2);
+                            fileBrowser.createSendEmail.mainRel.addView(fileBrowser.createSendEmail.selector);
+
                         }
                     });
                 }
@@ -664,7 +664,7 @@ public class showMessageFragment extends Fragment {
                     @Override
                     public void run() {
                         if (fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && fileBrowser.createTxEditor.action.equals("info"))
-                            fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+                            fileBrowser.createTxEditor.createTextEditorDisplay();
 
                         fileBrowser.createTxEditor.TxEditor.requestFocus();
                         if (fileBrowser.createTxEditor.TxEditor.getText().toString().contains("(!") && fileBrowser.createTxEditor.TxEditor.getText().toString().contains("!)"))
@@ -722,8 +722,13 @@ public class showMessageFragment extends Fragment {
 
 
             } else if(kindOf.equals("Successful_PdfDocumentSave")) {
-                fileBrowser.startExtApp(devicePath);
+                fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.createTxEditor.timerAnimation.stop();
+
+            } else if(kindOf.equals("AddLayConstruct")) {
+                fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[2], "TextEditorIcons","open","closed");
             }
+
 
             if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible()) {
                 fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
@@ -732,8 +737,9 @@ public class showMessageFragment extends Fragment {
 
             if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
                 fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
-            if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
-                fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+            if(!calledBack.equals("InfoView"))
+               if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                   fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
 
 
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);

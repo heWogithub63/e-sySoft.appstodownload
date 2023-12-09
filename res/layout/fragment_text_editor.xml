@@ -5,13 +5,11 @@
                 android:layout_height="match_parent"
                 android:background="@color/grey"
                 tools:context=".TextEditorFragment">
-
     <RelativeLayout
-            android:id="@+id/textEditorMainRel"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white">
-
+         android:id="@+id/textEditorMainRel"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:background="@color/white">
     </RelativeLayout>
 
 </RelativeLayout>

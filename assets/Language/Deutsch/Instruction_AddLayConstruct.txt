@@ -1,0 +1,4 @@
+Bitte tippen Sie auf die
+Position im Display
+wo das Object (Tx/Bild)
+eingefügt werden soll.

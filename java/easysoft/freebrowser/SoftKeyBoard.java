@@ -466,7 +466,7 @@ public class SoftKeyBoard extends Fragment {
                     break;
                 }
                 case("Tab"): {
-                    txEd.setText(txEd.getText().toString().substring(0,startPointer) + "          " + txEd.getText().toString().substring(endPointer));
+                    txEd.setText(txEd.getText().toString().substring(0,startPointer) + "                 " + txEd.getText().toString().substring(endPointer));
                     txEd.setSelection(startPointer + tab.length());
                     startPointer = startPointer + tab.length();
                     endPointer = startPointer;

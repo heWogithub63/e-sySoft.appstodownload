@@ -1174,6 +1174,7 @@ public class FileBrowser extends Activity  {
                 headMenueIcon02[headMenueIcon02.length - 1].setImageBitmap(bitmapLoader("Icons/sideRightMenueIcons/" + sideRightMenueStringArray[i].replace("closed", "open")));
             headMenueIcon02[headMenueIcon02.length - 1].setLayoutParams(new RelativeLayout.LayoutParams((int) (displayWidth/10 * xfact), (int) (displayWidth/10 * xfact)));
             headMenueIcon02[headMenueIcon02.length - 1].setTag(headMenueIcon02.length - 1 + " " + sideRightMenueStringArray[i]);
+
             if (sideRightMenueStringArray[i].contains("mediaBack"))
                 headMenueIcon02[headMenueIcon02.length - 1].setEnabled(false);
             if (sideRightMenueStringArray[i].startsWith("Hided")) {
@@ -1225,10 +1226,13 @@ public class FileBrowser extends Activity  {
                                 if(yfact <= 0.625)
                                     f = 3;
                                 int[] iconpos = new int[2];
-                                headMenueIcon02[5].getLocationOnScreen(iconpos);
-
-                                fileBrowser.createList("documentList", 1, "Language/" + language + "/Index_DocumentList.txt", 3,
-                                        iconpos[0], iconpos[1], (int)(displayWidth / f), "lu");
+                                System.err.println(devicePath);
+                                if(devicePath != null && !devicePath.equals("")) {
+                                    headMenueIcon02[5].getLocationOnScreen(iconpos);
+                                    fileBrowser.createList("documentList", 1, "Language/" + language + "/Index_DocumentList.txt", 3,
+                                            iconpos[0], iconpos[1], (int) (displayWidth / f), "lu");
+                                } else
+                                    return;
 
                             } else if ((tag.contains("E@sySoft"))) {
                                 fileBrowser.timeImage.setVisibility(View.VISIBLE);
@@ -1448,7 +1452,8 @@ public class FileBrowser extends Activity  {
                                 fileBrowser.headMenueIcon02[2].setEnabled(false);
 
 
-                                fragId = 7;
+                                fileBrowser.fragmentShutdown(createTxEditor,7);
+
                             } else if (tag.startsWith("mediaList")) {
 
                                 if(!openFrags.contains("4")) {
@@ -1598,13 +1603,6 @@ public class FileBrowser extends Activity  {
                     @Override
                     public boolean onLongClick(View v) {
                         String extProgrUrl = v.getTag().toString().substring(v.getTag().toString().lastIndexOf("  ") + 2);
-
-                        /*if (fileBrowser.intendStarted) {
-                            if (fileBrowser.showMediaDisplay != null && fileBrowser.showMediaDisplay.isVisible()) {
-                                fileBrowser.showMediaDisplay.createMediaPlay(extProgrUrl);
-
-                            }
-                        } else { */
 
                         if (extProgrUrl.endsWith(".html"))
                             extProgrUrl = "file://" + extProgrUrl;
@@ -1782,8 +1780,7 @@ public class FileBrowser extends Activity  {
             if(Url.contains("protonmail"))
                 form = "protonmail";
             else if(Url.startsWith("http") || Url.startsWith("https"))
-                form = "https";
-            //form = Url.substring(0,Url.indexOf(":"));
+                form = Url.substring(0,Url.indexOf(":"));
         }
 
         if(form.contains(" "))
@@ -1966,7 +1963,8 @@ public class FileBrowser extends Activity  {
     //
     public void fragmentStart(Fragment kind_of_fragment, int a, String kind_of, Bundle transParam, int xpos, int ypos, int width, int height) {
 
-        if (kind_of_fragment != null && kind_of_fragment.isVisible()) {
+        if (kind_of_fragment != null && kind_of_fragment.isVisible() && !(kind_of.equals("textEditorDisplay")  || kind_of.equals("pdfEditorDisplay"))) {
+
             fragmentShutdown(kind_of_fragment, a);
         }
 
@@ -2021,15 +2019,24 @@ public class FileBrowser extends Activity  {
             fragTrans.replace(R.id.createSendEmail, createSendEmail);
         } else if (kind_of.equals("textEditorDisplay") || kind_of.equals("pdfEditorDisplay")) {
             fragId = 7;
-            if(openFrags.equals(""))
-                openFrags = ""+fragId;
+            if (openFrags.equals(""))
+                openFrags = "" + fragId;
             else
-                openFrags = openFrags +fragId;
-            createTxEditor = TextEditorFragment.newInstance();
-            if (transParam != null)
-                createTxEditor.setArguments(transParam);
-            frameContainerMove(fragId, findViewById(R.id.createTextDisplay), xpos, ypos, width, height);
-            fragTrans.replace(R.id.createTextDisplay, createTxEditor);
+                openFrags = openFrags + fragId;
+
+            if(createTxEditor != null && createTxEditor.isVisible() && createTxEditor.preFixed.size() >= 1) {
+
+                if (transParam != null) {
+                    createTxEditor.variablenInstantion(transParam.get("CALLER").toString(),
+                                                           transParam.get("FORMAT").toString(),transParam.getStringArray("TEXT"));
+                }
+            } else {
+                createTxEditor = TextEditorFragment.newInstance();
+                if (transParam != null)
+                    createTxEditor.setArguments(transParam);
+                frameContainerMove(fragId, findViewById(R.id.createTextDisplay), xpos, ypos, width, height);
+                fragTrans.replace(R.id.createTextDisplay, createTxEditor);
+            }
         } else if (kind_of.equals("webBrowserDisplay")) {
             fragId = 8;
             if(openFrags.equals(""))
@@ -2047,10 +2054,10 @@ public class FileBrowser extends Activity  {
             if (transParam != null)
                 softKeyBoard.setArguments(transParam);
             frameContainerMove(6, findViewById(R.id.softKeyBoard), xpos, ypos, width, height);
-            fragTrans.replace(R.id.softKeyBoard, softKeyBoard);fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
+            fragTrans.replace(R.id.softKeyBoard, softKeyBoard);
         }
 
-        fragTrans.addToBackStack(""+fragId).commitAllowingStateLoss();
+        fragTrans.commitAllowingStateLoss();
     }
 
     public void fragmentShutdown (Fragment kind_of, int n) {
@@ -2076,10 +2083,9 @@ public class FileBrowser extends Activity  {
             });
 
 
-
-
         if(n == 8)
             calledBack = "";
+
     }
 
 
@@ -2227,7 +2233,7 @@ public class FileBrowser extends Activity  {
                 nex = f.indexOf(" ")  + nx.indexOf("/");
             f= f.substring(0,lst)+f.substring(nex);
 
-            from = from.substring(0,lst) +"'"+ from.substring(lst,nex).replace(" ","\\ ") +"'" + from.substring(nex);
+            from = from.substring(0,lst) +"\""+ from.substring(lst,nex) +"\""+ from.substring(nex);
         }
 
         while (to.contains("/") && t.contains(" ")) {
@@ -2239,7 +2245,7 @@ public class FileBrowser extends Activity  {
                 nex = t.indexOf(" ")  + nx.indexOf("/");
             t= t.substring(0,lst)+t.substring(nex);
 
-            to = to.substring(0,lst) +"'"+ to.substring(lst,nex).replace(" ","\\ ") +"'" + to.substring(nex);
+            to = to.substring(0,lst) +"\""+ to.substring(lst,nex) +"\"" + to.substring(nex);
         }
 
 

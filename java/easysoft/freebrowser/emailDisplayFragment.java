@@ -115,6 +115,7 @@ public class emailDisplayFragment extends Fragment {
         context = getContext();
         view = inflater.inflate(R.layout.fragment_email_display, container, false);
         mainRel = (RelativeLayout) view.findViewById(R.id.mainRel);
+        mainRel.setBackgroundColor(getResources().getColor(R.color.white));
 
         //AnimationTimer
         timeImage = new ImageView(context);
@@ -649,8 +650,8 @@ public class emailDisplayFragment extends Fragment {
             selector = new ImageView(context);
             selector.setLayoutParams(new RelativeLayout.LayoutParams((int) (80 * xfact), (int) (80 * xfact)));
             selector.setImageBitmap(fileBrowser.bitmapLoader("Icons/browserIcons/txEditorSelector.png"));
-            selector.setX(3 * displayWidth / 5);
-            selector.setY(2 * displayHeight / 7);
+            selector.setX(2 * displayWidth / 3);
+            selector.setY(displayHeight / 3);
 
             selector.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -662,7 +663,6 @@ public class emailDisplayFragment extends Fragment {
                 }
             });
 
-            fileBrowser.createSendEmail.mainRel.addView(selector);
         }
 
         if (praefix.length > 0 && (mailAccountData != null && mailAccountData.length > 0) && createMail &&
@@ -822,6 +822,7 @@ public class emailDisplayFragment extends Fragment {
         mainLin.setOrientation(LinearLayout.VERTICAL);
         mainLin.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
         mainLin.setPadding(10, 10, 10, 10);
+        mainLin.setBackgroundColor(getResources().getColor(R.color.white));
 
         headEMScroll = new HorizontalScrollView(context);
         headEMScroll.setHorizontalScrollBarEnabled(false);
@@ -978,6 +979,10 @@ public class emailDisplayFragment extends Fragment {
                                     collectionMemoryList.add(memoryList);
 
                                     arrayList = new ArrayList<>();
+                                    fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
+                                    fileBrowser.createSendEmail.timerAnimation.start();
+
+
                                     String accountName = "Account ", kind = "mailSentAccountList";
                                     if (fileBrowser.language.equals("Deutsch"))
                                         accountName = "Konto ";

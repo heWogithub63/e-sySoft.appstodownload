@@ -141,8 +141,9 @@ public class showListFragment extends Fragment {
                     listTx[listTx.length - 1].setText(listTx[listTx.length - 1].getText().toString().substring(0,listTx[listTx.length - 1].getText().toString().indexOf(" ")));
                 }
                 if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible() && (fileBrowser.createTxEditor.isBackground && arrayList.get(i)[i1].contains("Text ") ||
-                        (fileBrowser.createTxEditor.isLogo && arrayList.get(i)[i1].contains("Text ")))) {
-                    System.err.println(fileBrowser.createTxEditor.isLogo +"--"+ fileBrowser.createTxEditor.isBackground);
+                        (fileBrowser.createTxEditor.isLogo && arrayList.get(i)[i1].contains("Text ")) || (!fileBrowser.createTxEditor.newPDF &&
+                        fileBrowser.createTxEditor.kindOfFormat.equals(".pdf") && arrayList.get(i)[i1].contains("PDFs ")))) {
+
                     listTx[listTx.length - 1].setTextColor(getResources().getColor(R.color.grey));
                     listTx[listTx.length - 1].setEnabled(false);
                 }
@@ -472,19 +473,29 @@ public class showListFragment extends Fragment {
                                     fileBrowser.createSendEmail.headerEdit[1].setText(((TextView) v).getText().toString().trim());
                                 fileBrowser.createSendEmail.memoryList[1] = fileBrowser.createSendEmail.headerEdit[1].getText().toString().trim();
                             } else if(caller.equals("TextList")) {
+
                                 if(tag.contains("Logo")) {
                                     if (devicePath.endsWith(".png")) {
                                         fileBrowser.createTxEditor.noAddr = false;
                                         fileBrowser.createTxEditor.isLogo = true;
                                         fileBrowser.createTxEditor.isBackground = false;
-                                        fileBrowser.createTxEditor.action = "text + AddressLogo";
                                         logoPath = devicePath;
+
+                                        if(fileBrowser.createTxEditor.accountAddrData != null && fileBrowser.createTxEditor.accountAddrData.length > 6 &&
+                                                !fileBrowser.createTxEditor.accountAddrData[5].contains("(!"))  {
+                                            fileBrowser.createTxEditor.action = "AddressLogo";
+
+                                            fileBrowser.createTxEditor.createTextEditorDisplay();
+
+                                        } else {
+                                            fileBrowser.messageStarter("Instruction_LogoAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"),  8000);
+                                            return;
+                                        }
+
                                     } else if (logoPath.length() == 0) {
                                         fileBrowser.messageStarter("Instruction_LogoAccount", docu_Loader("Language/" + language + "/Instruction_LogoAccount.txt"),  8000);
                                         return;
                                     }
-                                    fileBrowser.createTxEditor.refreshToFillIn();
-                                    fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
 
                                 } else if(tag.contains("AbsAddress")) {
                                     fileBrowser.createTxEditor.noAddr = false;
@@ -493,9 +504,9 @@ public class showListFragment extends Fragment {
 
                                     if(fileBrowser.createTxEditor.accountAddrData != null && fileBrowser.createTxEditor.accountAddrData.length > 6 &&
                                             !fileBrowser.createTxEditor.accountAddrData[5].contains("(!"))  {
-                                        fileBrowser.createTxEditor.action = "text + Address";
-                                        fileBrowser.createTxEditor.refreshToFillIn();
-                                        fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+                                        fileBrowser.createTxEditor.action = "Address";
+
+                                        fileBrowser.createTxEditor.createTextEditorDisplay();
 
                                     } else {
                                         fileBrowser.messageStarter("Instruction_LogoAccount", docu_Loader("Language/" + language + "/Instruction_EditorAccount.txt"),  8000);
@@ -509,8 +520,9 @@ public class showListFragment extends Fragment {
                                             devicePath.substring(devicePath.lastIndexOf("/") +1).contains(".JPG")) {
                                         fileBrowser.createTxEditor.isBackground = true;
                                         fileBrowser.createTxEditor.isBackgroundPath = devicePath;
-                                        fileBrowser.createTxEditor.refreshToFillIn();
-                                        fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+
+                                        fileBrowser.createTxEditor.createTextEditorDisplay();
+
                                     } else {
                                         fileBrowser.messageStarter("Instruction_BackgroundPicture", docu_Loader("Language/" + language + "/Instruction_BackgroundPicture.txt"), 8000);
                                         return;
@@ -524,7 +536,8 @@ public class showListFragment extends Fragment {
                                     fileBrowser.createTxEditor.isBackgroundPath = devicePath;
 
                                     fileBrowser.createTxEditor.mainTx="";
-                                    fileBrowser.createTxEditor.createTextEditorDisplay(fileBrowser.createTxEditor.mainLin);
+
+                                    fileBrowser.createTxEditor.createTextEditorDisplay();
                                 }
 
                             } else if(caller.equals("PdfSideList")) {
@@ -540,33 +553,36 @@ public class showListFragment extends Fragment {
                                 int sz = 2;
                                 if(yfact < 0.625)
                                     sz = 3;
-                                if(tag.substring(tag.indexOf(" ") +1).startsWith("PDF ")) {
+                                if(tag.substring(tag.indexOf(" ") +1).startsWith("PDFs ")) {
                                     if (!devicePath.equals("") && !devicePath.substring(devicePath.lastIndexOf("/") + 1).contains("."))
                                         fileBrowser.messageStarter("pdfCombinedDocument_Save",
                                                 docu_Loader("Language/" + language + "/" + "PdfCombinedDocument_Save" + ".txt"),  0);
                                     else
                                         fileBrowser.messageStarter("Instruction_TxDocumentSave", docu_Loader("Language/" + language + "/Instruction_PdfCombination.txt"),  8000);
                                 } else if(tag.substring(tag.indexOf(" ") +1).contains("import")) {
-                                    if (!devicePath.equals("") && (devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".") &&
-                                            !(devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".pdf") || devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".txt")))) {
+                                    if (!devicePath_trans.equals("") && (devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".") &&
+                                            !(devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".pdf") || devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".txt")))) {
                                         fileBrowser.createTxEditor.importImg = true;
-
-                                        fileBrowser.createTxEditor.createPdfEditorDisplay(fileBrowser.createTxEditor.mainLin);
+                                        fileBrowser.createTxEditor.createLayOverPdf();
+                                        //fileBrowser.createTxEditor.createPdfEditorDisplay();
                                     } else {
+                                        fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[2],"TextEditorIcons","open","closed");
                                         fileBrowser.messageStarter("Instruction_TxDocumentSave", docu_Loader("Language/" + language + "/Instruction_ImageImport.txt"), 8000);
                                     }
                                 } else if(tag.substring(tag.indexOf(" ") +1).startsWith("Text ")) {
 
                                     if(fileBrowser.createTxEditor != null & fileBrowser.createTxEditor.isVisible()) {
                                         fileBrowser.createTxEditor.isBackgroundPath = devicePath;
-                                        fileBrowser.createTxEditor.createTxOverPdf();
+                                        fileBrowser.createTxEditor.createLayOverPdf();
                                     }
 
                                 }
 
                             } else if(caller.equals("PdfSaveList")) {
-                                if (!devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".") ||
-                                        fileBrowser.createTxEditor.loadedFile.endsWith(".pdf")) {
+                                if (!devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".")) {
+                                    fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
+                                    fileBrowser.createTxEditor.timerAnimation.start();
+
                                     File file = new File(devicePath);
                                     boolean canWrite = file.canWrite();
                                     if (!canWrite) {
