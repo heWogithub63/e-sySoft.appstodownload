@@ -27,3 +27,11 @@ This Android-App provides
 - QR_Barcode Scanner
 - QR_Barcode Generator
 - QR_BarCode Reader from a File (Pictures)
+
+# Tools/CECR
+Copywrite by e@sySoft-cooperation
+Autor: heworring@gmail.com
+
+This Android-App provides
+an Calculator for Exchange Currency Rates
+with an aktuell currency state
