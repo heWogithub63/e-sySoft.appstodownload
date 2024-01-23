@@ -157,6 +157,18 @@ public class MediaDisplayFragment extends Fragment {
         else if(kindOfMedia.equals("VIDEO") || kindOfMedia.equals("AUDIO")) {
             if (kindOfMedia.equals("AUDIO")) {
                 mainRel.setBackgroundColor(getResources().getColor(R.color.white_overlay));
+                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
+                fileBrowser.headMenueIcon02[2].setEnabled(false);
+
+                if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                }
+                if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible()) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                }
+                if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
+                    fileBrowser.changeIcon(fileBrowser.headMenueIcon[7], "headMenueIcons", "running", "open");
+                }
 
                 RelativeLayout videoRel = (RelativeLayout) view.findViewById(R.id.videoRel);
                 videoRel.setLayoutParams(new RelativeLayout.LayoutParams(3 * mediaDisplayLayout.getWidth() / 5, mediaDisplayLayout.getHeight()));
@@ -285,8 +297,19 @@ public class MediaDisplayFragment extends Fragment {
                         @Override
                         public void run() {
                             fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "runningOne", "closed");
+                            fileBrowser.changeIcon(fileBrowser.headMenueIcon02[3], "sideRightMenueIcons", "openOne", "closed");
                             fileBrowser.changeIcon(fileBrowser.headMenueIcon02[2], "sideRightMenueIcons", "open", "closed");
                             fileBrowser.headMenueIcon02[2].setEnabled(false);
+
+                            if(fileBrowser.createTxEditor != null && fileBrowser.createTxEditor.isVisible()) {
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon02[5], "sideRightMenueIcons", "running", "open");
+                            }
+                            if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible()) {
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon[6], "headMenueIcons", "running", "open");
+                            }
+                            if(fileBrowser.webBrowserDisplay != null && fileBrowser.webBrowserDisplay.isVisible()) {
+                                fileBrowser.changeIcon(fileBrowser.headMenueIcon[7], "headMenueIcons", "running", "open");
+                            }
 
                             fileBrowser.fragmentShutdown(fileBrowser.showMediaDisplay, 4);
                             fileBrowser.intendStarted = false;
