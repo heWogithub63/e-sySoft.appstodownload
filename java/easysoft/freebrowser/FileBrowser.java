@@ -989,8 +989,6 @@ public class FileBrowser extends Activity  {
                 String[] st = read_writeFileOnInternalStorage("read", "TrashIndex", "", "");
 
                 if (st != null && st.length > 0) {
-                    for(String s:st)
-                        System.err.println("..."+s+"...");
                     headMenueIcon01[headMenueIcon01.length - 1].setTag(headMenueIcon01[headMenueIcon01.length - 1].getTag().
                             toString().replace("closed","open"));
                     sideLeftMenueStringArray[i] = sideLeftMenueStringArray[i].replace("closed", "open");
@@ -1249,7 +1247,7 @@ public class FileBrowser extends Activity  {
                                     startActivity(qrBarCode);
                                     fileBrowser.finish();
                                 } catch (Exception e) {
-                                    startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/hewogithub63/e-sySoft.freeFileBrowser/tree/main/release/")));
+                                    startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://github.com/hewogithub63/e-sySoft.appstodownload/tree/main/release/Tools/QR_BareCode.apk")));
                                 }
 
                             }
@@ -1772,15 +1770,23 @@ public class FileBrowser extends Activity  {
             if(Url.startsWith("mailto"))
                 form = "mailto";
             else if(Url.startsWith("http"))
-                form = Url.substring(0,Url.indexOf(":"));
-
+                if(calledFrom.equals("mail"))
+                    form = Url.substring(0, Url.indexOf(":")) + "+";
+                else
+                    form = Url.substring(0,Url.indexOf(":"));
+            else if(Url.startsWith("file"))
+                    form = Url.substring(0,Url.indexOf(":"));
         } else if(!Url.startsWith("http")) {
             form = "*";
         } else if(Url.startsWith("http")){
             if(Url.contains("protonmail"))
                 form = "protonmail";
-            else if(Url.startsWith("http") || Url.startsWith("https"))
-                form = Url.substring(0,Url.indexOf(":"));
+            else if(Url.startsWith("http") || Url.startsWith("https")) {
+                if(calledFrom.equals("mail"))
+                    form = Url.substring(0, Url.indexOf(":")) + "+";
+                else
+                    form = Url.substring(0, Url.indexOf(":"));
+            }
         }
 
         if(form.contains(" "))
@@ -1794,13 +1800,14 @@ public class FileBrowser extends Activity  {
                 progrIntent.setDataAndType(Uri.parse(Url), "application/" +form);
                 break;
             }
-            case ("http"): {
+            case ("http"): case (".html"): case ("https"):{
                 progrIntent = new Intent(Intent.ACTION_VIEW);
                 progrIntent.setData(Uri.parse(Url));
                 fileBrowser.startActivity(progrIntent);
                 return;
             }
-            case (".html"): case ("https"):{
+
+            case ("html+"): case ("https+"): case ("http+"): case ("file"):{
                 if(fileBrowser.haveNetwork()) {
                     fileBrowser.intendStarted = true;
                     Bundle bund = new Bundle();
@@ -1813,6 +1820,7 @@ public class FileBrowser extends Activity  {
 
                 return;
             }
+
             case (".txt"): case (".pdf"): {
                 calledBy = "extFileCall";
                 fileBrowser.intendStarted = true;
@@ -1993,6 +2001,7 @@ public class FileBrowser extends Activity  {
             fragTrans.replace(R.id.listFrame, showList);
 
         } else if (kind_of.equals("mediaDisplay")) {
+
             fragId = 4;
             showMediaDisplay = MediaDisplayFragment.newInstance();
             if(transParam != null) {
@@ -2029,6 +2038,9 @@ public class FileBrowser extends Activity  {
                 if (transParam != null) {
                     createTxEditor.variablenInstantion(transParam.get("CALLER").toString(),
                                                            transParam.get("FORMAT").toString(),transParam.getStringArray("TEXT"));
+                    if(frameLy.get(fragId).getX() > 0)
+                        startMovePanel(fragId);
+                    return;
                 }
             } else {
                 createTxEditor = TextEditorFragment.newInstance();
@@ -2154,6 +2166,7 @@ public class FileBrowser extends Activity  {
 
         Bitmap.Config bmpConfig = Bitmap.Config.ARGB_8888;
         Bitmap bmp = Bitmap.createBitmap(view.getWidth(), view.getHeight(), bmpConfig);
+
         return bmp;
     }
     public void reloadFileBrowserDisplay() {

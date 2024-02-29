@@ -6,6 +6,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.pdf.PdfDocument;
@@ -159,7 +160,7 @@ public class TextEditorFragment extends Fragment {
             loadedFile = devicePath + "/New_Pdf.txt";
             AnzOpenPdf++;
             addLayers.add(new RelativeLayout[0]);
-            addLayers.set(selectedPdfTab,new RelativeLayout[1]);
+            //addLayers.set(selectedPdfTab,new RelativeLayout[1]);
         }
 
 
@@ -180,7 +181,7 @@ public class TextEditorFragment extends Fragment {
             mainRel.addView(createTabIcons());
             mainRel.addView(timeImage);
             mainRel.addView(createSwitcher());
-            fileBrowser.startMovePanel(fileBrowser.fragId);
+            //fileBrowser.startMovePanel(fileBrowser.fragId);
         }
 
     }
@@ -1018,9 +1019,8 @@ public class TextEditorFragment extends Fragment {
 
         String emptyTx = "";
         isPdf = true;
-
         if(pdfDisplayRel != null && addLayers != null) {
-            if(addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[pageNr] == null) {
+            if(addLayers.get(selectedPdfTab) != null &&  addLayers.get(selectedPdfTab)[pageNr] == null) {
                 addLayers.get(selectedPdfTab)[pageNr] = new RelativeLayout(context);
                 addLayers.get(selectedPdfTab)[pageNr].setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
                 addLayers.get(selectedPdfTab)[pageNr].setTag(selectedPdfTab);
@@ -1046,8 +1046,8 @@ public class TextEditorFragment extends Fragment {
                         return false;
                     }
                 });
-
-            fileBrowser.messageStarter("AddLayConstruct", docu_Loader("Language/" + language + "/Instruction_AddLayConstruct.txt"), 2500);
+            if(calledFrom.startsWith("import"))
+               fileBrowser.messageStarter("AddLayConstruct", docu_Loader("Language/" + language + "/Instruction_AddLayConstruct.txt"), 2500);
 
         }
     }
@@ -1158,25 +1158,23 @@ public class TextEditorFragment extends Fragment {
     }
 
     public LinearLayout createPdfEditorDisplay () {
-        float f = 10, f1 = 24;
+        float f = 6;
         if(yfact <= 0.625) {
-            f = 16;
-            f1 = 28;
+            f = 12;
         }
         mainRel.removeView(mainLin);
         mainRel.removeView(pdfDisplayLin);
 
         String imgPath = "";
         RelativeLayout.LayoutParams pdfDisRelParam = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-
+        pdfDisRelParam.addRule(RelativeLayout.CENTER_HORIZONTAL);
         pdfDisplayLin = new LinearLayout(context);
-        pdfDisplayLin.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+        pdfDisplayLin.setLayoutParams(pdfDisRelParam);
         pdfDisplayLin.setTag("pdfDisplayLin");
-        pdfDisplayLin.setX(displayWidth/f1);
-        pdfDisplayLin.setY(displayHeight/f);
 
         pdfDisplayRel = new RelativeLayout(context);
         pdfDisplayRel.setLayoutParams(pdfDisRelParam);
+        pdfDisplayRel.setY(displayHeight/f);
 
         pdfDisplayRel.setOnTouchListener(new View.OnTouchListener() {
             float x, y, preX, preY;
@@ -1200,11 +1198,11 @@ public class TextEditorFragment extends Fragment {
                             view.setY(view.getY() + (me.getY() - y));
                             view.setX(view.getX() + (me.getX() - x));
                             break;
-                        } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 1.75 * displayHeight) && scaleFact >= 1) {
+                        } else if (pC == 2 && ((view.getHeight() * scaleFact) <= 1.75 * displayHeight) && scaleFact >= .5) {
                             scaleFact = scaleFact + (-(me.getY() - y) * 0.001);
                             if ((view.getHeight() * scaleFact) >= 1.75 * displayHeight && me.getY() < y)
                                 scaleFact = scaleFact + ((me.getY() - y) * 0.001);
-                            if (scaleFact <= 1 && me.getY() > y)
+                            if (scaleFact <= .5 && me.getY() > y)
                                 scaleFact = scaleFact + ((me.getY() - y) * 0.001);
                             view.setScaleX((float) scaleFact);
                             view.setScaleY((float) scaleFact);
@@ -1242,11 +1240,13 @@ public class TextEditorFragment extends Fragment {
         activImgView = imgView;
 
         pdfDisplayRel.addView(imgView);
-
-        if (addLayers != null && addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab)[pageNr] != null) {
-            if(((RelativeLayout)addLayers.get(selectedPdfTab)[pageNr].getParent()) != null)
-               ((RelativeLayout)addLayers.get(selectedPdfTab)[pageNr].getParent()).removeView(addLayers.get(selectedPdfTab)[pageNr]);
-            pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[pageNr]);
+        if (addLayers != null && addLayers.size() > 0 && addLayers.get(selectedPdfTab) != null && addLayers.get(selectedPdfTab).length == pdfPageCount) {
+            try {
+                if (addLayers.get(selectedPdfTab)[pageNr] != null && addLayers.get(selectedPdfTab)[pageNr].getParent() != null) {
+                    ((RelativeLayout) addLayers.get(selectedPdfTab)[pageNr].getParent()).removeView(addLayers.get(selectedPdfTab)[pageNr]);
+                    pdfDisplayRel.addView(addLayers.get(selectedPdfTab)[pageNr]);
+                }
+            } catch (ArrayIndexOutOfBoundsException ae) {}
 
         }
 
@@ -1259,20 +1259,30 @@ public class TextEditorFragment extends Fragment {
         return pdfDisplayLin;
     }
 
-    public void generatePDFfromTx(String[] txts, String folder, String file) {
+    public void generatePDFfromTx(String txt, String folder, String file) {
+
         StaticLayout staticLayout;
-        Bitmap bmp = fileBrowser.viewToBitmap(textRel);
-        int pageWidth = bmp.getWidth(),
-                pageHeight  = bmp.getHeight(),
-                txn = 2,
-                maxLines = 36;
+        Bitmap bmp = fileBrowser.viewToBitmap(textRel),
+                scaledBitmap = Bitmap.createScaledBitmap(bmp, 210, 297, false);
+        RectF rectF = new RectF(5,5, 210, 297);
+
+        int txn = 2,
+                maxLines;
+
         float spacingMultiplier = 1;
         float spacingAddition = 0;
         boolean includePadding = true;
 
-        if(yfact < 0.625) {
+        if(yfact <= 0.625) {
             txn = 3;
-            maxLines = 24;
+            maxLines = 32;
+            if(!noAddr)
+                maxLines = 28;
+        } else {
+            txn = 2;
+            maxLines = 36;
+            if(!noAddr)
+                maxLines = 34;
         }
 
         PdfDocument pdfDocument;
@@ -1285,36 +1295,55 @@ public class TextEditorFragment extends Fragment {
         TextPaint textPaint = new TextPaint();
         textPaint.setAntiAlias(true);
         textPaint.setTextSize(txn*textSize);
-        textPaint.setColor(0xFF000000);
+        textPaint.setLetterSpacing((float) .1);
+        textPaint.setColor(getResources().getColor(R.color.black));
 
         bottomLine.setTextSize(textSize+4);
         bottomLine.setTextAlign(Paint.Align.CENTER);
 
-        for(int i=0;i<txts.length;i++) {
-            textRel.removeAllViews();
+        String[] txts = txt.split("\n");
+        String[] texts = new String[0];
 
-            mainTx = (txts[i]);
+        for(int n=0;n<txts.length;n++) {
+            if (("" + (float) n / maxLines).endsWith(".0")) {
+                texts = Arrays.copyOf(texts, texts.length + 1);
+                texts[texts.length -1] = "";
+            }
+            texts[texts.length -1] = texts[texts.length -1] + txts[n]+"\n";
+        }
+
+        for(int i=0;i<texts.length;i++) {
+
+            textRel.removeAllViews();
+            mainTx = (texts[i]);
             staticLayout = StaticLayout.Builder
-                    .obtain(mainTx, 0, mainTx.length(), textPaint, pageWidth)
+                    .obtain(mainTx, 0, mainTx.length(), textPaint, bmp.getWidth()-2*displayWidth/22)
                     .setAlignment(Layout.Alignment.ALIGN_NORMAL)
                     .setLineSpacing(spacingAddition, spacingMultiplier)
                     .setIncludePad(includePadding)
                     .setMaxLines(maxLines)
                     .build();
 
-            mypageInfo = new PdfDocument.PageInfo.Builder(pageWidth, pageHeight, (i+1)).create();
+            int height = staticLayout.getHeight() +40;
+            if(!noAddr && i==0)
+                height = staticLayout.getHeight() +40 +headIconLin.getHeight();
+
+            mypageInfo = new PdfDocument.PageInfo.Builder(staticLayout.getWidth() , height, (i+1)).create();
             PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
 
             Canvas canvas = myPage.getCanvas();
             if(!noAddr && i==0) {
                 headIconLin.draw(canvas);
-                canvas.translate(0,headIconLin.getHeight());
+                canvas.translate(10,headIconLin.getHeight());
+                maxLines = maxLines +4;
             }
             if(isBackground) {
-                canvas.drawBitmap(bmp, 40, 0, paint);
+                canvas.drawBitmap(bmp, 10, 10, paint);
                 textRel.draw(canvas);
-                canvas.translate(0,textRel.getHeight());
+                canvas.translate(10,bmp.getHeight());
             } else {
+                //canvas.drawBitmap(scaledBitmap, null, rectF, paint);
+                canvas.translate(20,20);
                 staticLayout.draw(canvas);
             }
 
@@ -1327,9 +1356,10 @@ public class TextEditorFragment extends Fragment {
             kindOfFormat = ".pdf";
             if(fileBrowser.showMessage != null && fileBrowser.showMessage.isVisible())
                 fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
-            fileBrowser.messageStarter("Successful_TxDocumentSave", docu_Loader("Language/" + language + "/Success_TxDocumentSave.txt"),  5000);
+            fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
 
         } catch (IOException e) {
+
             String[] noSuccessful = docu_Loader("Language/" + language + "/Unsuccessful_Action.txt"),
                     noSuccsess = new String[]{e.getMessage()};
             for (String s : noSuccessful) {
@@ -1383,16 +1413,21 @@ public class TextEditorFragment extends Fragment {
                 bmp = fileBrowser.viewToBitmap(pdfDisplayRel);
 
             paint.reset();
-            mypageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), (bmp.getHeight() - bmp.getHeight()/11), i).create();
+            //mypageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), (bmp.getHeight() - bmp.getHeight()/11), i).create();
+            mypageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), bmp.getHeight(), i).create();
+
             PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
 
             canvas = myPage.getCanvas();
             canvas.drawBitmap(bmp, 0, 20, paint);
-            if(isBackground)
+            if(isBackground) {
+                canvas.drawBitmap(bmp, 20, 20, paint);
                 textRel.draw(canvas);
-            else
+            } else {
+                Bitmap scbmp = Bitmap.createScaledBitmap(bmp, 210, 297, false);
+                canvas.drawBitmap(scbmp, 20, 20, paint);
                 pdfDisplayRel.draw(canvas);
-
+            }
             pdfDocument.finishPage(myPage);
 
         }
@@ -1401,7 +1436,7 @@ public class TextEditorFragment extends Fragment {
             pdfDocument.writeTo(new FileOutputStream(FILE));
 
             pdfDocument.close();
-            devicePath = FILE;
+            loadedFile = FILE;
             fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
 
         } catch (Exception e) {
@@ -1455,7 +1490,7 @@ public class TextEditorFragment extends Fragment {
             }
 
             document.close();
-            devicePath = file;
+            loadedFile = file;
             fileBrowser.messageStarter("Successful_PdfDocumentSave", docu_Loader("Language/" + language + "/Success_PdfDocumentSave.txt"),  5000);
 
             //fileBrowser.reloadFileBrowserDisplay();
@@ -1481,7 +1516,7 @@ public class TextEditorFragment extends Fragment {
             height = displayHeight/18;
 
         scView = new ScrollView(context);
-        scView.setLayoutParams(new FrameLayout.LayoutParams(displayWidth/5 +10,height +10));
+        scView.setLayoutParams(new FrameLayout.LayoutParams(displayWidth/5 +10,height +20));
         scView.setBackgroundColor(getResources().getColor(R.color.grey_blue_overlay));
         scView.setPadding(5,5,5,5);
         scView.post(new Runnable() {
@@ -1589,8 +1624,12 @@ public class TextEditorFragment extends Fragment {
 
                 fileDescriptor.close();
                 refreshToDefine();
-                if(selectedPdfTab < addLayers.size() && addLayers.get(selectedPdfTab).length == 0)
-                    addLayers.set(selectedPdfTab,new RelativeLayout[pdfPageCount]);
+
+                if(caller.endsWith("New") && selectedPdfTab < addLayers.size() && addLayers.get(selectedPdfTab).length == 0) {
+                    addLayers.set(selectedPdfTab, new RelativeLayout[pdfPageCount]);
+                    calledFrom = "openPdf";
+                    createLayOverPdf();
+                }
 
             } catch (IOException io) {
 

@@ -717,6 +717,7 @@ public class emailDisplayFragment extends Fragment {
                       calledFrom = "email";
                       fileBrowser.startExtApp("file:///" + folder + "/" + file);
                   } else if(view.getTag().toString().contains("http")) {
+                      calledFrom = "mail";
                       file = view.getTag().toString();
                       fileBrowser.startExtApp(file);
                   }
@@ -979,9 +980,6 @@ public class emailDisplayFragment extends Fragment {
                                     collectionMemoryList.add(memoryList);
 
                                     arrayList = new ArrayList<>();
-                                    fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
-                                    fileBrowser.createSendEmail.timerAnimation.start();
-
 
                                     String accountName = "Account ", kind = "mailSentAccountList";
                                     if (fileBrowser.language.equals("Deutsch"))
@@ -1044,6 +1042,8 @@ public class emailDisplayFragment extends Fragment {
                                     fileBrowser.createSendEmail.timerAnimation.start();
 
                                     if (!deleteIndividium.equals("")) {
+                                        fileBrowser.changeIcon(v, "mailIcons", "closed", "open");
+
                                         String[] Index;
                                         String index1 = "";
                                         if (deleteIndividium.contains(":")) {
@@ -1343,6 +1343,7 @@ public class emailDisplayFragment extends Fragment {
             }
             return null;
         }
+
         public void send (String protocol, String d_port, String from, String password, String out, String[] to, String sub, String msg) throws Exception  {
             //Get properties object
             Properties props = new Properties();
@@ -1377,19 +1378,20 @@ public class emailDisplayFragment extends Fragment {
 
             Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPart1);
+            if(attachedList != null) {
+                MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
 
-            MimeBodyPart[] mimeBodyParts = new MimeBodyPart[0];
-            if(attachedList != null)
-            for (int i = 0; i < attachedList.size(); i++) {
-                mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
-                mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
+                for (int i = 0; i < attachedList.size(); i++) {
+                    mimeBodyParts = Arrays.copyOf(mimeBodyParts, mimeBodyParts.length + 1);
+                    mimeBodyParts[mimeBodyParts.length - 1] = new MimeBodyPart();
 
-                String filename = attachedList.get(i)[1];
-                DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
-                mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
-                mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
+                    String filename = attachedList.get(i)[1];
+                    DataSource source = new FileDataSource(attachedList.get(i)[0] + "/" + attachedList.get(i)[1]);
+                    mimeBodyParts[mimeBodyParts.length - 1].setDataHandler(new DataHandler(source));
+                    mimeBodyParts[mimeBodyParts.length - 1].setFileName(filename);
 
-                multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
+                    multipart.addBodyPart(mimeBodyParts[mimeBodyParts.length - 1]);
+                }
             }
 
             message.setContent(multipart);

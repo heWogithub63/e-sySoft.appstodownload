@@ -153,7 +153,7 @@ public class showMessageFragment extends Fragment {
             String tx = "";
             if(devicePath != null && devicePath.length() > 0) {
                 if (devicePath.substring(1).contains("."))
-                    tx = devicePath.substring(devicePath.lastIndexOf("/")+1);
+                    tx = devicePath.substring(devicePath.lastIndexOf("/")+1, devicePath.lastIndexOf("."));
                 else if (kindOf.startsWith("create"))
                     tx = devicePath.substring(devicePath.lastIndexOf("/") + 1) + "/";
                 else if (kindOf.startsWith("find"))
@@ -268,32 +268,33 @@ public class showMessageFragment extends Fragment {
 
             RelativeLayout steerRel = new RelativeLayout(fileBrowser);
             steerRel.setLayoutParams(steerParam);
+            if(kindOf.endsWith("Delete") || kindOf.equals("Instruction_Manuel") || kindOf.equals("PermissionDenied") || kindOf.equals("mailSendRequest")) {
+                for (int i = 0; i < steerPanel.length; i++) {
+                    steerButton = Arrays.copyOf(steerButton, steerButton.length + 1);
+                    steerButton[steerButton.length - 1] = new TextView(fileBrowser);
+                    steerButton[steerButton.length - 1].setTextColor(getResources().getColor(R.color.white));
+                    steerButton[steerButton.length - 1].setText(steerPanel[i]);
+                    steerButton[steerButton.length - 1].setTextSize((float) (textSize));
+                    steerButton[steerButton.length - 1].setTag(kindOf + "  " + steerPanel[i]);
+                    steerButton[steerButton.length - 1].setPadding(10, 0, 10, 0);
+                    steerButton[steerButton.length - 1].setX((float) (i * displayWidth / 5));
+                    steerButton[steerButton.length - 1].setBackgroundColor(getResources().getColor(R.color.black_overlay));
+                    steerButton[steerButton.length - 1].setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String kind_of = view.getTag().toString().substring(view.getTag().toString().lastIndexOf("  ") + 2);
+                            if (kind_of.equals("OK")) {
+                                clickOk();
+                            } else if (kindOf.equals("InstallPermissionDenied"))
+                                fileBrowser.createList_systemUrl(2, 4);
 
-            for (int i = 0; i < steerPanel.length; i++) {
-                steerButton = Arrays.copyOf(steerButton, steerButton.length + 1);
-                steerButton[steerButton.length - 1] = new TextView(fileBrowser);
-                steerButton[steerButton.length - 1].setTextColor(getResources().getColor(R.color.white));
-                steerButton[steerButton.length - 1].setText(steerPanel[i]);
-                steerButton[steerButton.length - 1].setTextSize((float) (textSize));
-                steerButton[steerButton.length - 1].setTag(kindOf + "  " + steerPanel[i]);
-                steerButton[steerButton.length - 1].setPadding(10,0,10,0);
-                steerButton[steerButton.length - 1].setX((float)(i*displayWidth/5));
-                steerButton[steerButton.length - 1].setBackgroundColor(getResources().getColor(R.color.black_overlay));
-                steerButton[steerButton.length - 1].setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String kind_of = view.getTag().toString().substring(view.getTag().toString().lastIndexOf("  ") + 2);
-                        if (kind_of.equals("OK")) {
-                            clickOk();
-                        } else if (kindOf.equals("InstallPermissionDenied"))
-                            fileBrowser.createList_systemUrl(2, 4);
+                            fileBrowser.threadStop = true;
+                            fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
 
-                        fileBrowser.threadStop = true;
-                        fileBrowser.fragmentShutdown(fileBrowser.showMessage, 0);
-
-                    }
-                });
-                steerRel.addView(steerButton[steerButton.length - 1]);
+                        }
+                    });
+                    steerRel.addView(steerButton[steerButton.length - 1]);
+                }
             }
             if(kindOf.equals("Instruction_Manuel"))
                steerRel.addView(createCopyButton(messageTx.length -1));
@@ -366,7 +367,12 @@ public class showMessageFragment extends Fragment {
                     fileBrowser.startTerminalCommands(com, fromPath, toPath);
                 }
             });
-
+            if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
+                fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                fileBrowser.changeIcon(fileBrowser.headMenueIcon[2],"headMenueIcons","open","closed");
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
+            }
         } else if(kindOf.equals("Instruction_Manuel")) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
                 if (!fileBrowser.getPackageManager().canRequestPackageInstalls()) {
@@ -382,8 +388,6 @@ public class showMessageFragment extends Fragment {
         } else if (kindOf.equals("Extern_Device_Permission")) {
             fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.equals("mailSendRequest")) {
-            fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
-            fileBrowser.createSendEmail.timerAnimation.start();
 
             String ms = fileBrowser.createSendEmail.mailTx.getText().toString();
             ClipboardManager clipBoard;
@@ -392,70 +396,23 @@ public class showMessageFragment extends Fragment {
             clipBoard.setPrimaryClip(clip);
             fileBrowser.createSendEmail.startMailSend();
 
-            fileBrowser.fragmentShutdown(fileBrowser.showMessage,0);
         } else if(kindOf.endsWith("Document_Save")) {
 
             String tx = requestedText.getText().toString().replace(" ","");
 
             if (tx.contains(".") && !tx.contains(","))
                 tx = tx.substring(0, tx.lastIndexOf("."));
+
             if (kindOf.startsWith("Tx")) {
-                fileBrowser.createTxEditor.buildTxFile(devicePath, tx);
+                fileBrowser.createTxEditor.buildTxFile(devicePath.substring(0,devicePath.lastIndexOf("/")), tx);
             } else if (kindOf.startsWith("PDF") || kindOf.startsWith("Pdf")) {
                 fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
                 fileBrowser.createTxEditor.timerAnimation.start();
 
                 if(fileBrowser.createTxEditor.kindOfFormat.equals(".txt")) {
-                    String[] txString = new String[0];
-                    String  text = fileBrowser.createTxEditor.TxEditor.getText().toString(),
-                            text_01 = "";
-
-                    int i1 = 0, act = 34;
-                    if(yfact < 0.625)
-                        act = 30;
-
-                    if(!fileBrowser.createTxEditor.noAddr) {
-                        act = 34;
-                        if(yfact < 0.625)
-                            act = 30;
-                    }
-
-                    String[] gesTxLines = text.split("\n") ;
-                    int countChar = 0;
-                    for(String s:gesTxLines) {
-                        text_01 = text_01 + s + "\n";
-                        countChar = countChar + s.length();
-                        i1++;
-
-                        if ((""+((float) i1/act)).endsWith(".0")) {
-                            int rl = text.split("\n").length - i1;
-
-                            txString = Arrays.copyOf(txString, txString.length + 1);
-                            txString[txString.length - 1] = text_01;
-
-                            if (rl < act) {
-                                txString = Arrays.copyOf(txString, txString.length + 1);
-                                txString[txString.length - 1] = text.substring(text.indexOf(text_01) + text_01.length());
-                                break;
-                            }
-                            act = 34;
-                            if(yfact < 0.625)
-                                act = 32;
-                            i1 = 0;
-                            text_01 = "";
-
-                        }
-                    }
-                    if(txString.length == 0) {
-                        txString = Arrays.copyOf(txString,txString.length +1);
-                        txString[txString.length -1] = text;
-                    }
-
-                    int i=0;
-                    fileBrowser.createTxEditor.generatePDFfromTx(txString, devicePath, tx);
-
+                    fileBrowser.createTxEditor.generatePDFfromTx(fileBrowser.createTxEditor.TxEditor.getText().toString(), devicePath.substring(0, devicePath.lastIndexOf("/")), tx);
                 } else if(fileBrowser.createTxEditor.kindOfFormat.equals(".pdf")) {
-                    fileBrowser.createTxEditor.generatePDFfromPdf(devicePath, tx);
+                    fileBrowser.createTxEditor.generatePDFfromPdf(devicePath.substring(0, devicePath.lastIndexOf("/")), tx);
                 }
 
 
@@ -721,9 +678,20 @@ public class showMessageFragment extends Fragment {
                 fileBrowser.createTxEditor.timerAnimation.stop();
 
 
+
+
             } else if(kindOf.equals("Successful_PdfDocumentSave")) {
+
                 fileBrowser.createTxEditor.timeImage.setVisibility(View.INVISIBLE);
                 fileBrowser.createTxEditor.timerAnimation.stop();
+                fileBrowser.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        devicePath = fileBrowser.createTxEditor.loadedFile;
+                        fileBrowser.createTxEditor.variablenInstantion("",".pdf",new String[]{});
+                        fileBrowser.reloadFileBrowserDisplay();
+                    }
+                });
 
             } else if(kindOf.equals("AddLayConstruct")) {
                 fileBrowser.changeIcon(fileBrowser.createTxEditor.icons[2], "TextEditorIcons","open","closed");
@@ -733,10 +701,17 @@ public class showMessageFragment extends Fragment {
             if(fileBrowser.createSendEmail != null && fileBrowser.createSendEmail.isVisible()) {
                 fileBrowser.createSendEmail.timeImage.setVisibility(View.INVISIBLE);
                 fileBrowser.createSendEmail.timerAnimation.stop();
+                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[7],"mailIcons","open","closed");
+                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[6],"mailIcons","open","closed");
+                fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[1],"mailIcons","open","closed");
             }
 
-            if(fileBrowser.showList != null && fileBrowser.showList.isVisible())
+            if(fileBrowser.showList != null && fileBrowser.showList.isVisible()) {
                 fileBrowser.fragmentShutdown(fileBrowser.showList, 3);
+                fileBrowser.changeIcon(fileBrowser.headMenueIcon[2],"headMenueIcons","open","closed");
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
+            }
             if(!calledBack.equals("InfoView"))
                if(fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);

@@ -1,0 +1,4 @@
+The predefined selected file is not 
+a '.txt' or '.pdf' File.
+That's why the save process is actuallay
+not possible !!

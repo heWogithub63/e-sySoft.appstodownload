@@ -1,11 +1,14 @@
 package easysoft.freebrowser;
 
 
+import android.Manifest;
+import android.app.DownloadManager;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.AnimationDrawable;
+import android.net.Uri;
 import android.os.*;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -13,19 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.*;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -54,7 +49,7 @@ public class WebBrowserFragment extends Fragment {
     String orientation = "Portrait";
 
     boolean ishandled = false, actionIdChanged = false;
-
+    private String sFileName, sUrl, sUserAgent;
     public WebBrowserFragment() {
 
     }
@@ -80,6 +75,7 @@ public class WebBrowserFragment extends Fragment {
 
         fileBrowser.changeIcon(headMenueIcon[6], "headMenueIcons", "closed", "running");
         fileBrowser.changeIcon(headMenueIcon[6], "headMenueIcons", "open", "running");
+
 
     }
 
@@ -123,6 +119,27 @@ public class WebBrowserFragment extends Fragment {
         mainRel.addView(createReview());
         webLayout.bringToFront();
         return view;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode==1001){
+            if (grantResults.length>0&&grantResults[0]== PackageManager.PERMISSION_GRANTED){
+                if (!sUrl.equals("")&&!sFileName.equals("")&&!sUserAgent.equals("")){
+                    downloadFile(sFileName,sUrl,sUserAgent);
+                }
+            }
+        }
+    }
+
+    public static String getMimeType(String url) {
+        String type = null;
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension != null) {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        }
+        return type;
     }
 
     private void popupSoftkeyboard() {
@@ -226,155 +243,30 @@ public class WebBrowserFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.M)
     public WebView WebAction(int angel) {
 
-        final ProgressDialog progressDialog = new ProgressDialog(fileBrowser);
-        progressDialog.setMessage("Loading Data...");
-        progressDialog.setCancelable(false);
-
         webView = new createWebView();
-        webView.addJavascriptInterface(
-                new Object() {
-                    @JavascriptInterface
-                    public void onClick(String tag, String id, String type) {
-                        actionId = id;
-                        actionIdChanged = true;
-                        if ((type.contains("search") || type.contains("text")) && (tag.contains("INPUT") || tag.contains("TEXT"))) {
-                            calledFrom = "";
-                            if (id.endsWith("p") || id.endsWith("q") || id.endsWith("s") || id.contains("search")) {
-                                calledFrom = "SearchEngine_" + id;
-                            } else
-                                calledFrom = "EditSearch";
-
-                            handleJavascriptInput("", 0, 0);
-                        }
-
-
-                    }
-                },
-                "appHost"
-        );
-        webView.setWebChromeClient(new WebChromeClient() {
-            public void onProgressChanged(WebView view, int progress) {
-                if (progress > 100) {
-                    progressDialog.show();
-                }
-                if (progress <= 100) {
-                    progressDialog.dismiss();
-                }
-            }
-        });
-
-        webView.setDownloadListener(new DownloadListener() {
-
-            @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition
-                    , String mimetype, long contentLength) {
-                String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
-
-                try {
-                    String address = Environment.getExternalStorageDirectory().getAbsolutePath() + "/"
-                            + Environment.DIRECTORY_DOWNLOADS + "/" +
-                            fileName.replace(" ", "");
-
-                    File file = new File(address);
-                    boolean a = file.createNewFile();
-                    URL link = null;
-                    if (url.startsWith("blob"))
-                        link = new URL(url.substring(url.indexOf(":") + 1));
-                    else
-                        link = new URL(url);
-                    downloadFile(link, address);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
         webView.loadUrl(runningUrl);
-
-        webView.setWebViewClient(new WebViewClient() {
-
-            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                if (urlCollection.size() > 1) {
-                    urlCollection.remove(urlCollectionCounter);
-                    urlCollectionCounter = urlCollectionCounter - 1;
-                }
-                fileBrowser.changeIcon(steerImgs[2], "browserIcons", "open", "closed");
-                steerImgs[2].setEnabled(false);
-
-                fileBrowser.changeIcon(steerImgs[6], "browserIcons", "open", "closed");
-                steerImgs[6].setEnabled(false);
-
-                if (description.contains("ERR_UNKNOWN_URL_SCHEME")) {
-                    webView.loadUrl(urlCollection.get(urlCollectionCounter));
-                    fileBrowser.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            fileBrowser.startExtApp(failingUrl);
-                        }
-                    });
-
-                } else
-                    fileBrowser.messageStarter("notFoundWebPage", fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NoFoundWebSide.txt"), 6000);
-            }
-
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-
-                final String injectedJs = "javascript:(function(){" + fileBrowser.injectedJs("JS/getSelectedObject.js") + "})()";
-                view.loadUrl(injectedJs);
-                if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
-                    fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
-
-                runningUrl = url;
-                boolean contain = false;
-                if (urlCollectionCounter > -1 && (urlCollection.get(urlCollectionCounter)).startsWith(url.substring(0, url.length() - 10)))
-                    contain = true;
-
-                if (!urlCollection.contains(url)) {
-                    if (contain) {
-                        urlCollection.remove(urlCollectionCounter);
-                        urlCollectionCounter = urlCollectionCounter - 1;
-                    }
-                    if (ishandled && steerImgs.length > 1) {
-                        for (int i = urlCollection.size() - 1; i > urlCollectionCounter; i--)
-                            urlCollection.remove(i);
-                        fileBrowser.changeIcon(steerImgs[5], "browserIcons", "open", "closed");
-                        steerImgs[6].setEnabled(false);
-                    }
-
-                    urlCollection.add(webView.getUrl());
-                    urlCollectionCounter = urlCollectionCounter + 1;
-                    if (urlCollectionCounter > 0 && steerImgs.length > 1) {
-                        fileBrowser.changeIcon(steerImgs[2], "browserIcons", "closed", "open");
-                        steerImgs[2].setEnabled(true);
-                        steerImgs[4].setEnabled(true);
-                    }
-                }
-                timeImage.setVisibility(View.INVISIBLE);
-                timerAnimation.stop();
-            }
-        });
-
-
         return webView;
     }
 
+    private void downloadFile(String filename, String url, String userAgent) {
+        try {
+            DownloadManager.Request request = new DownloadManager.Request(
+                    Uri.parse(url));
 
-    public void downloadFile(URL url, String outputFileName) throws IOException {
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); //Notify client once download is completed!
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+            DownloadManager dm = (DownloadManager) fileBrowser.getSystemService(fileBrowser.DOWNLOAD_SERVICE);
+            dm.enqueue(request);
 
-        try (InputStream in = url.openStream();
-             ReadableByteChannel rbc = Channels.newChannel(in);
-             FileOutputStream fos = new FileOutputStream(outputFileName)) {
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            Toast.makeText(fileBrowser, "Downloading File...", Toast.LENGTH_LONG).show();
+
+            sUrl = "";
+            sFileName = "";
+            sUserAgent = "";
+        }catch (Exception ignored){
+            Toast.makeText(fileBrowser, ignored.toString(), Toast.LENGTH_SHORT).show();
         }
-        // do your work here
-
     }
 
     private ImageView createSwitcher() {
@@ -637,10 +529,11 @@ public class WebBrowserFragment extends Fragment {
     }
 
     class createWebView extends WebView {
+
         public createWebView() {
             super(fileBrowser.context);
             this.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-            initWebSetting(webView);
+            initWebSetting();
             this.requestFocus();
             this.setOnTouchListener(new OnTouchListener() {
                 @Override
@@ -651,24 +544,147 @@ public class WebBrowserFragment extends Fragment {
                     return false;
                 }
             });
+
+
+            this.setDownloadListener(new DownloadListener() {
+                @Override
+                public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+                    String filename = URLUtil.guessFileName(url,contentDisposition,getMimeType(url));
+                    sFileName = filename;
+                    sUrl = url;
+                    sUserAgent = userAgent;
+                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+                        if (ContextCompat.checkSelfPermission(fileBrowser, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                == PackageManager.PERMISSION_GRANTED){
+                            downloadFile(filename,url,userAgent);
+                        }else {
+                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1001);
+                        }
+                    }else {
+                        downloadFile(filename,url,userAgent);
+                    }
+
+                }
+            });
+            this.setWebViewClient(new WebViewClient() {
+                @Override
+                public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                    if (urlCollection.size() > 1) {
+                        urlCollection.remove(urlCollectionCounter);
+                        urlCollectionCounter = urlCollectionCounter - 1;
+                    }
+                    fileBrowser.changeIcon(steerImgs[2], "browserIcons", "open", "closed");
+                    steerImgs[2].setEnabled(false);
+
+                    fileBrowser.changeIcon(steerImgs[6], "browserIcons", "open", "closed");
+                    steerImgs[6].setEnabled(false);
+
+                    if (description.contains("ERR_UNKNOWN_URL_SCHEME")) {
+                        webView.loadUrl(urlCollection.get(urlCollectionCounter));
+                        fileBrowser.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                fileBrowser.startExtApp(failingUrl);
+                            }
+                        });
+
+                    } else
+                        fileBrowser.messageStarter("notFoundWebPage", fileBrowser.docu_Loader("Language/" + fileBrowser.language + "/NoFoundWebSide.txt"), 6000);
+                }
+
+                @Override
+                public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                }
+
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+
+                    final String injectedJs = "javascript:(function(){" + fileBrowser.injectedJs("JS/getSelectedObject.js") + "})()";
+                    view.loadUrl(injectedJs);
+                    if (fileBrowser.softKeyBoard != null && fileBrowser.softKeyBoard.isVisible())
+                        fileBrowser.fragmentShutdown(fileBrowser.softKeyBoard, 6);
+
+                    runningUrl = url;
+                    boolean contain = false;
+                    if (urlCollectionCounter > -1 && (urlCollection.get(urlCollectionCounter)).startsWith(url.substring(0, url.length() - 10)))
+                        contain = true;
+
+                    if (!urlCollection.contains(url)) {
+                        if (contain) {
+                            urlCollection.remove(urlCollectionCounter);
+                            urlCollectionCounter = urlCollectionCounter - 1;
+                        }
+                        if (ishandled && steerImgs.length > 1) {
+                            for (int i = urlCollection.size() - 1; i > urlCollectionCounter; i--)
+                                urlCollection.remove(i);
+                            fileBrowser.changeIcon(steerImgs[5], "browserIcons", "open", "closed");
+                            steerImgs[6].setEnabled(false);
+                        }
+
+                        urlCollection.add(webView.getUrl());
+                        urlCollectionCounter = urlCollectionCounter + 1;
+                        if (urlCollectionCounter > 0 && steerImgs.length > 1) {
+                            fileBrowser.changeIcon(steerImgs[2], "browserIcons", "closed", "open");
+                            steerImgs[2].setEnabled(true);
+                            steerImgs[4].setEnabled(true);
+                        }
+                    }
+                    timeImage.setVisibility(View.INVISIBLE);
+                    timerAnimation.stop();
+                }
+            });
+
+            this.setWebChromeClient(new WebChromeClient(){
+                @Override
+                public void onPermissionRequest(PermissionRequest request) {
+                    super.onPermissionRequest(request);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        request.grant(request.getResources());
+                    }
+                }
+
+            });
+
+            this.addJavascriptInterface(
+                    new Object() {
+                        @JavascriptInterface
+                        public void onClick(String tag, String id, String type) {
+
+                            actionId = id;
+                            actionIdChanged = true;
+                            if ((type.contains("search") || type.contains("text")) && (tag.contains("INPUT") || tag.contains("TEXT"))) {
+                                calledFrom = "";
+                                if (id.endsWith("p") || id.endsWith("q") || id.endsWith("s") || id.contains("search")) {
+                                    calledFrom = "SearchEngine_" + id;
+                                } else
+                                    calledFrom = "EditSearch";
+
+                                handleJavascriptInput("", 0, 0);
+                            }
+
+
+                        }
+                    },
+                    "appHost"
+            );
+
         }
 
-        public void initWebSetting(WebView webView) {
+        public void initWebSetting() {
             WebSettings settings = this.getSettings();
             settings.setJavaScriptEnabled(true);
 
-            settings.setAppCachePath(getActivity().getApplicationContext().getCacheDir().getAbsolutePath());
             settings.setUseWideViewPort(true);
             settings.setPluginState(WebSettings.PluginState.ON);
 
             settings.setAllowFileAccess(true);
             settings.setAllowFileAccessFromFileURLs(true);
             settings.setAllowUniversalAccessFromFileURLs(true);
-            settings.setAppCacheEnabled(true);
+
             settings.setDatabaseEnabled(true);
             settings.setDomStorageEnabled(true);
             settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-            settings.setAppCachePath(this.getContext().getCacheDir().getAbsolutePath());
             settings.setUseWideViewPort(true);
             settings.setLoadWithOverviewMode(true);
             settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
@@ -684,5 +700,6 @@ public class WebBrowserFragment extends Fragment {
                 settings.setAllowFileAccessFromFileURLs(true);
             }
         }
+
     }
 }

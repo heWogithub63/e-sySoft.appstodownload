@@ -445,6 +445,8 @@ public class showListFragment extends Fragment {
                                     fileBrowser.changeIcon(fileBrowser.createSendEmail.icons[2], "mailIcons","open","closed");
                                 }
                             } else if(caller.equals("mailCallAccountList") || caller.equals("mailSentAccountList")) {
+                                fileBrowser.createSendEmail.timeImage.setVisibility(View.VISIBLE);
+                                fileBrowser.createSendEmail.timerAnimation.start();
                                 String kind = caller.substring(4,caller.indexOf("Account"));
                                 nn = Integer.parseInt(tag.substring(0,tag.indexOf(" "))) +1;
                                 int o = 3;
@@ -563,6 +565,11 @@ public class showListFragment extends Fragment {
                                     if (!devicePath_trans.equals("") && (devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".") &&
                                             !(devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".pdf") || devicePath_trans.substring(devicePath_trans.lastIndexOf("/") + 1).contains(".txt")))) {
                                         fileBrowser.createTxEditor.importImg = true;
+                                        if(fileBrowser.createTxEditor.addLayers.size() == (fileBrowser.createTxEditor.selectedPdfTab +1)) {
+                                            fileBrowser.calledFrom =  "importImg";
+                                            //fileBrowser.createTxEditor.addLayers.add(new RelativeLayout[0]);
+                                            fileBrowser.createTxEditor.addLayers.set(fileBrowser.createTxEditor.selectedPdfTab, new RelativeLayout[fileBrowser.pdfPageCount]);
+                                        }
                                         fileBrowser.createTxEditor.createLayOverPdf();
                                         //fileBrowser.createTxEditor.createPdfEditorDisplay();
                                     } else {
@@ -573,37 +580,47 @@ public class showListFragment extends Fragment {
 
                                     if(fileBrowser.createTxEditor != null & fileBrowser.createTxEditor.isVisible()) {
                                         fileBrowser.createTxEditor.isBackgroundPath = devicePath;
-                                        fileBrowser.createTxEditor.createLayOverPdf();
+                                        if(fileBrowser.createTxEditor.addLayers.size() == (fileBrowser.createTxEditor.selectedPdfTab +1)) {
+                                            fileBrowser.calledFrom =  "importTxt";
+                                            //fileBrowser.createTxEditor.addLayers.add(new RelativeLayout[0]);
+                                            fileBrowser.createTxEditor.addLayers.set(fileBrowser.createTxEditor.selectedPdfTab, new RelativeLayout[fileBrowser.pdfPageCount]);
+                                        }fileBrowser.createTxEditor.createLayOverPdf();
                                     }
 
                                 }
 
                             } else if(caller.equals("PdfSaveList")) {
-                                if (!devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".")) {
-                                    fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
-                                    fileBrowser.createTxEditor.timerAnimation.start();
+                                File file;
+                                fileBrowser.createTxEditor.timeImage.setVisibility(View.VISIBLE);
+                                fileBrowser.createTxEditor.timerAnimation.start();
 
-                                    File file = new File(devicePath);
+                                if ((devicePath.substring(devicePath.lastIndexOf("/") + 1).contains(".") && (devicePath.contains(".txt") || devicePath.contains(".pdf"))) ||
+                                     !devicePath.contains(".")) {
+
+                                    file = new File(devicePath);
+
                                     boolean canWrite = file.canWrite();
                                     if (!canWrite) {
                                         fileBrowser.messageStarter("Instruction_Save_Not_Possible", docu_Loader("Language/" + language + "/Save_Not_Possible.txt"), 8000);
                                         return;
                                     }
+                                    if(!devicePath.contains("."))
+                                        devicePath = devicePath +"/FileName";
                                     isPdf = false;
                                     isBackground = false;
                                     isLogo = false;
                                     String kind = "TxDocument_Save";
                                     if (tag.contains("PDF ")) {
                                         kind = "PDFDocument_Save";
-                                        if(fileBrowser.createTxEditor.loadedFile.endsWith(".pdf"))
+                                        if (fileBrowser.createTxEditor.loadedFile.endsWith(".pdf"))
                                             kind = "PDF01Document_Save";
                                     }
 
                                     fileBrowser.messageStarter(kind,
-                                            docu_Loader("Language/" + language + "/"+kind+".txt"), 0);
-                                } else {
-                                    fileBrowser.messageStarter("Instruction_TxDocumentSave", docu_Loader("Language/" + language + "/Instruction_TxDokumentSave.txt"), 8000);
-                                }
+                                            docu_Loader("Language/" + language + "/" + kind + ".txt"), 0);
+                                } else
+                                    fileBrowser.messageStarter("Instruction_Save_Not_Possible", docu_Loader("Language/" + language + "/Save_Not_Possible_1.txt"), 8000);
+
                             }
                             else if(caller.equals("documentList")) {
                                 String kind = "textEditorDisplay", format = ".txt";

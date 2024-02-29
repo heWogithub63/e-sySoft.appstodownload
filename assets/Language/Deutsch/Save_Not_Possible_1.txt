@@ -1,0 +1,5 @@
+Das selectierte file ist kein
+'.txt' or '.pdf' File.
+Das ist der Grund warum ein Save
+erst nach Änderung der Selection 
+im FileBrowser möglich ist.

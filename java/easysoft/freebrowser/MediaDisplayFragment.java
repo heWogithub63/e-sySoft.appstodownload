@@ -283,7 +283,11 @@ public class MediaDisplayFragment extends Fragment {
                 mp.setScreenOnWhilePlaying(true);
                 mP = mp;
                 mP.start();
+
+                fileBrowser.timeImage.setVisibility(View.INVISIBLE);
+                fileBrowser.timerAnimation.stop();
             }
+
         });
         videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
